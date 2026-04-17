@@ -1,0 +1,328 @@
+{
+  "LanguageSwitcher": {
+    "label": "Language",
+    "en": "English",
+    "es": "Spanish"
+  },
+  "Auth": {
+    "signIn": "Sign in",
+    "sendCodePrompt": "Enter your email and we'll send you a code.",
+    "emailLabel": "Email",
+    "sendCode": "Send code",
+    "checkEmail": "Check your inbox",
+    "codeSent": "We sent a 6-digit code to <email>{email}</email>.",
+    "back": "Use a different email",
+    "noCode": "Didn't get it?",
+    "resend": "Resend code",
+    "loading": "Loading...",
+    "errors": {
+      "sendFailed": "Couldn't send the code. Check your email and try again.",
+      "invalidCode": "That code isn't right. Try again or request a new one.",
+      "verifyFailed": "Couldn't verify that code. Try again or request a new one."
+    }
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome, {name}",
+    "emptyTitle": "No menus yet",
+    "emptyDescription": "Menu creation is almost ready. Your published menus and QR codes will appear here once you build your first one.",
+    "signOut": "Sign out",
+    "loading": "Loading..."
+  },
+  "Landing": {
+    "nav": {
+      "brand": "QRmenucrafter",
+      "howItWorks": "How it works",
+      "examples": "Examples",
+      "pricing": "Pricing",
+      "resources": "Resources",
+      "signIn": "Sign in",
+      "getStarted": "Get started",
+      "menu": "Menu",
+      "close": "Close menu"
+    },
+    "hero": {
+      "badge": "New — Auto-parse from any PDF or photo",
+      "h1a": "Your menu,",
+      "h1b": "on every table,",
+      "h1c": "just a scan away.",
+      "description": "Turn your printed menu into a beautiful mobile page and a QR code for your tables. No apps to download, no menus to reprint — edit a dish and it updates everywhere, instantly.",
+      "ctaPrimary": "Start for free",
+      "ctaSecondary": "See a live menu",
+      "trustStars": "4.9 from 340+ reviews",
+      "trustLine": "Trusted by bistros, bars, bakeries and brasseries.",
+      "stats": {
+        "time": { "value": "2 min", "label": "to go live" },
+        "scans": { "value": "Unlimited", "label": "scans, always" },
+        "app": { "value": "No app", "label": "opens in any browser" },
+        "restaurants": { "value": "1,240+", "label": "restaurants trust us" }
+      }
+    },
+    "mockup": {
+      "restaurant": "Maison Rustique",
+      "address": "12 Rue de la Paix",
+      "rating": "★ 4.8",
+      "tableLabel": "TABLE · 07",
+      "floatingChip": "Live menu, no app",
+      "chefsPick": "Chef's pick",
+      "tabs": {
+        "starters": "Starters",
+        "mains": "Mains",
+        "desserts": "Desserts",
+        "wine": "Wine"
+      },
+      "dishes": {
+        "bourguignon": {
+          "name": "Boeuf Bourguignon",
+          "price": "28",
+          "desc": "6-hour braise, baby carrots, pearl onions."
+        },
+        "risotto": {
+          "name": "Truffle Risotto",
+          "price": "26",
+          "desc": "Carnaroli rice, 24-month parmigiano, black truffle."
+        },
+        "tataki": {
+          "name": "Tuna Tataki",
+          "price": "22",
+          "desc": "Bluefin loin, ponzu, daikon, fresh wasabi."
+        }
+      }
+    },
+    "process": {
+      "kicker": "How it works",
+      "title": "From your menu\nto your table in minutes.",
+      "steps": {
+        "upload": {
+          "n": "01",
+          "title": "Upload your menu",
+          "description": "Send us a PDF, a photo of your printed menu, or even a snapshot on your phone. Wine stains and all — we handle it."
+        },
+        "build": {
+          "n": "02",
+          "title": "We build your page",
+          "description": "Every dish, price, and description is organized into a beautiful mobile menu. Add photos, allergens, and dietary tags with one click."
+        },
+        "print": {
+          "n": "03",
+          "title": "Print the QR",
+          "description": "Download a print-ready QR card, laminate it, place it on your tables. Diners scan, browse, and order — no download needed."
+        }
+      }
+    },
+    "preview": {
+      "kicker": "What your diners see",
+      "title": "A menu worth\nopening.",
+      "description": "Gorgeous dish photos, clear prices, allergen badges, and a tap-to-call-waiter button. Works on every phone, loads in under a second, and feels like a native app.",
+      "features": {
+        "photos": { "title": "Real food photos", "meta": "Upload yours, or use our library" },
+        "allergens": { "title": "Allergen badges", "meta": "All 14 EU-listed allergens" },
+        "diet": { "title": "Diet tags", "meta": "Vegan, veggie, gluten-free" },
+        "waiter": { "title": "Call waiter button", "meta": "One tap on the diner's phone" },
+        "analytics": { "title": "Dish analytics", "meta": "See what sells and when" }
+      },
+      "menuCard": {
+        "season": "Spring 2026",
+        "restaurant": "Maison Rustique",
+        "domain": "maison-rustique.qrmenu.cr",
+        "categories": {
+          "starters": "Starters",
+          "mains": "Mains",
+          "desserts": "Desserts",
+          "wine": "Wine",
+          "pairings": "Pairings"
+        },
+        "dishes": {
+          "bourguignon": {
+            "name": "Boeuf Bourguignon",
+            "origin": "France",
+            "price": "28",
+            "desc": "Beef braised 6 hours in Burgundy wine, baby carrots, glazed pearl onions, smoked bacon.",
+            "tags": ["Gluten", "Sulfites"]
+          },
+          "risotto": {
+            "name": "Truffle Risotto",
+            "origin": "Italy",
+            "price": "26",
+            "desc": "Carnaroli rice, Normandy butter, 24-month parmigiano, raw black truffle shavings.",
+            "tags": ["Dairy", "Veggie"]
+          },
+          "tataki": {
+            "name": "Tuna Tataki",
+            "origin": "Almadraba",
+            "price": "22",
+            "desc": "Bluefin loin seared in sesame, house ponzu, daikon, cilantro, fresh wasabi.",
+            "tags": ["Fish", "Sesame"]
+          },
+          "tarte": {
+            "name": "Tarte Tatin",
+            "origin": "Loire",
+            "price": "11",
+            "desc": "Upside-down caramelized reinette apples, butter shortcrust, Tahitian vanilla cream.",
+            "tags": ["Gluten", "Dairy", "Egg"]
+          }
+        }
+      }
+    },
+    "qrDemo": {
+      "kicker": "Branded QR codes",
+      "titleA": "Not just any QR.",
+      "titleB": "Your",
+      "titleC": "QR.",
+      "description": "Add your logo to the center, pick your colors, and print it on anything — paper, wood, steel, vinyl. We handle the math so it still scans reliably, every time.",
+      "scanLabel": "Scan for the menu",
+      "variants": {
+        "classic": "Classic",
+        "accent": "Accent",
+        "bold": "Bold"
+      },
+      "cta": "Download a sample QR"
+    },
+    "lovedBy": {
+      "kicker": "Loved by restaurants",
+      "titleA": "Restaurants that switched",
+      "titleB": "never looked back.",
+      "quotes": {
+        "clara": {
+          "name": "Clara Domínguez",
+          "role": "Owner, Bar Lolita (Madrid)",
+          "quote": "Our reprints cost us nearly €400 a year. With QRmenucrafter, I update a dish from my phone between lunch and dinner."
+        },
+        "thomas": {
+          "name": "Thomas Renaud",
+          "role": "Chef, Brasserie 19 (Lyon)",
+          "quote": "The translation is the killer feature. Our tourists finally order confidently — and upsells on wine are up 18%."
+        },
+        "sara": {
+          "name": "Sara Kouassi",
+          "role": "Manager, Kinteros (Barcelona)",
+          "quote": "Setup took us a single afternoon. Our servers love it — they just point at the QR, the rest is on the diner."
+        }
+      }
+    },
+    "pricing": {
+      "kicker": "Simple pricing",
+      "title": "One plan per restaurant.\nNo surprises.",
+      "mostPopular": "Most popular",
+      "plans": {
+        "starter": {
+          "name": "Starter",
+          "price": "0",
+          "unit": "/month",
+          "tagline": "Perfect to try it out",
+          "features": [
+            "1 menu, up to 40 dishes",
+            "Printable QR code",
+            "Unlimited scans",
+            "Works on any phone"
+          ],
+          "cta": "Start free"
+        },
+        "restaurant": {
+          "name": "Restaurant",
+          "price": "19",
+          "unit": "/month",
+          "tagline": "Most popular",
+          "features": [
+            "Unlimited menus & dishes",
+            "Your own custom domain",
+            "Branded QR codes",
+            "Allergens & diet tags",
+            "Dish analytics",
+            "Remove watermark"
+          ],
+          "cta": "Choose Restaurant"
+        },
+        "group": {
+          "name": "Group",
+          "price": "49",
+          "unit": "/month",
+          "tagline": "For 2 or more locations",
+          "features": [
+            "Everything in Restaurant",
+            "Up to 10 locations",
+            "Wine pairing cards",
+            "Staff accounts",
+            "Priority support",
+            "POS integration"
+          ],
+          "cta": "Choose Group"
+        }
+      }
+    },
+    "faq": {
+      "kicker": "Questions",
+      "titleA": "The things",
+      "titleB": "we hear",
+      "titleC": "the most.",
+      "helpLine": "Can't find your answer? Email us at hello@qrmenucrafter.com — a human replies within an hour, every day of the week.",
+      "items": {
+        "savvy": {
+          "q": "Do I need to be tech-savvy?",
+          "a": "Not at all. If you can take a photo with your phone, you can use QRmenucrafter. Upload your menu and we do the rest — no training needed."
+        },
+        "price": {
+          "q": "What if I change a price tomorrow?",
+          "a": "Edit any dish from your phone and it updates instantly. The QR on your tables never changes — it always shows your latest menu."
+        },
+        "wifi": {
+          "q": "Does it work without restaurant wifi?",
+          "a": "Yes. Your diners use their own phone data or your wifi. Our menus are tiny and load in under a second, even on a weak signal."
+        },
+        "scans": {
+          "q": "Do you charge per scan?",
+          "a": "Never. Every plan — including the free one — comes with unlimited scans."
+        },
+        "domain": {
+          "q": "Can I use my own domain?",
+          "a": "Yes, on the Restaurant plan and above. Point your domain to us and we handle the rest, including the secure certificate."
+        }
+      }
+    },
+    "footerCta": {
+      "kicker": "Ready when you are",
+      "titleA": "Your first digital menu,",
+      "titleB": "in two minutes.",
+      "description": "No credit card required. You can print your QR today.",
+      "ctaPrimary": "Start for free",
+      "ctaSecondary": "Talk to sales"
+    },
+    "footer": {
+      "tagline": "Digital menus and QR codes, built for restaurants. Made in Madrid, served worldwide.",
+      "copyright": "© {year} QRmenucrafter SL",
+      "madeWith": "Made with care in Madrid · hello@qrmenucrafter.com",
+      "columns": {
+        "product": {
+          "title": "Product",
+          "links": ["How it works", "Pricing", "Templates", "What's new"]
+        },
+        "for": {
+          "title": "For",
+          "links": ["Bistros", "Bars", "Food trucks", "Hotels"]
+        },
+        "resources": {
+          "title": "Resources",
+          "links": ["Blog", "Guides", "Help center", "Contact"]
+        },
+        "legal": {
+          "title": "Legal",
+          "links": ["Terms", "Privacy", "Cookies", "GDPR"]
+        }
+      }
+    }
+  },
+  "Changelog": {
+    "title": "Changelog",
+    "description": "All notable changes to QRmenucrafter are documented here.",
+    "backHome": "Back to home",
+    "latest": "Latest",
+    "types": {
+      "added": "Added",
+      "changed": "Changed",
+      "fixed": "Fixed",
+      "removed": "Removed"
+    },
+    "moreHistory": "Looking for more history?",
+    "viewGithub": "View full changelog on GitHub"
+  }
+}

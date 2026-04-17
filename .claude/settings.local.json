@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Read(//mnt/e/downloads/infographs/**)",
+      "Bash(awk 'NR>=50 && NR<=193 {print NR\": \"length\\($0\\)\" chars\"}' \"/mnt/e/downloads/infographs/QRmenucrafter-Landing.html\")",
+      "Bash(awk NR>=50 && length\\($0\\)>1000 {print NR\": \"length\\($0\\)\" chars\"} *)",
+      "Bash(awk NR>=175 && NR<=193 && NR!=183 {print NR\": \"$0} *)"
+    ]
+  }
+}

@@ -1,0 +1,269 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ---- Keyframes ---- */
+
+@keyframes fade-up {
+  0% { opacity: 0; transform: translateY(16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-step {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes scan-line {
+  0% { top: 22%; }
+  100% { top: 78%; }
+}
+
+@utility animate-fade-up {
+  animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@utility animate-pulse-step {
+  animation: pulse-step 1.4s ease-in-out infinite;
+}
+
+@utility animate-scan-line {
+  animation: scan-line 2.4s linear infinite alternate;
+}
+
+/* ---- Theme tokens (shadcn + design-spec additions) ---- */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', 'DM Sans', Georgia, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-pop: var(--pop);
+  --color-pop-foreground: var(--pop-foreground);
+  --color-chip: var(--chip);
+  --color-chip-foreground: var(--chip-foreground);
+  --color-accent-deep: var(--accent-deep);
+  --color-pop-deep: var(--pop-deep);
+  --color-cream-line: var(--cream-line);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+}
+
+/*
+ * QRmenucrafter — Pistachio × Persimmon (design-spec exact values).
+ * Role          Hex        Token                  Usage
+ * Ink           #1A1E17    --foreground           Primary text / buttons / footer
+ * Paper         #F6F2E7    --background           Page cream
+ * Paper-2       #EFE8D4    --card                 Alt section cream
+ * Pistachio     #C8E06A    --accent               Hero blob, highlights, QR bg
+ * Pistachio-deep #9DB84A   --accent-deep          Pistachio hover/shadow
+ * Persimmon     #E8552B    --pop                  Squiggle, price chips, pop accents
+ * Persimmon-deep #C43E18   --pop-deep             Persimmon hover
+ * Cream-line    #D9CFB4    --cream-line / border  Hairline borders, dividers
+ * Muted         #6B6B5E    --muted-foreground     Secondary text
+ */
+:root {
+  /* Shadcn base radius for generic controls (inputs, default buttons).
+     Design-spec radii (cards 24px, hero/phone 36px, chips 8px, pills 999px)
+     are applied via arbitrary Tailwind values where needed. */
+  --radius: 0.625rem;
+
+  --background: #F6F2E7;
+  --foreground: #1A1E17;
+
+  --card: #EFE8D4;
+  --card-foreground: #1A1E17;
+  --popover: #F6F2E7;
+  --popover-foreground: #1A1E17;
+
+  --primary: #1A1E17;
+  --primary-foreground: #F6F2E7;
+
+  --secondary: #EFE8D4;
+  --secondary-foreground: #1A1E17;
+
+  --muted: #EFE8D4;
+  --muted-foreground: #6B6B5E;
+
+  --accent: #C8E06A;
+  --accent-foreground: #1A1E17;
+  --accent-deep: #9DB84A;
+
+  --destructive: oklch(0.577 0.245 27.325);
+
+  --border: #D9CFB4;
+  --input: #D9CFB4;
+  --ring: #1A1E17;
+
+  --pop: #E8552B;
+  --pop-foreground: #FFFFFF;
+  --pop-deep: #C43E18;
+  --chip: #FFD36B;
+  --chip-foreground: #1A1E17;
+
+  --cream-line: #D9CFB4;
+
+  --chart-1: #1A1E17;
+  --chart-2: #C8E06A;
+  --chart-3: #E8552B;
+  --chart-4: #FFD36B;
+  --chart-5: #6B6B5E;
+
+  --sidebar: #F6F2E7;
+  --sidebar-foreground: #1A1E17;
+  --sidebar-primary: #1A1E17;
+  --sidebar-primary-foreground: #F6F2E7;
+  --sidebar-accent: #EFE8D4;
+  --sidebar-accent-foreground: #1A1E17;
+  --sidebar-border: #D9CFB4;
+  --sidebar-ring: #1A1E17;
+}
+
+.dark {
+  --background: #1A1E17;
+  --foreground: #F6F2E7;
+
+  --card: #22261F;
+  --card-foreground: #F6F2E7;
+  --popover: #22261F;
+  --popover-foreground: #F6F2E7;
+
+  --primary: #F6F2E7;
+  --primary-foreground: #1A1E17;
+
+  --secondary: #262A23;
+  --secondary-foreground: #F6F2E7;
+
+  --muted: #262A23;
+  --muted-foreground: #A8AB9F;
+
+  --accent: #C8E06A;
+  --accent-foreground: #1A1E17;
+  --accent-deep: #9DB84A;
+
+  --destructive: oklch(0.704 0.191 22.216);
+
+  --border: rgba(246, 242, 231, 0.12);
+  --input: rgba(246, 242, 231, 0.14);
+  --ring: #C8E06A;
+
+  --pop: #F26A3E;
+  --pop-foreground: #FFFFFF;
+  --pop-deep: #C43E18;
+  --chip: #FFD36B;
+  --chip-foreground: #1A1E17;
+
+  --cream-line: rgba(246, 242, 231, 0.12);
+
+  --sidebar: #22261F;
+  --sidebar-foreground: #F6F2E7;
+  --sidebar-primary: #C8E06A;
+  --sidebar-primary-foreground: #1A1E17;
+  --sidebar-accent: #262A23;
+  --sidebar-accent-foreground: #F6F2E7;
+  --sidebar-border: rgba(246, 242, 231, 0.12);
+  --sidebar-ring: #C8E06A;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  i, em {
+    font-family: 'Instrument Serif', 'DM Sans', Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+  }
+  h1, h2, h3 {
+    font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
+  }
+  ::selection {
+    background: var(--accent);
+    color: var(--accent-foreground);
+  }
+
+  /* Mobile nav disclosure icon swap */
+  details[data-nav] > summary .icon-closed { display: inline-block; }
+  details[data-nav] > summary .icon-open { display: none; }
+  details[data-nav][open] > summary .icon-closed { display: none; }
+  details[data-nav][open] > summary .icon-open { display: inline-block; }
+
+  /* FAQ accordion: active state + plus icon rotation */
+  details[data-faq] > summary .faq-icon {
+    background: var(--card);
+    color: var(--foreground);
+    transition: transform 0.2s, background 0.2s, color 0.2s;
+  }
+  details[data-faq][open] {
+    background: var(--background);
+    border-color: transparent;
+  }
+  details[data-faq][open] > summary .faq-icon {
+    background: var(--foreground);
+    color: var(--background);
+    transform: rotate(45deg);
+  }
+}
+
+/* ---- Design-spec pill button shadow utilities ---- */
+@layer components {
+  .btn-pill-shadow-primary {
+    box-shadow: 0 2px 0 #0a0c08;
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+  .btn-pill-shadow-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 #0a0c08;
+  }
+  .btn-pill-shadow-accent {
+    box-shadow: 0 2px 0 var(--accent-deep);
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+  .btn-pill-shadow-accent:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 var(--accent-deep);
+  }
+}
