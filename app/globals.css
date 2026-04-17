@@ -248,6 +248,28 @@
   }
 }
 
+/* Hide the native scrollbar but keep the element scrollable. Used for
+   horizontal pill rows on mobile (category nav, tabs, etc.). */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Soft fade at the right edge of a horizontally-scrolling row so users still
+   know there's more content when the scrollbar is hidden. */
+@utility scroll-fade-x {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    black 24px,
+    black calc(100% - 24px),
+    transparent 100%
+  );
+}
+
 /* ---- Design-spec pill button shadow utilities ---- */
 @layer components {
   .btn-pill-shadow-primary {

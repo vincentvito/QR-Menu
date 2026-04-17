@@ -560,7 +560,7 @@ function MenuPreview({ t }: { t: T }) {
               </div>
             </div>
 
-            <div className="border-cream-line flex gap-2 overflow-auto border-b px-6 py-3 text-xs sm:px-7">
+            <div className="border-cream-line no-scrollbar flex gap-2 overflow-auto border-b px-6 py-3 text-xs sm:px-7">
               {categories.map((c, i) => (
                 <span
                   key={c}

@@ -6,6 +6,42 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.4.0',
+    date: '2026-04-17',
+    title: 'Edit your menu + search for diners',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Owner-only menu editor at /m/[slug]/edit — inline edit every dish name, description, and price with autosave',
+          'Desktop editor has a sticky left sidebar with big category buttons + icons; mobile gets horizontal category pills',
+          'Search bar inside the editor filters dishes across the whole menu',
+          'Add or delete dishes per category',
+          'Change the restaurant name or currency from the editor header, reflected on the public page instantly',
+          'Search bar at the top of every public menu — filters dishes by name, description, or tag in real time, with a no-results state',
+          '"Currency" selector in the create-menu form (default USD)',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.3.0',
+    date: '2026-04-17',
+    title: 'Create your first digital menu',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Menu creation from a photo or PDF — drag a file into the dashboard and we OCR every dish with Gemini',
+          'Menu creation from a restaurant URL — we scrape the page, extract every dish with Gemini, and publish a mobile-friendly menu in seconds',
+          'Menu creation from pasted text for restaurants without a website',
+          'Public menu page at /m/[slug] with sticky category nav, dish cards, persimmon price chips, dietary tags, and a floating call-waiter button',
+          'Dashboard lists your published menus with copy-link and view-menu actions',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.2.0',
     date: '2026-04-17',
     title: 'Pistachio · Persimmon design system',

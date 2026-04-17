@@ -23,6 +23,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  menus         Menu[]
 
   @@unique([email])
   @@map("user")
@@ -74,4 +75,37 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+model Menu {
+  id             String     @id @default(cuid())
+  slug           String     @unique
+  userId         String
+  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurantName String
+  currency       String     @default("USD")
+  sourceUrl      String?
+  sourceText     String?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  items          MenuItem[]
+
+  @@index([userId])
+  @@map("menu")
+}
+
+model MenuItem {
+  id          String   @id @default(cuid())
+  menuId      String
+  menu        Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  category    String
+  name        String
+  description String   @default("")
+  price       Float    @default(0)
+  tags        String[] @default([])
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([menuId])
+  @@map("menu_item")
 }
