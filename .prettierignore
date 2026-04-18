@@ -1,0 +1,25 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Generated
+.next
+out
+dist
+build
+next-env.d.ts
+tsconfig.tsbuildinfo
+
+# Prisma
+lib/generated
+prisma/migrations
+
+# Misc
+.env*
+.vercel
+coverage
+*.log
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
