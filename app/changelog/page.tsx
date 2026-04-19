@@ -6,6 +6,122 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.10.0',
+    date: '2026-04-18',
+    title: 'Logo uploads, sidebar nav, profile',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Upload your restaurant logo with drag-and-drop instead of pasting a URL — PNG, JPG, WEBP, or SVG up to 2 MB. Works from Settings and from onboarding',
+          'Pick what goes in the middle of your QR code: your logo, custom text (up to 4 characters), or leave it blank',
+          '&quot;Use restaurant brand colors&quot; one-click button in the QR section — pulls your primary/secondary colors straight into the code',
+          'Download your most recent menu&apos;s QR straight from the Settings preview — SVG or PNG',
+          'New left sidebar for the dashboard — your restaurant at the top, Menus/Team/Settings tabs below, your account card at the bottom. Collapses to icons with ⌘B / Ctrl+B',
+          'New Profile page at /dashboard/profile — set a display name so you don&apos;t show up to teammates as your email',
+          'Onboarding now asks for your name so it&apos;s filled in from day one',
+          'Floating back-to-top button on the landing page',
+        ],
+      },
+      {
+        type: 'changed' as const,
+        items: [
+          'Landing page top nav simplified — one &quot;Get started&quot; button that takes you to the dashboard when you&apos;re already signed in',
+          'Every CTA on the landing page (Start for free, Get started, Choose plan) routes you straight to your dashboard if you&apos;re signed in, instead of bouncing through the login screen',
+          'Dashboard pages now share the same width and padding so navigating between Menus, Team, Settings, and Profile doesn&apos;t jump horizontally',
+          'Color pickers are now circular to match the rest of the rounded UI',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.9.0',
+    date: '2026-04-18',
+    title: 'Customizable QR codes',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Every menu now has a real, downloadable QR code at /dashboard/menus/[slug]/qr — SVG for print, PNG for sharing',
+          'Customize your QR&apos;s dot style, corner style, and colors in Settings — updates apply across every menu',
+          'If you&apos;ve set a restaurant logo, it&apos;s automatically placed in the center of your QR',
+          '&quot;QR&quot; action on each row of the menu list opens the downloadable code for that menu',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.8.0',
+    date: '2026-04-18',
+    title: 'Team + invitations',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'New Team page at /dashboard/team — see who has access to your restaurant and invite more teammates',
+          'Invite employees by email — they receive a branded invitation email and can accept with a single click',
+          'Two roles when inviting: Admin (can edit menus + settings + invite others) or Member (can edit menus)',
+          'Pending invitations are listed with their expiry and can be canceled before they&apos;re accepted',
+          'Accept-invite page at /accept-invite — shows who invited you and which restaurant, and signs you in if needed',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.7.0',
+    date: '2026-04-18',
+    title: 'Restaurant settings',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'New Settings page at /dashboard/settings — edit your restaurant name, description, website, logo, brand colors, and default currency any time',
+          'Changes to brand colors and logo show up on your public menu page immediately',
+          'Settings tab in the dashboard nav',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.6.0',
+    date: '2026-04-18',
+    title: 'Menus under your restaurant',
+    changes: [
+      {
+        type: 'changed' as const,
+        items: [
+          'Menus now belong to your restaurant, not to a single user — every teammate on the account sees and can edit the same menus',
+          'Menu creation now asks for a menu name (e.g. Dinner, Brunch, Cocktails) instead of the restaurant name — the restaurant name comes from onboarding',
+          'Currency is set once on the restaurant and every menu inherits it — no more picking currency on every new menu',
+          'Public menu page now shows your restaurant logo and applies your brand colors if you set them during onboarding',
+        ],
+      },
+      {
+        type: 'removed' as const,
+        items: [
+          'Per-menu currency override and per-menu restaurant name — moved to restaurant-level settings',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.5.0',
+    date: '2026-04-18',
+    title: 'Restaurant onboarding + dashboard',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'New restaurants go through a quick onboarding flow after sign-up — paste your website and we auto-fill your name, description, logo, and brand colors from the page',
+          'Skip-to-manual option if you don&apos;t have a website yet',
+          'Set a default currency for your restaurant so every new menu inherits it',
+          'Dashboard now has a top nav with your restaurant name + logo so you always know which restaurant you&apos;re managing',
+          'Menus moved to their own page at /dashboard/menus; creating a menu is now a dedicated /dashboard/menus/new page',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.4.0',
     date: '2026-04-17',
     title: 'Edit your menu + search for diners',

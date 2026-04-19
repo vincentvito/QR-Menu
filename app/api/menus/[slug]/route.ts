@@ -2,8 +2,7 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
-import { requireMenuOwner } from '@/lib/menus/get'
-import { isSupportedCurrency } from '@/lib/menus/currency'
+import { requireMenuAccess } from '@/lib/menus/get'
 
 export const runtime = 'nodejs'
 
@@ -18,31 +17,24 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   }
   const { slug } = await params
 
-  let body: { restaurantName?: unknown; currency?: unknown }
+  let body: { name?: unknown }
   try {
     body = await request.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const updates: { restaurantName?: string; currency?: string } = {}
+  const updates: { name?: string } = {}
 
-  if (body.restaurantName !== undefined) {
-    if (typeof body.restaurantName !== 'string') {
-      return NextResponse.json({ error: 'restaurantName must be a string' }, { status: 400 })
+  if (body.name !== undefined) {
+    if (typeof body.name !== 'string') {
+      return NextResponse.json({ error: 'name must be a string' }, { status: 400 })
     }
-    const trimmed = body.restaurantName.trim()
+    const trimmed = body.name.trim()
     if (!trimmed) {
-      return NextResponse.json({ error: 'Restaurant name can\u2019t be empty' }, { status: 400 })
+      return NextResponse.json({ error: 'Menu name can\u2019t be empty' }, { status: 400 })
     }
-    updates.restaurantName = trimmed.slice(0, 120)
-  }
-
-  if (body.currency !== undefined) {
-    if (!isSupportedCurrency(body.currency)) {
-      return NextResponse.json({ error: `Unsupported currency` }, { status: 400 })
-    }
-    updates.currency = body.currency
+    updates.name = trimmed.slice(0, 120)
   }
 
   if (Object.keys(updates).length === 0) {
@@ -50,11 +42,11 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   }
 
   try {
-    const owner = await requireMenuOwner(slug, session.user.id)
+    const access = await requireMenuAccess(slug, session.user.id)
     const menu = await prisma.menu.update({
-      where: { id: owner.id },
+      where: { id: access.id },
       data: updates,
-      select: { id: true, slug: true, restaurantName: true, currency: true },
+      select: { id: true, slug: true, name: true },
     })
     return NextResponse.json(menu)
   } catch (err) {

@@ -12,21 +12,10 @@ import {
   X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PillButton } from '@/components/ui/pill-button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  CURRENCIES,
-  type CurrencyCode,
-  currencySymbol,
-  isSupportedCurrency,
-} from '@/lib/menus/currency'
+import { currencySymbol } from '@/lib/menus/currency'
 import { categoryIcon } from '@/lib/menus/category-icon'
 
 interface EditorItem {
@@ -41,7 +30,7 @@ interface EditorItem {
 interface MenuEditorProps {
   slug: string
   initial: {
-    restaurantName: string
+    name: string
     currency: string
     items: EditorItem[]
   }
@@ -53,11 +42,12 @@ const ALL = '__all__'
 
 export function MenuEditor({ slug, initial }: MenuEditorProps) {
   const t = useTranslations('Editor')
-  const [restaurantName, setRestaurantName] = useState(initial.restaurantName)
-  const [currency, setCurrency] = useState<CurrencyCode>(
-    isSupportedCurrency(initial.currency) ? initial.currency : 'USD',
-  )
+  const [menuName, setMenuName] = useState(initial.name)
   const [items, setItems] = useState<EditorItem[]>(initial.items)
+  // Currency comes from the organization and is fixed at the menu level.
+  // The symbol drives price rendering; if we ever add per-menu overrides,
+  // this becomes state again.
+  const symbol = currencySymbol(initial.currency)
   const [selectedCategory, setSelectedCategory] = useState<string>(ALL)
   const [query, setQuery] = useState('')
   const [addingToCategory, setAddingToCategory] = useState<string | null>(null)
@@ -77,8 +67,6 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
     }
     return order.map((name) => ({ name, count: counts.get(name) ?? 0 }))
   }, [items])
-
-  const symbol = currencySymbol(currency)
 
   // Visible items = category filter ∩ search query.
   const visibleGroups = useMemo(() => {
@@ -129,7 +117,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
     setSaveState('error')
   }, [])
 
-  async function saveMenu(patch: { restaurantName?: string; currency?: CurrencyCode }) {
+  async function saveMenu(patch: { name?: string }) {
     setSaveState('saving')
     setError('')
     try {
@@ -240,19 +228,14 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
         <aside className="lg:w-[280px] lg:flex-shrink-0">
           <div className="lg:sticky lg:top-24">
             <MenuSettingsCard
-              restaurantName={restaurantName}
-              currency={currency}
-              initialName={initial.restaurantName}
-              onNameChange={setRestaurantName}
+              menuName={menuName}
+              initialName={initial.name}
+              onNameChange={setMenuName}
               onNameBlur={() => {
-                const trimmed = restaurantName.trim()
-                if (trimmed && trimmed !== initial.restaurantName) {
-                  saveMenu({ restaurantName: trimmed })
+                const trimmed = menuName.trim()
+                if (trimmed && trimmed !== initial.name) {
+                  saveMenu({ name: trimmed })
                 }
-              }}
-              onCurrencyChange={(next) => {
-                setCurrency(next)
-                saveMenu({ currency: next })
               }}
             />
 
@@ -297,7 +280,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
             aria-label={t('categoriesHeading')}
             className="no-scrollbar scroll-fade-x mb-4 flex gap-2 overflow-x-auto lg:hidden"
           >
-            <PillButton
+            <CategoryChip
               active={selectedCategory === ALL}
               Icon={LayoutGrid}
               label={t('allCategory')}
@@ -307,7 +290,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
             {categories.map((cat) => {
               const Icon = categoryIcon(cat.name)
               return (
-                <PillButton
+                <CategoryChip
                   key={cat.name}
                   active={selectedCategory === cat.name}
                   Icon={Icon}
@@ -442,56 +425,32 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
 }
 
 function MenuSettingsCard({
-  restaurantName,
-  currency,
+  menuName,
   initialName,
   onNameChange,
   onNameBlur,
-  onCurrencyChange,
 }: {
-  restaurantName: string
-  currency: CurrencyCode
+  menuName: string
   initialName: string
   onNameChange: (v: string) => void
   onNameBlur: () => void
-  onCurrencyChange: (next: CurrencyCode) => void
 }) {
   const t = useTranslations('Editor')
   return (
     <div className="border-cream-line bg-card rounded-[20px] border p-5">
       <label className="block space-y-1.5">
         <span className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-          {t('restaurantNameLabel')}
+          {t('menuNameLabel')}
         </span>
         <input
           type="text"
-          value={restaurantName}
+          value={menuName}
           onChange={(e) => onNameChange(e.target.value)}
           onBlur={onNameBlur}
           data-initial={initialName}
           className="border-transparent focus:border-foreground/30 focus:bg-background w-full rounded-md border bg-transparent px-2 py-1.5 text-lg font-semibold tracking-[-0.01em] outline-none"
         />
       </label>
-      <div className="mt-3 space-y-1.5">
-        <span className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-          {t('currencyLabel')}
-        </span>
-        <Select
-          value={currency}
-          onValueChange={(v) => onCurrencyChange(v as CurrencyCode)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {CURRENCIES.map((c) => (
-              <SelectItem key={c.code} value={c.code}>
-                {c.symbol} {c.code}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
     </div>
   )
 }
@@ -545,7 +504,7 @@ function RailButton({
   )
 }
 
-function PillButton({
+function CategoryChip({
   active,
   Icon,
   label,
@@ -668,10 +627,10 @@ function DraftItemForm({
           <Button type="button" size="sm" variant="ghost" onClick={onCancel} disabled={submitting}>
             {t('newDishCancel')}
           </Button>
-          <Button
+          <PillButton
             type="button"
             size="sm"
-            variant="pillPrimary"
+            variant="primary"
             onClick={handleSubmit}
             disabled={submitting || !name.trim()}
           >
@@ -681,7 +640,7 @@ function DraftItemForm({
               <Plus className="h-3.5 w-3.5" aria-hidden="true" />
             )}
             {t('newDishSave')}
-          </Button>
+          </PillButton>
         </div>
       </div>
     </li>

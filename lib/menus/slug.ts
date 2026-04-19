@@ -15,7 +15,7 @@ function slugify(input: string): string {
   )
 }
 
-// `maison-rustique-a3f8kq` — readable + globally unique.
-export function makeSlug(restaurantName: string): string {
-  return `${slugify(restaurantName)}-${nano()}`
+// `dinner-menu-a3f8kq` — readable + globally unique.
+export function makeSlug(name: string): string {
+  return `${slugify(name)}-${nano()}`
 }

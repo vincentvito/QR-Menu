@@ -3,13 +3,14 @@
 import { useState } from 'react'
 import { useTranslations } from 'next-intl'
 import Link from 'next/link'
-import { Check, Copy, ExternalLink, Pencil } from 'lucide-react'
+import { Check, Copy, ExternalLink, Pencil, QrCode } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PillButton } from '@/components/ui/pill-button'
 
 interface MenuListItem {
   id: string
   slug: string
-  restaurantName: string
+  name: string
   createdAt: Date
   itemCount: number
 }
@@ -42,9 +43,7 @@ export function MenuList({ menus, publicBaseUrl }: MenuListProps) {
           >
             <div className="min-w-0">
               <div className="flex items-baseline gap-2">
-                <h3 className="truncate text-lg font-semibold tracking-[-0.01em]">
-                  {m.restaurantName}
-                </h3>
+                <h3 className="truncate text-lg font-semibold tracking-[-0.01em]">{m.name}</h3>
                 <span className="text-muted-foreground shrink-0 text-xs">
                   {t('itemsCount', { count: m.itemCount })}
                 </span>
@@ -58,6 +57,12 @@ export function MenuList({ menus, publicBaseUrl }: MenuListProps) {
                 <Link href={`/m/${m.slug}/edit`}>
                   <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                   {t('edit')}
+                </Link>
+              </Button>
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/dashboard/menus/${m.slug}/qr`}>
+                  <QrCode className="h-3.5 w-3.5" aria-hidden="true" />
+                  QR
                 </Link>
               </Button>
               <Button
@@ -78,12 +83,12 @@ export function MenuList({ menus, publicBaseUrl }: MenuListProps) {
                   </>
                 )}
               </Button>
-              <Button asChild size="sm" variant="pillPrimary">
+              <PillButton asChild size="sm" variant="primary">
                 <Link href={`/m/${m.slug}`} target="_blank" rel="noopener">
                   {t('viewMenu')}
                   <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
-              </Button>
+              </PillButton>
             </div>
           </li>
         ))}

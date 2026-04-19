@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { Bell } from 'lucide-react'
 import { getMenuBySlug } from '@/lib/menus/get'
 import { currencySymbol } from '@/lib/menus/currency'
@@ -14,9 +15,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params
   const menu = await getMenuBySlug(slug)
   if (!menu) return { title: 'Menu not found' }
+  const restaurant = menu.organization.name
   return {
-    title: `${menu.restaurantName} — Menu`,
-    description: `${menu.restaurantName}'s menu, powered by QRmenucrafter.`,
+    title: `${restaurant} — ${menu.name}`,
+    description: `${restaurant}'s ${menu.name}, powered by QRmenucrafter.`,
   }
 }
 
@@ -25,10 +27,21 @@ export default async function PublicMenuPage({ params }: PageProps) {
   const menu = await getMenuBySlug(slug)
   if (!menu) notFound()
 
-  const symbol = currencySymbol(menu.currency)
+  const org = menu.organization
+  const symbol = currencySymbol(org.currency)
+
+  // Inject org colors as CSS variables on the page, overriding the global
+  // accent/pop when the restaurant has picked brand colors. Defaults fall
+  // through to the cream/ink palette.
+  const brandStyle: Record<string, string> = {}
+  if (org.primaryColor) brandStyle['--accent'] = org.primaryColor
+  if (org.secondaryColor) brandStyle['--pop'] = org.secondaryColor
 
   return (
-    <div className="bg-background text-foreground min-h-screen pb-24">
+    <div
+      className="bg-background text-foreground min-h-screen pb-24"
+      style={brandStyle as React.CSSProperties}
+    >
       {/* Cover / header block */}
       <section className="bg-foreground text-background relative overflow-hidden">
         <div
@@ -41,15 +54,24 @@ export default async function PublicMenuPage({ params }: PageProps) {
         />
         <div className="relative mx-auto flex max-w-[720px] flex-col px-5 pt-8 pb-12 sm:px-8 sm:pt-12 sm:pb-16">
           <BrandMark size="sm" invert className="mb-8" />
-          <p className="text-accent text-[12px] font-medium tracking-[0.18em] uppercase">
-            Menu
-          </p>
-          <h1 className="mt-2 text-[44px] leading-[1.02] font-semibold tracking-[-0.035em] sm:text-[56px]">
-            {menu.restaurantName}
-          </h1>
-          <p className="text-background/70 mt-3 text-sm">
-            {menu.items.length} {menu.items.length === 1 ? 'dish' : 'dishes'}
-          </p>
+          <div className="flex items-start gap-4">
+            {org.logo ? (
+              <div className="relative size-16 shrink-0 overflow-hidden rounded-2xl bg-background/10 backdrop-blur-sm sm:size-20">
+                <Image src={org.logo} alt="" fill unoptimized className="object-contain p-2" />
+              </div>
+            ) : null}
+            <div className="min-w-0">
+              <p className="text-accent text-[12px] font-medium tracking-[0.18em] uppercase">
+                {menu.name}
+              </p>
+              <h1 className="mt-2 text-[44px] leading-[1.02] font-semibold tracking-[-0.035em] sm:text-[56px]">
+                {org.name}
+              </h1>
+              <p className="text-background/70 mt-3 text-sm">
+                {menu.items.length} {menu.items.length === 1 ? 'dish' : 'dishes'}
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 

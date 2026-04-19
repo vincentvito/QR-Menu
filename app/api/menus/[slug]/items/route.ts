@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
-import { requireMenuOwner } from '@/lib/menus/get'
+import { requireMenuAccess } from '@/lib/menus/get'
 
 export const runtime = 'nodejs'
 
@@ -51,17 +51,17 @@ export async function POST(request: Request, { params }: RouteContext) {
   }
 
   try {
-    const owner = await requireMenuOwner(slug, session.user.id)
+    const access = await requireMenuAccess(slug, session.user.id)
     // New items go to the end of the full menu so they don't disrupt
     // existing ordering inside their category until the user reorders.
     const last = await prisma.menuItem.findFirst({
-      where: { menuId: owner.id },
+      where: { menuId: access.id },
       orderBy: { order: 'desc' },
       select: { order: true },
     })
     const item = await prisma.menuItem.create({
       data: {
-        menuId: owner.id,
+        menuId: access.id,
         category: category.slice(0, 80),
         name: name.slice(0, 200),
         description,

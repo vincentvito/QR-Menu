@@ -14,31 +14,38 @@ datasource db {
 }
 
 model User {
-  id            String    @id
+  id            String       @id
   name          String
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean      @default(false)
   image         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  role          String       @default("user")
+  banned        Boolean      @default(false)
+  banReason     String?
+  banExpires    DateTime?
   sessions      Session[]
   accounts      Account[]
-  menus         Menu[]
+  members       Member[]
+  invitations   Invitation[]
 
   @@unique([email])
   @@map("user")
 }
 
 model Session {
-  id        String   @id
-  expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                   String   @id
+  expiresAt            DateTime
+  token                String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  ipAddress            String?
+  userAgent            String?
+  userId               String
+  user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activeOrganizationId String?
+  impersonatedBy       String?
 
   @@unique([token])
   @@index([userId])
@@ -78,20 +85,75 @@ model Verification {
 }
 
 model Menu {
-  id             String     @id @default(cuid())
-  slug           String     @unique
-  userId         String
-  user           User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  restaurantName String
-  currency       String     @default("USD")
+  id             String       @id @default(cuid())
+  slug           String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
   sourceUrl      String?
   sourceText     String?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
   items          MenuItem[]
 
-  @@index([userId])
+  @@index([organizationId])
   @@map("menu")
+}
+
+model Organization {
+  id                String       @id
+  name              String
+  slug              String?      @unique
+  logo              String?
+  metadata          String?
+  createdAt         DateTime     @default(now())
+  description       String?
+  primaryColor      String?
+  secondaryColor    String?
+  currency          String       @default("USD")
+  sourceUrl         String?
+  qrDotStyle        String       @default("square")
+  qrCornerStyle     String       @default("square")
+  qrForegroundColor String       @default("#1C1917")
+  qrBackgroundColor String       @default("#FDFCFB")
+  qrCenterType      String       @default("none")
+  qrCenterText      String?
+  members           Member[]
+  invitations       Invitation[]
+  menus             Menu[]
+
+  @@map("organization")
+}
+
+model Member {
+  id             String       @id
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           String       @default("member")
+  createdAt      DateTime     @default(now())
+
+  @@index([userId])
+  @@index([organizationId])
+  @@map("member")
+}
+
+model Invitation {
+  id             String       @id
+  email          String
+  inviterId      String
+  inviter        User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  role           String?
+  status         String       @default("pending")
+  createdAt      DateTime     @default(now())
+  expiresAt      DateTime
+
+  @@index([email])
+  @@index([organizationId])
+  @@map("invitation")
 }
 
 model MenuItem {

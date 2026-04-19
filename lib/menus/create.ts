@@ -1,33 +1,32 @@
 import prisma from '@/lib/prisma'
 import { scrapeUrl } from '@/lib/ai/firecrawl'
 import { extractMenu, type ExtractedMenu } from '@/lib/ai/gemini'
-import { DEFAULT_CURRENCY, type CurrencyCode } from './currency'
 import { makeSlug } from './slug'
 
 interface CreateMenuInput {
-  userId: string
+  organizationId: string
   url?: string
   text?: string
   file?: { base64: string; mimeType: string }
-  restaurantName?: string
-  currency?: CurrencyCode
+  name?: string
 }
 
 interface CreateMenuResult {
   id: string
   slug: string
-  restaurantName: string
+  name: string
   itemCount: number
 }
 
 // Pick the source, run Firecrawl if URL → Gemini → save menu + items atomically.
+// Menu name is explicit if provided; otherwise we fall back to Gemini's best
+// guess (which Gemini returns under `restaurantName` — we reuse it as a label).
 export async function createMenuFromSource({
-  userId,
+  organizationId,
   url,
   text,
   file,
-  restaurantName,
-  currency = DEFAULT_CURRENCY,
+  name,
 }: CreateMenuInput): Promise<CreateMenuResult> {
   const source = url?.trim()
   const pasted = text?.trim()
@@ -49,15 +48,14 @@ export async function createMenuFromSource({
     extracted = await extractMenu({ text: pasted! })
   }
 
-  const finalName = restaurantName?.trim() || extracted.restaurantName
+  const finalName = name?.trim() || extracted.restaurantName || 'Menu'
   const slug = makeSlug(finalName)
 
   const menu = await prisma.menu.create({
     data: {
       slug,
-      userId,
-      restaurantName: finalName,
-      currency,
+      organizationId,
+      name: finalName,
       sourceUrl: source || null,
       sourceText: !source && !file ? pasted : null,
       items: {
@@ -77,7 +75,7 @@ export async function createMenuFromSource({
   return {
     id: menu.id,
     slug: menu.slug,
-    restaurantName: menu.restaurantName,
+    name: menu.name,
     itemCount: menu._count.items,
   }
 }

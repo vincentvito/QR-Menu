@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import { createMenuFromSource } from '@/lib/menus/create'
-import { DEFAULT_CURRENCY, isSupportedCurrency } from '@/lib/menus/currency'
+import { getActiveOrganization } from '@/lib/organizations/get-active-org'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60
@@ -26,12 +26,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
   }
 
+  const organization = await getActiveOrganization({
+    userId: session.user.id,
+    activeOrganizationId: session.session.activeOrganizationId,
+  })
+  if (!organization) {
+    return NextResponse.json({ error: 'Set up your restaurant first' }, { status: 409 })
+  }
+
   const contentType = request.headers.get('content-type') ?? ''
 
   let url = ''
   let text = ''
-  let restaurantName: string | undefined
-  let currencyRaw: string | undefined
+  let name: string | undefined
   let file: { base64: string; mimeType: string } | undefined
 
   try {
@@ -39,10 +46,8 @@ export async function POST(request: Request) {
       const form = await request.formData()
       url = String(form.get('url') ?? '').trim()
       text = String(form.get('text') ?? '').trim()
-      const rawName = form.get('restaurantName')
-      restaurantName = rawName ? String(rawName).trim() : undefined
-      const rawCurrency = form.get('currency')
-      currencyRaw = rawCurrency ? String(rawCurrency) : undefined
+      const rawName = form.get('name')
+      name = rawName ? String(rawName).trim() : undefined
 
       const rawFile = form.get('file')
       if (rawFile && rawFile instanceof File && rawFile.size > 0) {
@@ -66,15 +71,11 @@ export async function POST(request: Request) {
       const body = (await request.json()) as {
         url?: string
         text?: string
-        restaurantName?: string
+        name?: string
       }
       url = typeof body.url === 'string' ? body.url.trim() : ''
       text = typeof body.text === 'string' ? body.text.trim() : ''
-      restaurantName =
-        typeof body.restaurantName === 'string' ? body.restaurantName.trim() : undefined
-      currencyRaw = typeof (body as { currency?: unknown }).currency === 'string'
-        ? ((body as { currency: string }).currency)
-        : undefined
+      name = typeof body.name === 'string' ? body.name.trim() : undefined
     }
   } catch {
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
@@ -94,27 +95,13 @@ export async function POST(request: Request) {
     )
   }
 
-  // Default to USD if missing; reject unknown codes rather than silently casting.
-  const currency = currencyRaw
-    ? isSupportedCurrency(currencyRaw)
-      ? currencyRaw
-      : null
-    : DEFAULT_CURRENCY
-  if (currency === null) {
-    return NextResponse.json(
-      { error: `Unsupported currency: ${currencyRaw}` },
-      { status: 400 },
-    )
-  }
-
   try {
     const menu = await createMenuFromSource({
-      userId: session.user.id,
+      organizationId: organization.id,
       url: url || undefined,
       text: text || undefined,
       file,
-      restaurantName,
-      currency,
+      name,
     })
     return NextResponse.json(menu, { status: 201 })
   } catch (err) {

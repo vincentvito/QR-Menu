@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
 import { auth } from '@/lib/auth'
+import prisma from '@/lib/prisma'
 import { getMenuBySlug } from '@/lib/menus/get'
 import { BrandMark } from '@/components/brand/BrandMark'
 import { Button } from '@/components/ui/button'
@@ -24,8 +25,14 @@ export default async function EditMenuPage({ params }: PageProps) {
 
   const menu = await getMenuBySlug(slug)
   if (!menu) notFound()
-  // Don't leak existence of menus the user doesn't own.
-  if (menu.userId !== session.user.id) notFound()
+
+  // Access check: user must be a member of the menu's organization.
+  // Don't leak existence of menus in orgs the user doesn't belong to.
+  const membership = await prisma.member.findFirst({
+    where: { organizationId: menu.organizationId, userId: session.user.id },
+    select: { id: true },
+  })
+  if (!membership) notFound()
 
   return (
     <div className="min-h-screen">
@@ -36,7 +43,7 @@ export default async function EditMenuPage({ params }: PageProps) {
               <BrandMark size="md" />
             </Link>
             <Link
-              href="/dashboard"
+              href="/dashboard/menus"
               className="text-muted-foreground hover:text-foreground hidden items-center gap-1 text-sm sm:inline-flex"
             >
               <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
@@ -56,8 +63,8 @@ export default async function EditMenuPage({ params }: PageProps) {
         <MenuEditor
           slug={slug}
           initial={{
-            restaurantName: menu.restaurantName,
-            currency: menu.currency,
+            name: menu.name,
+            currency: menu.organization.currency,
             items: menu.items.map((i) => ({
               id: i.id,
               category: i.category,

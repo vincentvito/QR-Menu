@@ -1,10 +1,14 @@
+import { headers } from 'next/headers'
 import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { ArrowRight, Bell, Check, Download, Play, Plus } from 'lucide-react'
+import { auth } from '@/lib/auth'
 import { Button } from '@/components/ui/button'
+import { PillButton } from '@/components/ui/pill-button'
 import { BrandMark } from '@/components/brand/BrandMark'
 import { QRCode } from '@/components/brand/QRCode'
 import { Kicker } from '@/components/ui/kicker'
+import { BackToTop } from '@/components/landing/BackToTop'
 
 // ─────────────────────────────────────────────────────────────────────────
 // Unsplash imagery (same set the design handoff uses).
@@ -27,8 +31,15 @@ const SECTION = 'mx-auto max-w-[1240px] px-[clamp(20px,5vw,80px)]'
 const SECTION_Y = 'py-16 md:py-24'
 
 export default async function LandingPage() {
-  const t = await getTranslations('Landing')
+  const [t, session] = await Promise.all([
+    getTranslations('Landing'),
+    auth.api.getSession({ headers: await headers() }),
+  ])
   const year = new Date().getFullYear()
+  // Destination for every "Get started / Sign in / CTA" link on the page:
+  // authenticated visitors jump straight to their dashboard, anonymous
+  // visitors land on /auth/login (which already has a post-login gate).
+  const ctaHref = session ? '/dashboard' : '/auth/login'
 
   return (
     <div className="bg-background text-foreground min-h-screen">
@@ -39,20 +50,21 @@ export default async function LandingPage() {
         Skip to content
       </a>
 
-      <Nav t={t} />
+      <Nav t={t} ctaHref={ctaHref} isAuthed={Boolean(session)} />
 
       <main id="main">
-        <Hero t={t} />
+        <Hero t={t} ctaHref={ctaHref} />
         <Process t={t} />
         <MenuPreview t={t} />
-        <QrDemo t={t} />
+        <QrDemo t={t} ctaHref={ctaHref} />
         <LovedBy t={t} />
-        <Pricing t={t} />
+        <Pricing t={t} ctaHref={ctaHref} />
         <Faq t={t} />
-        <FooterCta t={t} />
+        <FooterCta t={t} ctaHref={ctaHref} />
       </main>
 
       <Footer t={t} year={year} />
+      <BackToTop />
     </div>
   )
 }
@@ -62,13 +74,25 @@ type T = Awaited<ReturnType<typeof getTranslations<'Landing'>>>
 // ─────────────────────────────────────────────────────────────────────────
 // NAV
 // ─────────────────────────────────────────────────────────────────────────
-function Nav({ t }: { t: T }) {
+function Nav({
+  t,
+  ctaHref,
+  isAuthed,
+}: {
+  t: T
+  ctaHref: string
+  isAuthed: boolean
+}) {
   const links = [
     { label: t('nav.howItWorks'), href: '#how-it-works' },
     { label: t('nav.examples'), href: '#examples' },
     { label: t('nav.pricing'), href: '#pricing' },
     { label: t('nav.resources'), href: '#resources' },
   ]
+  // Logged-in visitors see "Dashboard"; anonymous visitors see "Get started".
+  // Either way, one CTA — no separate "Sign in" link (we dropped it to keep
+  // the nav clean; clicking "Get started" while signed out routes to /auth/login).
+  const ctaLabel = isAuthed ? 'Dashboard' : t('nav.getStarted')
 
   return (
     <header className="bg-background/80 sticky top-0 z-50 border-b border-cream-line backdrop-blur-md">
@@ -89,19 +113,13 @@ function Nav({ t }: { t: T }) {
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-3 sm:gap-4">
-          <Link
-            href="/auth/login"
-            className="hidden text-sm font-medium transition-opacity hover:opacity-70 sm:inline"
-          >
-            {t('nav.signIn')}
-          </Link>
-          <Button asChild variant="pillPrimary" size="pill">
-            <Link href="/auth/login">
-              {t('nav.getStarted')}
+        <div className="ml-auto flex items-center gap-3">
+          <PillButton asChild variant="primary" size="default">
+            <Link href={ctaHref}>
+              {ctaLabel}
               <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             </Link>
-          </Button>
+          </PillButton>
         </div>
       </div>
     </header>
@@ -111,7 +129,7 @@ function Nav({ t }: { t: T }) {
 // ─────────────────────────────────────────────────────────────────────────
 // HERO
 // ─────────────────────────────────────────────────────────────────────────
-function Hero({ t }: { t: T }) {
+function Hero({ t, ctaHref }: { t: T; ctaHref: string }) {
   const stats = ['time', 'scans', 'app', 'restaurants'] as const
 
   return (
@@ -183,20 +201,20 @@ function Hero({ t }: { t: T }) {
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
-            <Button asChild variant="pillPrimary" size="pill-lg">
-              <Link href="/auth/login">
+            <PillButton asChild variant="primary" size="lg">
+              <Link href={ctaHref}>
                 {t('hero.ctaPrimary')}
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </Link>
-            </Button>
-            <Button asChild variant="pillGhost" size="pill-lg">
+            </PillButton>
+            <PillButton asChild variant="ghost" size="lg">
               <Link href="#examples">
                 <span className="bg-pop text-background inline-flex h-6 w-6 items-center justify-center rounded-full">
                   <Play className="h-3 w-3 translate-x-[1px] fill-current" aria-hidden="true" />
                 </span>
                 {t('hero.ctaSecondary')}
               </Link>
-            </Button>
+            </PillButton>
           </div>
 
           {/* Trust row */}
@@ -636,7 +654,7 @@ function MenuPreview({ t }: { t: T }) {
 // ─────────────────────────────────────────────────────────────────────────
 // QR DEMO
 // ─────────────────────────────────────────────────────────────────────────
-function QrDemo({ t }: { t: T }) {
+function QrDemo({ t, ctaHref }: { t: T; ctaHref: string }) {
   return (
     <section className={SECTION_Y}>
       <div className={SECTION}>
@@ -695,12 +713,12 @@ function QrDemo({ t }: { t: T }) {
             </div>
 
             <div className="mt-7">
-              <Button asChild variant="pillPrimary" size="pill-lg">
-                <Link href="/auth/login">
+              <PillButton asChild variant="primary" size="lg">
+                <Link href={ctaHref}>
                   {t('qrDemo.cta')}
                   <Download className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
-              </Button>
+              </PillButton>
             </div>
           </div>
         </div>
@@ -771,7 +789,7 @@ function LovedBy({ t }: { t: T }) {
 // ─────────────────────────────────────────────────────────────────────────
 // PRICING
 // ─────────────────────────────────────────────────────────────────────────
-function Pricing({ t }: { t: T }) {
+function Pricing({ t, ctaHref }: { t: T; ctaHref: string }) {
   const plans = ['starter', 'restaurant', 'group'] as const
 
   return (
@@ -854,16 +872,16 @@ function Pricing({ t }: { t: T }) {
                   ))}
                 </ul>
 
-                <Button
+                <PillButton
                   asChild
-                  variant={featured ? 'pillAccent' : 'pillPrimary'}
-                  size="pill-lg"
+                  variant={featured ? 'accent' : 'primary'}
+                  size="lg"
                   className="w-full"
                 >
-                  <Link href="/auth/login">
+                  <Link href={ctaHref}>
                     {t(`pricing.plans.${key}.cta` as 'pricing.plans.starter.cta')}
                   </Link>
-                </Button>
+                </PillButton>
               </div>
             )
           })}
@@ -934,7 +952,7 @@ function Faq({ t }: { t: T }) {
 // ─────────────────────────────────────────────────────────────────────────
 // FOOTER CTA
 // ─────────────────────────────────────────────────────────────────────────
-function FooterCta({ t }: { t: T }) {
+function FooterCta({ t, ctaHref }: { t: T; ctaHref: string }) {
   return (
     <section className="px-[clamp(20px,5vw,80px)] py-14 md:py-20">
       <div className="bg-foreground text-background relative mx-auto max-w-[1240px] overflow-hidden rounded-[36px] px-6 py-16 text-center sm:px-10 sm:py-20">
@@ -977,20 +995,20 @@ function FooterCta({ t }: { t: T }) {
             {t('footerCta.description')}
           </p>
           <div className="mt-9 flex flex-wrap justify-center gap-3">
-            <Button asChild variant="pillAccent" size="pill-lg">
-              <Link href="/auth/login">
+            <PillButton asChild variant="accent" size="lg">
+              <Link href={ctaHref}>
                 {t('footerCta.ctaPrimary')}
                 <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </Link>
-            </Button>
-            <Button
+            </PillButton>
+            <PillButton
               asChild
-              variant="pillGhost"
-              size="pill-lg"
+              variant="ghost"
+              size="lg"
               className="border-background text-background hover:bg-background/10 hover:text-background"
             >
               <a href="mailto:hello@qrmenucrafter.com">{t('footerCta.ctaSecondary')}</a>
-            </Button>
+            </PillButton>
           </div>
         </div>
       </div>

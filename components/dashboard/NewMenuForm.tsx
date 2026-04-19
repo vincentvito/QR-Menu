@@ -13,17 +13,10 @@ import {
   X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PillButton } from '@/components/ui/pill-button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { CURRENCIES, DEFAULT_CURRENCY, type CurrencyCode } from '@/lib/menus/currency'
 
 const ACCEPTED_MIME = [
   'image/jpeg',
@@ -50,8 +43,7 @@ export function NewMenuForm() {
   const [file, setFile] = useState<File | null>(null)
   const [url, setUrl] = useState('')
   const [text, setText] = useState('')
-  const [restaurantName, setRestaurantName] = useState('')
-  const [currency, setCurrency] = useState<CurrencyCode>(DEFAULT_CURRENCY)
+  const [name, setName] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isDragging, setIsDragging] = useState(false)
@@ -94,8 +86,7 @@ export function NewMenuForm() {
       if (file) formData.append('file', file)
       if (url.trim()) formData.append('url', url.trim())
       if (text.trim()) formData.append('text', text.trim())
-      if (restaurantName.trim()) formData.append('restaurantName', restaurantName.trim())
-      formData.append('currency', currency)
+      if (name.trim()) formData.append('name', name.trim())
 
       const res = await fetch('/api/menus', { method: 'POST', body: formData })
       const data = await res.json().catch(() => ({}))
@@ -232,36 +223,15 @@ export function NewMenuForm() {
           />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-[1fr_140px]">
-          <div className="space-y-2">
-            <Label htmlFor="menu-name">{t('nameLabel')}</Label>
-            <Input
-              id="menu-name"
-              value={restaurantName}
-              onChange={(e) => setRestaurantName(e.target.value)}
-              disabled={busy}
-              placeholder={t('namePlaceholder')}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="menu-currency">{t('currencyLabel')}</Label>
-            <Select
-              value={currency}
-              onValueChange={(v) => setCurrency(v as CurrencyCode)}
-              disabled={busy}
-            >
-              <SelectTrigger id="menu-currency" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {CURRENCIES.map((c) => (
-                  <SelectItem key={c.code} value={c.code}>
-                    {c.symbol} {c.code}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="menu-name">{t('nameLabel')}</Label>
+          <Input
+            id="menu-name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={busy}
+            placeholder={t('namePlaceholder')}
+          />
         </div>
 
         {error && (
@@ -270,10 +240,10 @@ export function NewMenuForm() {
           </p>
         )}
 
-        <Button
+        <PillButton
           type="submit"
-          variant="pillPrimary"
-          size="pill-lg"
+          variant="primary"
+          size="lg"
           disabled={busy}
           className="w-full"
         >
@@ -285,7 +255,7 @@ export function NewMenuForm() {
           ) : (
             t('submit')
           )}
-        </Button>
+        </PillButton>
       </form>
     </div>
   )

@@ -1,19 +1,23 @@
 import { cache } from 'react'
 import prisma from '@/lib/prisma'
 
-// Resolves a menu by slug and confirms the caller owns it. Use at the top of
-// any mutating route. Throws an object with `status` that callers can map to
-// HTTP responses (404 missing, 403 wrong owner).
-export async function requireMenuOwner(slug: string, userId: string) {
+// Resolves a menu by slug and confirms the caller has access via membership
+// in the menu's organization. Throws with `status` callers map to HTTP.
+export async function requireMenuAccess(slug: string, userId: string) {
   const menu = await prisma.menu.findUnique({
     where: { slug },
-    select: { id: true, userId: true, slug: true },
+    select: { id: true, slug: true, organizationId: true },
   })
   if (!menu) throw Object.assign(new Error('Menu not found'), { status: 404 })
-  if (menu.userId !== userId) {
+
+  const membership = await prisma.member.findFirst({
+    where: { organizationId: menu.organizationId, userId },
+    select: { id: true, role: true },
+  })
+  if (!membership) {
     throw Object.assign(new Error('Not your menu'), { status: 403 })
   }
-  return menu
+  return { ...menu, role: membership.role }
 }
 
 // React.cache() dedupes per-request. Public menu page calls this once in
@@ -24,13 +28,14 @@ export const getMenuBySlug = cache(async (slug: string) => {
     where: { slug },
     include: {
       items: { orderBy: { order: 'asc' } },
+      organization: true,
     },
   })
 })
 
-export async function getMenusForUser(userId: string) {
+export async function getMenusForOrg(organizationId: string) {
   return prisma.menu.findMany({
-    where: { userId },
+    where: { organizationId },
     orderBy: { createdAt: 'desc' },
     include: { _count: { select: { items: true } } },
   })

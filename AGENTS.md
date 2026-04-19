@@ -29,3 +29,23 @@ When your work in a conversation includes **user-facing changes**, update `app/c
    - **major** (+1.0.0) for breaking changes
 3. Each entry needs: `version`, `date` (YYYY-MM-DD), `title` (short summary), and `changes` grouped by type (`added`, `changed`, `fixed`, `removed`).
 4. Keep descriptions concise — one line per item, written from the user's perspective (e.g. "Added zoom controls to editor" not "Implemented useZoom hook").
+
+## shadcn/ui Rule
+
+**Never edit files under `components/ui/*` that shadcn manages.** Running `npx shadcn add <component>` overwrites those files in place — any custom variants, sizes, or logic inlined into them will be silently wiped.
+
+### What this means in practice
+
+- `components/ui/button.tsx`, `input.tsx`, `select.tsx`, `sidebar.tsx`, etc. stay at shadcn defaults. Treat them as vendored — safe to update via `shadcn add`.
+- **Project-specific variants go in sibling files** like `components/ui/pill-button.tsx`. Own its own component, own cva, own `VariantProps`. Import that component at call sites instead of extending the shadcn one.
+- When a tweak is truly one-line and component-wide (rare), prefer overriding via `className` at the call site or a Tailwind plugin over editing the shadcn source.
+
+### Good vs. bad
+
+❌ Adding `pillPrimary` variant to `components/ui/button.tsx` — wiped by next `shadcn add`.
+
+✅ Creating `components/ui/pill-button.tsx` with its own `<PillButton variant="primary">`.
+
+### Why
+
+This is idempotency: `shadcn add` is how we get upstream fixes and new components. Any file that can be overwritten by that command must not contain project-specific logic, or upgrades become destructive merges every time.

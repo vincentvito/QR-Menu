@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
-import { requireMenuOwner } from '@/lib/menus/get'
+import { requireMenuAccess } from '@/lib/menus/get'
 
 export const runtime = 'nodejs'
 
@@ -11,15 +11,15 @@ interface RouteContext {
 }
 
 async function ensureOwnership(slug: string, itemId: string, userId: string) {
-  const owner = await requireMenuOwner(slug, userId)
+  const access = await requireMenuAccess(slug, userId)
   const item = await prisma.menuItem.findUnique({
     where: { id: itemId },
     select: { id: true, menuId: true },
   })
-  if (!item || item.menuId !== owner.id) {
+  if (!item || item.menuId !== access.id) {
     throw Object.assign(new Error('Item not found'), { status: 404 })
   }
-  return { menuId: owner.id, itemId: item.id }
+  return { menuId: access.id, itemId: item.id }
 }
 
 export async function PATCH(request: Request, { params }: RouteContext) {
