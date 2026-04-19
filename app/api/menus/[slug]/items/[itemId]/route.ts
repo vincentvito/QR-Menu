@@ -37,6 +37,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     category?: unknown
     badges?: unknown
     specialUntil?: unknown
+    imageUrl?: unknown
   }
   try {
     body = await request.json()
@@ -51,6 +52,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     category?: string
     badges?: string[]
     specialUntil?: Date | null
+    imageUrl?: string | null
   } = {}
 
   if (body.name !== undefined) {
@@ -83,6 +85,19 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       return NextResponse.json({ error: 'badges must be an array' }, { status: 400 })
     }
     updates.badges = Array.from(new Set(body.badges.filter(isBadgeKey)))
+  }
+  if (body.imageUrl !== undefined) {
+    if (body.imageUrl === null || body.imageUrl === '') {
+      updates.imageUrl = null
+    } else if (typeof body.imageUrl === 'string') {
+      try {
+        updates.imageUrl = new URL(body.imageUrl).toString()
+      } catch {
+        return NextResponse.json({ error: 'imageUrl must be a valid URL' }, { status: 400 })
+      }
+    } else {
+      return NextResponse.json({ error: 'imageUrl must be a string or null' }, { status: 400 })
+    }
   }
   if (body.specialUntil !== undefined) {
     if (body.specialUntil === null) {

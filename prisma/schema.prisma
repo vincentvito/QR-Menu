@@ -177,6 +177,7 @@ model MenuItem {
   tags         String[]  @default([])
   badges       String[]  @default([])
   specialUntil DateTime?
+  imageUrl     String?
   order        Int       @default(0)
   createdAt   DateTime @default(now())
 

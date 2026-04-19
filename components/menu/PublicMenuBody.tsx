@@ -1,9 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Search, X } from 'lucide-react'
 import { BadgeRow } from '@/components/menu/BadgeRow'
+import { ImageLightbox } from '@/components/menu/ImageLightbox'
 
 interface PublicItem {
   id: string
@@ -13,6 +14,7 @@ interface PublicItem {
   price: number
   tags: string[]
   badges: string[]
+  imageUrl: string | null
 }
 
 interface PublicMenuBodyProps {
@@ -34,6 +36,7 @@ export function PublicMenuBody({
 }: PublicMenuBodyProps) {
   const t = useTranslations('MenuView')
   const [query, setQuery] = useState('')
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
 
   const { visibleGroups, visibleSpecials, totalMatches, hasQuery } = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -78,41 +81,6 @@ export function PublicMenuBody({
   const showCategoryNav =
     !hasQuery && (visibleSpecials.length > 0 || visibleGroups.length > 1)
 
-  function renderItem(item: PublicItem) {
-    return (
-      <li key={item.id}>
-        <BadgeRow badges={item.badges} disabled={disabledBadges} />
-        <div className="flex items-baseline gap-3">
-          <h3 className="flex-1 text-[17px] font-semibold leading-tight tracking-[-0.01em]">
-            {item.name}
-          </h3>
-          {item.price > 0 && (
-            <span className="bg-foreground text-accent shrink-0 rounded-full px-2.5 py-1 text-[13px] font-semibold tabular-nums">
-              {symbol}
-              {formatPrice(item.price)}
-            </span>
-          )}
-        </div>
-        {item.description && (
-          <p className="text-muted-foreground mt-1.5 text-[14px] leading-[1.55]">
-            {item.description}
-          </p>
-        )}
-        {item.tags.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {item.tags.map((tag) => (
-              <span
-                key={tag}
-                className="bg-accent/30 text-foreground rounded-[6px] px-2 py-0.5 text-[10px] font-semibold tracking-[0.1em] uppercase"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </li>
-    )
-  }
 
   return (
     <>
@@ -193,7 +161,17 @@ export function PublicMenuBody({
                 {visibleSpecials.length}
               </span>
             </div>
-            <ul className="mt-5 space-y-6">{visibleSpecials.map(renderItem)}</ul>
+            <ul className="mt-5 space-y-6">
+              {visibleSpecials.map((item) => (
+                <DishCard
+                  key={item.id}
+                  item={item}
+                  symbol={symbol}
+                  disabledBadges={disabledBadges}
+                  onOpenImage={setLightboxSrc}
+                />
+              ))}
+            </ul>
           </section>
         )}
         {visibleGroups.length === 0 && visibleSpecials.length === 0 ? (
@@ -213,7 +191,17 @@ export function PublicMenuBody({
               <h2 className="text-muted-foreground text-[11px] font-semibold tracking-[0.18em] uppercase">
                 {g.category}
               </h2>
-              <ul className="mt-5 space-y-6">{g.items.map(renderItem)}</ul>
+              <ul className="mt-5 space-y-6">
+                {g.items.map((item) => (
+                  <DishCard
+                    key={item.id}
+                    item={item}
+                    symbol={symbol}
+                    disabledBadges={disabledBadges}
+                    onOpenImage={setLightboxSrc}
+                  />
+                ))}
+              </ul>
             </section>
           ))
         )}
@@ -223,9 +211,84 @@ export function PublicMenuBody({
           </p>
         )}
       </main>
+
+      <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
     </>
   )
 }
+
+interface DishCardProps {
+  item: PublicItem
+  symbol: string
+  disabledBadges: string[]
+  onOpenImage: (src: string) => void
+}
+
+// Memoized so typing in the search field or opening the lightbox doesn't
+// re-render every dish. Every prop is a stable reference at this point:
+// `item` refs come from the useMemo'd visibleGroups/visibleSpecials, `symbol`
+// and `disabledBadges` are stable props, and `onOpenImage` is React's
+// state-setter (stable by design).
+const DishCard = memo(function DishCard({
+  item,
+  symbol,
+  disabledBadges,
+  onOpenImage,
+}: DishCardProps) {
+  const imageUrl = item.imageUrl
+  return (
+    <li className="flex gap-4">
+      {imageUrl ? (
+        <button
+          type="button"
+          aria-label={`Open photo of ${item.name}`}
+          onClick={() => onOpenImage(imageUrl)}
+          className="border-cream-line bg-card size-[84px] shrink-0 overflow-hidden rounded-[14px] border transition-transform hover:scale-[1.03] focus-visible:ring-2 focus-visible:ring-foreground focus-visible:outline-none"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageUrl}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover"
+          />
+        </button>
+      ) : null}
+      <div className="min-w-0 flex-1">
+        <BadgeRow badges={item.badges} disabled={disabledBadges} />
+        <div className="flex items-baseline gap-3">
+          <h3 className="flex-1 text-[17px] font-semibold leading-tight tracking-[-0.01em]">
+            {item.name}
+          </h3>
+          {item.price > 0 && (
+            <span className="bg-foreground text-accent shrink-0 rounded-full px-2.5 py-1 text-[13px] font-semibold tabular-nums">
+              {symbol}
+              {formatPrice(item.price)}
+            </span>
+          )}
+        </div>
+        {item.description && (
+          <p className="text-muted-foreground mt-1.5 text-[14px] leading-[1.55]">
+            {item.description}
+          </p>
+        )}
+        {item.tags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {item.tags.map((tag) => (
+              <span
+                key={tag}
+                className="bg-accent/30 text-foreground rounded-[6px] px-2 py-0.5 text-[10px] font-semibold tracking-[0.1em] uppercase"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+      </div>
+    </li>
+  )
+})
 
 function formatPrice(n: number): string {
   return Number.isInteger(n) ? String(n) : n.toFixed(2)

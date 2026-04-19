@@ -64,6 +64,7 @@ export default async function EditMenuPage({ params }: PageProps) {
             tags: i.tags,
             badges: i.badges,
             specialUntil: i.specialUntil ? i.specialUntil.toISOString() : null,
+            imageUrl: i.imageUrl,
           })),
         }}
       />

@@ -20,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { currencySymbol } from '@/lib/menus/currency'
 import { categoryIcon } from '@/lib/menus/category-icon'
 import { BADGES, BADGE_KEYS, type BadgeKey } from '@/lib/menus/badges'
+import { DishPhotoUploader } from '@/components/editor/DishPhotoUploader'
 import { cn } from '@/lib/utils'
 
 interface EditorItem {
@@ -33,6 +34,7 @@ interface EditorItem {
   // ISO string so the editor stays JSON-serializable; compared against
   // Date.now() to decide "is this currently on special?".
   specialUntil: string | null
+  imageUrl: string | null
 }
 
 interface MenuEditorProps {
@@ -204,6 +206,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
         category?: string
         badges?: string[]
         specialUntil?: string | null
+        imageUrl?: string | null
       },
     ) => {
       const previous = itemsRef.current.find((it) => it.id === id)
@@ -258,6 +261,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
           tags: data.tags ?? [],
           badges: data.badges ?? [],
           specialUntil: data.specialUntil ?? null,
+          imageUrl: data.imageUrl ?? null,
         },
       ])
       return true
@@ -752,6 +756,7 @@ const ItemRow = memo(function ItemRow({
       price?: number
       badges?: string[]
       specialUntil?: string | null
+      imageUrl?: string | null
     },
   ) => void
   onDelete: (id: string) => void
@@ -768,6 +773,11 @@ const ItemRow = memo(function ItemRow({
         isFirst ? '' : 'border-cream-line border-t'
       } ${confirming ? 'bg-destructive/5' : ''}`}
     >
+      <DishPhotoUploader
+        itemId={item.id}
+        value={item.imageUrl}
+        onChange={(url) => onChange(item.id, { imageUrl: url })}
+      />
       <div className="min-w-0 flex-1 space-y-1.5">
         <div className="flex items-start gap-2">
           <input

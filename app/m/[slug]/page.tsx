@@ -136,6 +136,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
           price: i.price,
           tags: i.tags,
           badges: i.badges,
+          imageUrl: i.imageUrl,
         }))}
       />
 

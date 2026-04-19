@@ -6,6 +6,22 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.15.0',
+    date: '2026-04-19',
+    title: 'Dish photos',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Upload a photo for any dish in the editor — drag-drop or click, JPG/PNG/WEBP up to 5 MB',
+          'Photos render as a thumbnail next to each dish on your public menu, giving guests a taste at a glance',
+          'Tap a dish thumbnail to open it in a full-screen viewer — close with the button below, a tap outside, or Escape',
+          'Remove a photo anytime with the × button on the editor thumbnail',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.14.0',
     date: '2026-04-19',
     title: 'Today&apos;s Specials',

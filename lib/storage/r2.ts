@@ -57,6 +57,18 @@ export function keyForUserLogo(userId: string, ext: string, stamp: string): stri
   return `${KEY_PREFIX}/users/${userId}/logo-${stamp}.${safeExt}`
 }
 
+// Per-dish photo. Keyed by org (not menu) so moving a dish between menus
+// doesn't orphan its image. The stamp busts browser/CDN caches on reupload.
+export function keyForMenuItemImage(
+  orgId: string,
+  itemId: string,
+  ext: string,
+  stamp: string,
+): string {
+  const safeExt = ext.replace(/^\./, '').toLowerCase() || 'webp'
+  return `${KEY_PREFIX}/orgs/${orgId}/items/${itemId}/photo-${stamp}.${safeExt}`
+}
+
 export async function uploadBuffer({
   key,
   body,
