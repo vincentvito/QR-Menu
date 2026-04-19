@@ -54,6 +54,7 @@ export default async function EditMenuPage({ params }: PageProps) {
         initial={{
           name: menu.name,
           currency: menu.organization.currency,
+          disabledBadges: menu.organization.disabledBadges,
           items: menu.items.map((i) => ({
             id: i.id,
             category: i.category,
@@ -61,6 +62,8 @@ export default async function EditMenuPage({ params }: PageProps) {
             description: i.description,
             price: i.price,
             tags: i.tags,
+            badges: i.badges,
+            specialUntil: i.specialUntil ? i.specialUntil.toISOString() : null,
           })),
         }}
       />

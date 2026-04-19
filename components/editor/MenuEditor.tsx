@@ -8,6 +8,7 @@ import {
   Loader2,
   Plus,
   Search,
+  Sun,
   Trash2,
   X,
 } from 'lucide-react'
@@ -18,6 +19,8 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { currencySymbol } from '@/lib/menus/currency'
 import { categoryIcon } from '@/lib/menus/category-icon'
+import { BADGES, BADGE_KEYS, type BadgeKey } from '@/lib/menus/badges'
+import { cn } from '@/lib/utils'
 
 interface EditorItem {
   id: string
@@ -26,6 +29,10 @@ interface EditorItem {
   description: string
   price: number
   tags: string[]
+  badges: string[]
+  // ISO string so the editor stays JSON-serializable; compared against
+  // Date.now() to decide "is this currently on special?".
+  specialUntil: string | null
 }
 
 interface MenuEditorProps {
@@ -33,6 +40,7 @@ interface MenuEditorProps {
   initial: {
     name: string
     currency: string
+    disabledBadges: string[]
     items: EditorItem[]
   }
 }
@@ -52,6 +60,10 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
   // The symbol drives price rendering; if we ever add per-menu overrides,
   // this becomes state again.
   const symbol = currencySymbol(initial.currency)
+  const enabledBadgeKeys = useMemo<BadgeKey[]>(
+    () => BADGE_KEYS.filter((k) => !initial.disabledBadges.includes(k)),
+    [initial.disabledBadges],
+  )
   const [selectedCategory, setSelectedCategory] = useState<string>(ALL)
   const [query, setQuery] = useState('')
   const [addingToCategory, setAddingToCategory] = useState<string | null>(null)
@@ -185,7 +197,14 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
   const saveItem = useCallback(
     async (
       id: string,
-      patch: { name?: string; description?: string; price?: number; category?: string },
+      patch: {
+        name?: string
+        description?: string
+        price?: number
+        category?: string
+        badges?: string[]
+        specialUntil?: string | null
+      },
     ) => {
       const previous = itemsRef.current.find((it) => it.id === id)
       if (!previous) return
@@ -237,6 +256,8 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
           description: data.description ?? '',
           price: data.price ?? 0,
           tags: data.tags ?? [],
+          badges: data.badges ?? [],
+          specialUntil: data.specialUntil ?? null,
         },
       ])
       return true
@@ -464,6 +485,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
                           isFirst={i === 0 && !isAdding}
                           symbol={symbol}
                           save={saves[item.id]}
+                          enabledBadges={enabledBadgeKeys}
                           onChange={saveItem}
                           onDelete={deleteItem}
                         />
@@ -713,6 +735,7 @@ const ItemRow = memo(function ItemRow({
   isFirst,
   symbol,
   save,
+  enabledBadges,
   onChange,
   onDelete,
 }: {
@@ -720,9 +743,16 @@ const ItemRow = memo(function ItemRow({
   isFirst: boolean
   symbol: string
   save: SaveStatus | undefined
+  enabledBadges: BadgeKey[]
   onChange: (
     id: string,
-    patch: { name?: string; description?: string; price?: number },
+    patch: {
+      name?: string
+      description?: string
+      price?: number
+      badges?: string[]
+      specialUntil?: string | null
+    },
   ) => void
   onDelete: (id: string) => void
 }) {
@@ -802,6 +832,42 @@ const ItemRow = memo(function ItemRow({
             ))}
           </div>
         )}
+        {(enabledBadges.length > 0 || item.specialUntil !== undefined) && (
+          <div className="flex flex-wrap gap-1.5 px-2 pt-0.5">
+            <SpecialToggle
+              specialUntil={item.specialUntil}
+              onChange={(next) => onChange(item.id, { specialUntil: next })}
+            />
+            {enabledBadges.map((key) => {
+              const def = BADGES[key]
+              const Icon = def.icon
+              const selected = item.badges.includes(key)
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  role="switch"
+                  aria-checked={selected}
+                  onClick={() => {
+                    const next = selected
+                      ? item.badges.filter((b) => b !== key)
+                      : [...item.badges, key]
+                    onChange(item.id, { badges: next })
+                  }}
+                  className={cn(
+                    'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors',
+                    selected
+                      ? def.selectedChipClassName
+                      : 'border-cream-line bg-card text-muted-foreground hover:border-foreground/30',
+                  )}
+                >
+                  <Icon className="size-3" aria-hidden="true" />
+                  {def.label}
+                </button>
+              )
+            })}
+          </div>
+        )}
         {/* Reserved slot so showing/hiding the pill doesn't push the row's
             height around. Height matches the pill (px-2.5 py-1 + 1px border). */}
         <div className="flex min-h-[28px] items-center justify-end px-2 pt-0.5">
@@ -851,6 +917,42 @@ const ItemRow = memo(function ItemRow({
     </li>
   )
 })
+
+// Computes "end of today" in the browser's local timezone. Staff clicking
+// the toggle from the restaurant floor means their device timezone IS the
+// restaurant's timezone, so this matches their intuition of "until close".
+function endOfTodayIso(): string {
+  const d = new Date()
+  d.setHours(23, 59, 59, 999)
+  return d.toISOString()
+}
+
+function SpecialToggle({
+  specialUntil,
+  onChange,
+}: {
+  specialUntil: string | null
+  onChange: (next: string | null) => void
+}) {
+  const active = specialUntil ? new Date(specialUntil).getTime() > Date.now() : false
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={active}
+      onClick={() => onChange(active ? null : endOfTodayIso())}
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors',
+        active
+          ? 'border-pop bg-pop text-pop-foreground'
+          : 'border-cream-line bg-card text-muted-foreground hover:border-foreground/30',
+      )}
+    >
+      <Sun className="size-3" aria-hidden="true" />
+      {active ? "Today's Special" : 'Mark as special'}
+    </button>
+  )
+}
 
 function EmptyState({
   query,

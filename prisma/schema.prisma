@@ -127,6 +127,7 @@ model Organization {
   instagramUrl      String?
   tiktokUrl         String?
   facebookUrl       String?
+  disabledBadges    String[]     @default([])
   members           Member[]
   invitations       Invitation[]
   menus             Menu[]
@@ -173,8 +174,10 @@ model MenuItem {
   name        String
   description String   @default("")
   price       Float    @default(0)
-  tags        String[] @default([])
-  order       Int      @default(0)
+  tags         String[]  @default([])
+  badges       String[]  @default([])
+  specialUntil DateTime?
+  order        Int       @default(0)
   createdAt   DateTime @default(now())
 
   @@index([menuId])

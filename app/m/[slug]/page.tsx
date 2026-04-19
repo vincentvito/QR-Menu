@@ -67,6 +67,11 @@ export default async function PublicMenuPage({ params }: PageProps) {
   if (org.primaryColor) brandStyle['--accent'] = org.primaryColor
   if (org.secondaryColor) brandStyle['--pop'] = org.secondaryColor
 
+  const now = Date.now()
+  const activeSpecialIds = menu.items
+    .filter((i) => i.specialUntil && i.specialUntil.getTime() > now)
+    .map((i) => i.id)
+
   const instaHref = org.instagramUrl ? socialUrl('instagram', org.instagramUrl) : null
   const tiktokHref = org.tiktokUrl ? socialUrl('tiktok', org.tiktokUrl) : null
   const facebookHref = org.facebookUrl ? socialUrl('facebook', org.facebookUrl) : null
@@ -121,6 +126,8 @@ export default async function PublicMenuPage({ params }: PageProps) {
 
       <PublicMenuBody
         symbol={symbol}
+        disabledBadges={org.disabledBadges}
+        specialIds={activeSpecialIds}
         items={menu.items.map((i) => ({
           id: i.id,
           category: i.category,
@@ -128,6 +135,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
           description: i.description,
           price: i.price,
           tags: i.tags,
+          badges: i.badges,
         }))}
       />
 

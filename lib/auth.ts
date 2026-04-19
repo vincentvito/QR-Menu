@@ -69,6 +69,7 @@ export const auth = betterAuth({
             instagramUrl: { type: 'string', required: false },
             tiktokUrl: { type: 'string', required: false },
             facebookUrl: { type: 'string', required: false },
+            disabledBadges: { type: 'string[]', required: false },
           },
         },
       },

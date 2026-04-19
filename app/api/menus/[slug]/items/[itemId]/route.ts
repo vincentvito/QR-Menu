@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { requireMenuAccess } from '@/lib/menus/get'
+import { isBadgeKey } from '@/lib/menus/badges'
 
 export const runtime = 'nodejs'
 
@@ -34,6 +35,8 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     description?: unknown
     price?: unknown
     category?: unknown
+    badges?: unknown
+    specialUntil?: unknown
   }
   try {
     body = await request.json()
@@ -41,7 +44,14 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const updates: { name?: string; description?: string; price?: number; category?: string } = {}
+  const updates: {
+    name?: string
+    description?: string
+    price?: number
+    category?: string
+    badges?: string[]
+    specialUntil?: Date | null
+  } = {}
 
   if (body.name !== undefined) {
     if (typeof body.name !== 'string' || !body.name.trim()) {
@@ -67,6 +77,25 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       return NextResponse.json({ error: 'category must be a non-empty string' }, { status: 400 })
     }
     updates.category = body.category.trim().slice(0, 80)
+  }
+  if (body.badges !== undefined) {
+    if (!Array.isArray(body.badges)) {
+      return NextResponse.json({ error: 'badges must be an array' }, { status: 400 })
+    }
+    updates.badges = Array.from(new Set(body.badges.filter(isBadgeKey)))
+  }
+  if (body.specialUntil !== undefined) {
+    if (body.specialUntil === null) {
+      updates.specialUntil = null
+    } else if (typeof body.specialUntil === 'string') {
+      const d = new Date(body.specialUntil)
+      if (Number.isNaN(d.getTime())) {
+        return NextResponse.json({ error: 'specialUntil must be an ISO date string' }, { status: 400 })
+      }
+      updates.specialUntil = d
+    } else {
+      return NextResponse.json({ error: 'specialUntil must be ISO string or null' }, { status: 400 })
+    }
   }
   if (Object.keys(updates).length === 0) {
     return NextResponse.json({ error: 'No fields to update' }, { status: 400 })

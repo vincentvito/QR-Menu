@@ -6,6 +6,36 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.14.0',
+    date: '2026-04-19',
+    title: 'Today&apos;s Specials',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Mark any dish as Today&apos;s Special with a single tap in the editor — expires automatically at midnight, no unchecking needed',
+          'Specials appear as a pinned section at the top of your public menu with a distinct treatment so guests see them first',
+          'A &ldquo;Today&apos;s Specials&rdquo; pill in the menu&apos;s category nav jumps straight to that section',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.13.0',
+    date: '2026-04-19',
+    title: 'Editorial badges',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Tag dishes with editorial badges in the editor — Best Seller, Chef&apos;s Pick, Signature, New, and Spicy — each with their own icon and color',
+          'Badges render as prominent pills above the dish name on your public menu, so customers spot your highlights instantly',
+          'New Badges section in Settings lets you disable the ones you don&apos;t use, keeping the editor tidy',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.12.0',
     date: '2026-04-19',
     title: 'Google review button + social links',

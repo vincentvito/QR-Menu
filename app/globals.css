@@ -241,6 +241,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+  html {
+    /* Smooth anchor jumps (menu category nav, specials pill). Respects
+       prefers-reduced-motion per spec. */
+    scroll-behavior: smooth;
+  }
   body {
     @apply bg-background text-foreground;
     font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;

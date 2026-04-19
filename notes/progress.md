@@ -148,6 +148,39 @@ The items break into three buckets:
      Start with the table + instrumentation, ship dashboard later when
      there's real data.
 
+### Big-bet differentiator (post-v1, pre-launch wow-factor)
+
+**Menu templates + seasonal themes.** Goal: every restaurant's public menu
+feels *its own*, not the same layout with a different color. Intended as
+the main differentiator vs. generic QR-menu competitors.
+
+Two orthogonal layers:
+
+1. **Templates** — core layout/typography variants selected per-menu or
+   per-org. Ship 3–5 curated ones (e.g. "Editorial", "Photo grid",
+   "Chalkboard", "Minimal list"). Each template already picks up the
+   org's brand colors via the `--accent` / `--pop` CSS vars we inject.
+   Owner picks a template in Settings; it renders immediately on `/m/[slug]`.
+2. **Seasonal themes** — lightweight *decoration overlay* that sits on top
+   of any template. Small Lottie/SVG ornaments: snow for December,
+   falling leaves, subtle pumpkin motifs, etc. Either date-scheduled
+   automatically or owner-toggled. Should work with any template.
+
+**Sequencing rationale (why we deferred):** templates need content to
+shine. A "Photo grid" template without dish photos is just a styled
+text list. Shipping templates before photos/badges/daily-specials means
+rebuilding the templates once that data lands. So the order is:
+
+> small bucket (badges, specials, call-waiter) → dish photos →
+> templates → seasonal themes.
+
+**Data-model implications to keep in mind** when we get there:
+- `Menu.templateId String?` (or on Organization if picked once)
+- Templates are code-defined (a registry), not DB rows.
+- Seasonal theme: `Organization.seasonalTheme String?` with values
+  like `'snow' | 'autumn' | 'halloween' | 'none'` + optional auto-pick
+  from date.
+
 ### Nice-to-haves post-v1
 
 - Printable table-card layout (menu QR + restaurant name + "Scan for menu"

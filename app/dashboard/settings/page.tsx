@@ -54,6 +54,7 @@ export default async function SettingsPage() {
           instagramUrl: org.instagramUrl ?? '',
           tiktokUrl: org.tiktokUrl ?? '',
           facebookUrl: org.facebookUrl ?? '',
+          disabledBadges: org.disabledBadges,
         }}
       />
     </main>

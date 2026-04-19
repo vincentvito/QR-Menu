@@ -27,6 +27,7 @@ import {
   type QRDotStyle,
 } from '@/components/qr/QRCodeRenderer'
 import { buildWifiUri, WIFI_ENCRYPTIONS, type WifiEncryption } from '@/lib/wifi'
+import { BADGES, BADGE_KEYS, type BadgeKey } from '@/lib/menus/badges'
 import { cn } from '@/lib/utils'
 
 const QR_DOT_STYLES: { value: QRDotStyle; label: string }[] = [
@@ -74,6 +75,7 @@ interface SettingsDraft {
   instagramUrl: string
   tiktokUrl: string
   facebookUrl: string
+  disabledBadges: BadgeKey[]
 }
 
 interface SettingsFormProps {
@@ -101,6 +103,7 @@ interface SettingsFormProps {
     instagramUrl: string
     tiktokUrl: string
     facebookUrl: string
+    disabledBadges: string[]
   }
   /** Used only for the live QR preview. `name` is null when there's no
    * real menu yet, in which case the download buttons are hidden. */
@@ -148,6 +151,9 @@ export function SettingsForm({ canEdit, initial, previewMenu }: SettingsFormProp
     instagramUrl: initial.instagramUrl,
     tiktokUrl: initial.tiktokUrl,
     facebookUrl: initial.facebookUrl,
+    disabledBadges: initial.disabledBadges.filter((k): k is BadgeKey =>
+      (BADGE_KEYS as readonly string[]).includes(k),
+    ),
   })
   const [submitting, setSubmitting] = useState(false)
 
@@ -310,6 +316,48 @@ export function SettingsForm({ canEdit, initial, previewMenu }: SettingsFormProp
             disabled={disabled}
             placeholder="yourpage"
           />
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <SectionHeading>Badges</SectionHeading>
+        <p className="text-muted-foreground text-xs">
+          Choose which editorial badges appear in your menu editor. Disabled badges
+          won&apos;t show up in the dish picker or on the public menu.
+        </p>
+
+        <div className="flex flex-wrap gap-2">
+          {BADGE_KEYS.map((key) => {
+            const def = BADGES[key]
+            const enabled = !draft.disabledBadges.includes(key)
+            const Icon = def.icon
+            return (
+              <button
+                key={key}
+                type="button"
+                role="switch"
+                aria-checked={enabled}
+                disabled={disabled}
+                onClick={() =>
+                  setDraft({
+                    ...draft,
+                    disabledBadges: enabled
+                      ? [...draft.disabledBadges, key]
+                      : draft.disabledBadges.filter((k) => k !== key),
+                  })
+                }
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                  enabled
+                    ? def.selectedChipClassName
+                    : 'border-cream-line bg-card text-muted-foreground hover:border-foreground/30',
+                )}
+              >
+                <Icon className="size-3.5" aria-hidden="true" />
+                {def.label}
+              </button>
+            )
+          })}
         </div>
       </section>
 
