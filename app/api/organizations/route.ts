@@ -6,6 +6,7 @@ import prisma from '@/lib/prisma'
 import { getActiveOrganization } from '@/lib/organizations/get-active-org'
 import { isSupportedCurrency } from '@/lib/menus/currency'
 import { isWifiEncryption } from '@/lib/wifi'
+import { normalizeSocialHandle } from '@/lib/socials'
 
 export const runtime = 'nodejs'
 
@@ -39,8 +40,11 @@ function cleanUrl(value: unknown): string | null | undefined {
   if (typeof value !== 'string') return undefined
   const trimmed = value.trim()
   if (!trimmed) return null
+  // Auto-prepend https:// so owners can paste "example.com/page" without
+  // being forced to type the scheme — common when copying from address bars.
+  const withScheme = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`
   try {
-    return new URL(trimmed).toString()
+    return new URL(withScheme).toString()
   } catch {
     return undefined
   }
@@ -99,12 +103,14 @@ export async function PATCH(request: Request) {
     updates.description = cleaned
   }
 
+  // better-auth's additionalFields schema rejects null on optional string
+  // fields — persist "" to clear instead. Treated as "not set" everywhere.
   if ('logo' in body) {
     const cleaned = cleanUrl(body.logo)
     if (cleaned === undefined) {
       return NextResponse.json({ error: 'Invalid logo URL' }, { status: 400 })
     }
-    updates.logo = cleaned
+    updates.logo = cleaned ?? ''
   }
 
   if ('sourceUrl' in body) {
@@ -112,7 +118,7 @@ export async function PATCH(request: Request) {
     if (cleaned === undefined) {
       return NextResponse.json({ error: 'Invalid website URL' }, { status: 400 })
     }
-    updates.sourceUrl = cleaned
+    updates.sourceUrl = cleaned ?? ''
   }
 
   if ('primaryColor' in body) {
@@ -236,6 +242,28 @@ export async function PATCH(request: Request) {
       updates.wifiCenterText = body.wifiCenterText.trim().slice(0, 4)
     } else {
       return NextResponse.json({ error: 'Invalid WiFi QR center text' }, { status: 400 })
+    }
+  }
+
+  if ('googleReviewUrl' in body) {
+    const cleaned = cleanUrl(body.googleReviewUrl)
+    if (cleaned === undefined) {
+      return NextResponse.json({ error: 'Invalid Google review URL' }, { status: 400 })
+    }
+    updates.googleReviewUrl = cleaned ?? ''
+  }
+
+  // Social fields accept a handle, @handle, or a pasted URL — all stored
+  // as just the handle so the settings form round-trips what was entered
+  // and the public menu constructs the canonical URL at render.
+  const HANDLE_KEYS = ['instagramUrl', 'tiktokUrl', 'facebookUrl'] as const
+  for (const key of HANDLE_KEYS) {
+    if (key in body) {
+      const raw = body[key]
+      if (raw !== null && typeof raw !== 'string') {
+        return NextResponse.json({ error: `Invalid ${key}` }, { status: 400 })
+      }
+      updates[key] = raw ? normalizeSocialHandle(raw).slice(0, 64) : ''
     }
   }
 

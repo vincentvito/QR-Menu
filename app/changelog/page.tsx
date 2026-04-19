@@ -6,6 +6,21 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.12.0',
+    date: '2026-04-19',
+    title: 'Google review button + social links',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'New Links section in Settings — add your Google review URL plus Instagram, TikTok, and Facebook profiles',
+          '&ldquo;Leave us a Google review&rdquo; button in your public menu footer when a review link is set',
+          'Social follow icons (Instagram, TikTok, Facebook) show up in the footer — only the ones you&apos;ve filled in',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.11.0',
     date: '2026-04-19',
     title: 'WiFi password on your menu',

@@ -50,6 +50,10 @@ export default async function SettingsPage() {
           wifiEncryption: org.wifiEncryption,
           wifiCenterType: org.wifiCenterType,
           wifiCenterText: org.wifiCenterText ?? '',
+          googleReviewUrl: org.googleReviewUrl ?? '',
+          instagramUrl: org.instagramUrl ?? '',
+          tiktokUrl: org.tiktokUrl ?? '',
+          facebookUrl: org.facebookUrl ?? '',
         }}
       />
     </main>

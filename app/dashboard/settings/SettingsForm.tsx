@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { LogoUploader } from '@/components/dashboard/LogoUploader'
+import { SectionHeading } from '@/components/ui/section-heading'
 import {
   Select,
   SelectContent,
@@ -69,6 +70,10 @@ interface SettingsDraft {
   wifiEncryption: WifiEncryption
   wifiCenterType: QRCenterType
   wifiCenterText: string
+  googleReviewUrl: string
+  instagramUrl: string
+  tiktokUrl: string
+  facebookUrl: string
 }
 
 interface SettingsFormProps {
@@ -92,6 +97,10 @@ interface SettingsFormProps {
     wifiEncryption: string
     wifiCenterType: string
     wifiCenterText: string
+    googleReviewUrl: string
+    instagramUrl: string
+    tiktokUrl: string
+    facebookUrl: string
   }
   /** Used only for the live QR preview. `name` is null when there's no
    * real menu yet, in which case the download buttons are hidden. */
@@ -135,6 +144,10 @@ export function SettingsForm({ canEdit, initial, previewMenu }: SettingsFormProp
       : 'WPA',
     wifiCenterType: normalizeCenterType(initial.wifiCenterType),
     wifiCenterText: initial.wifiCenterText,
+    googleReviewUrl: initial.googleReviewUrl,
+    instagramUrl: initial.instagramUrl,
+    tiktokUrl: initial.tiktokUrl,
+    facebookUrl: initial.facebookUrl,
   })
   const [submitting, setSubmitting] = useState(false)
 
@@ -187,9 +200,7 @@ export function SettingsForm({ canEdit, initial, previewMenu }: SettingsFormProp
       )}
 
       <section className="space-y-4">
-        <h2 className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-          Restaurant
-        </h2>
+        <SectionHeading>Restaurant</SectionHeading>
 
         <div className="space-y-2">
           <Label htmlFor="org-name">Restaurant name *</Label>
@@ -252,9 +263,58 @@ export function SettingsForm({ canEdit, initial, previewMenu }: SettingsFormProp
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-          Brand
-        </h2>
+        <SectionHeading>Links</SectionHeading>
+        <p className="text-muted-foreground text-xs">
+          Shown in your menu&apos;s footer so guests can review you or follow along.
+          Leave any field blank to hide it.
+        </p>
+
+        <div className="space-y-2">
+          <Label htmlFor="google-review-url">Google review link</Label>
+          <Input
+            id="google-review-url"
+            value={draft.googleReviewUrl}
+            onChange={(e) => setDraft({ ...draft, googleReviewUrl: e.target.value })}
+            disabled={disabled}
+            placeholder="g.page/r/…/review"
+            autoComplete="off"
+          />
+          <p className="text-muted-foreground text-xs">
+            Paste the review link from your Google Business profile. No need to type
+            &ldquo;https://&rdquo; — we&apos;ll add it.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <HandleField
+            id="instagram-url"
+            label="Instagram"
+            value={draft.instagramUrl}
+            onChange={(v) => setDraft({ ...draft, instagramUrl: v })}
+            disabled={disabled}
+            placeholder="yourhandle"
+          />
+          <HandleField
+            id="tiktok-url"
+            label="TikTok"
+            value={draft.tiktokUrl}
+            onChange={(v) => setDraft({ ...draft, tiktokUrl: v })}
+            disabled={disabled}
+            placeholder="yourhandle"
+          />
+          <HandleField
+            id="facebook-url"
+            label="Facebook"
+            value={draft.facebookUrl}
+            onChange={(v) => setDraft({ ...draft, facebookUrl: v })}
+            disabled={disabled}
+            placeholder="yourpage"
+          />
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <SectionHeading>Brand</SectionHeading>
 
         <div className="space-y-2">
           <Label>Logo</Label>
@@ -284,9 +344,7 @@ export function SettingsForm({ canEdit, initial, previewMenu }: SettingsFormProp
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-          QR code style
-        </h2>
+        <SectionHeading>QR code style</SectionHeading>
         <p className="text-muted-foreground text-xs">
           Applies to every menu QR you generate. Preview uses your most recent menu.
         </p>
@@ -460,9 +518,7 @@ export function SettingsForm({ canEdit, initial, previewMenu }: SettingsFormProp
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-          WiFi
-        </h2>
+        <SectionHeading>WiFi</SectionHeading>
         <p className="text-muted-foreground text-xs">
           Guests see a &quot;Show WiFi&quot; button on your menu to reveal and copy the
           password. Download the WiFi QR below for table cards — modern phones auto-join
@@ -618,6 +674,50 @@ export function SettingsForm({ canEdit, initial, previewMenu }: SettingsFormProp
         </Button>
       )}
     </form>
+  )
+}
+
+function HandleField({
+  id,
+  label,
+  value,
+  disabled,
+  onChange,
+  placeholder,
+}: {
+  id: string
+  label: string
+  value: string
+  disabled: boolean
+  onChange: (v: string) => void
+  placeholder?: string
+}) {
+  // Strip a typed `@` so the visible value stays aligned with the prefix
+  // adornment. Users can still paste `@handle` or a URL — the server-side
+  // normalize covers both.
+  const display = value.replace(/^@/, '')
+  return (
+    <div className="space-y-2">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="border-cream-line bg-card focus-within:border-foreground/40 focus-within:bg-background flex h-9 items-center rounded-md border px-3 text-sm transition-colors">
+        <span aria-hidden="true" className="text-muted-foreground pr-1">
+          @
+        </span>
+        <input
+          id={id}
+          type="text"
+          value={display}
+          onChange={(e) => onChange(e.target.value)}
+          disabled={disabled}
+          placeholder={placeholder}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          className="placeholder:text-muted-foreground/60 h-full flex-1 bg-transparent outline-none disabled:cursor-not-allowed disabled:opacity-50"
+        />
+      </div>
+    </div>
   )
 }
 

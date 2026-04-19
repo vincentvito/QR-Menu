@@ -7,6 +7,13 @@ import { currencySymbol } from '@/lib/menus/currency'
 import { BrandMark } from '@/components/brand/BrandMark'
 import { PublicMenuBody } from '@/components/menu/PublicMenuBody'
 import { WifiReveal } from '@/components/menu/WifiReveal'
+import {
+  FacebookIcon,
+  GoogleIcon,
+  InstagramIcon,
+  TikTokIcon,
+} from '@/components/brand/SocialIcons'
+import { socialUrl } from '@/lib/socials'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -23,6 +30,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
+function SocialLink({
+  href,
+  label,
+  children,
+}: {
+  href: string
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="border-cream-line bg-card text-muted-foreground hover:text-foreground hover:border-foreground/30 inline-flex size-10 items-center justify-center rounded-full border transition-colors"
+    >
+      {children}
+    </a>
+  )
+}
+
 export default async function PublicMenuPage({ params }: PageProps) {
   const { slug } = await params
   const menu = await getMenuBySlug(slug)
@@ -37,6 +66,11 @@ export default async function PublicMenuPage({ params }: PageProps) {
   const brandStyle: Record<string, string> = {}
   if (org.primaryColor) brandStyle['--accent'] = org.primaryColor
   if (org.secondaryColor) brandStyle['--pop'] = org.secondaryColor
+
+  const instaHref = org.instagramUrl ? socialUrl('instagram', org.instagramUrl) : null
+  const tiktokHref = org.tiktokUrl ? socialUrl('tiktok', org.tiktokUrl) : null
+  const facebookHref = org.facebookUrl ? socialUrl('facebook', org.facebookUrl) : null
+  const hasSocials = Boolean(instaHref || tiktokHref || facebookHref)
 
   return (
     <div
@@ -106,8 +140,42 @@ export default async function PublicMenuPage({ params }: PageProps) {
         <Bell className="h-5 w-5" aria-hidden="true" />
       </button>
 
-      <footer className="mx-auto mt-16 max-w-[720px] px-5 pb-12 text-center text-xs sm:px-8">
-        <p className="text-muted-foreground">
+      <footer className="mx-auto mt-8 max-w-[720px] px-5 pb-12 sm:px-8">
+        {org.googleReviewUrl ? (
+          <div className="mb-6 flex justify-center">
+            <a
+              href={org.googleReviewUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="border-cream-line bg-card hover:bg-foreground hover:text-background inline-flex items-center gap-2 rounded-full border px-5 py-3 text-sm font-semibold transition-colors"
+            >
+              <GoogleIcon className="size-4" aria-hidden={true} />
+              Leave us a Google review
+            </a>
+          </div>
+        ) : null}
+
+        {hasSocials && (
+          <div className="mb-6 flex justify-center gap-3">
+            {instaHref ? (
+              <SocialLink href={instaHref} label="Instagram">
+                <InstagramIcon className="size-4" aria-hidden={true} />
+              </SocialLink>
+            ) : null}
+            {tiktokHref ? (
+              <SocialLink href={tiktokHref} label="TikTok">
+                <TikTokIcon className="size-4" aria-hidden={true} />
+              </SocialLink>
+            ) : null}
+            {facebookHref ? (
+              <SocialLink href={facebookHref} label="Facebook">
+                <FacebookIcon className="size-4" aria-hidden={true} />
+              </SocialLink>
+            ) : null}
+          </div>
+        )}
+
+        <p className="text-muted-foreground text-center text-xs">
           Menu by{' '}
           <a href="/" className="underline-offset-4 hover:underline">
             QRmenucrafter

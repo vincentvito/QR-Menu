@@ -123,6 +123,10 @@ model Organization {
   wifiEncryption    String       @default("WPA")
   wifiCenterType    String       @default("none")
   wifiCenterText    String?
+  googleReviewUrl   String?
+  instagramUrl      String?
+  tiktokUrl         String?
+  facebookUrl       String?
   members           Member[]
   invitations       Invitation[]
   menus             Menu[]

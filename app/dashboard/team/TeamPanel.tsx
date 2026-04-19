@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { SectionHeading } from '@/components/ui/section-heading'
 
 interface Member {
   id: string
@@ -99,9 +100,7 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
     <div className="space-y-8">
       {canManage && (
         <section className="border-cream-line bg-card rounded-2xl border p-6">
-          <h2 className="text-muted-foreground mb-4 text-[11px] font-semibold tracking-[0.14em] uppercase">
-            Invite someone
-          </h2>
+          <SectionHeading className="mb-4">Invite someone</SectionHeading>
           <form onSubmit={sendInvite} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="invite-email">Email</Label>
@@ -154,9 +153,7 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
       )}
 
       <section>
-        <h2 className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-[0.14em] uppercase">
-          Members ({members.length})
-        </h2>
+        <SectionHeading className="mb-3">Members ({members.length})</SectionHeading>
         <ul className="border-cream-line divide-cream-line bg-card divide-y overflow-hidden rounded-2xl border">
           {members.map((m) => {
             const initials =
@@ -197,9 +194,9 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
 
       {invitations.length > 0 && (
         <section>
-          <h2 className="text-muted-foreground mb-3 text-[11px] font-semibold tracking-[0.14em] uppercase">
+          <SectionHeading className="mb-3">
             Pending invitations ({invitations.length})
-          </h2>
+          </SectionHeading>
           <ul className="border-cream-line divide-cream-line bg-card divide-y overflow-hidden rounded-2xl border">
             {invitations.map((inv) => (
               <li key={inv.id} className="flex items-center gap-3 px-5 py-4">
