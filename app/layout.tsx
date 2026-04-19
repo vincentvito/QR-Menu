@@ -32,7 +32,14 @@ export default async function RootLayout({
       <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
           <TooltipProvider>{children}</TooltipProvider>
-          <Toaster />
+          <Toaster
+            toastOptions={{
+              classNames: {
+                success:
+                  '!border-emerald-500/60 shadow-[0_0_0_3px_rgba(34,197,94,0.12)] [&_[data-icon]]:!text-emerald-500',
+              },
+            }}
+          />
         </NextIntlClientProvider>
       </body>
     </html>

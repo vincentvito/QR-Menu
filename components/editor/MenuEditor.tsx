@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import {
   Check,
@@ -11,6 +11,7 @@ import {
   Trash2,
   X,
 } from 'lucide-react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { PillButton } from '@/components/ui/pill-button'
 import { Input } from '@/components/ui/input'
@@ -36,9 +37,12 @@ interface MenuEditorProps {
   }
 }
 
-type SaveState = 'idle' | 'saving' | 'saved' | 'error'
+type SaveState = 'saving' | 'saved' | 'error'
+type SaveStatus = { state: SaveState; error?: string }
+type Saves = Record<string, SaveStatus>
 
 const ALL = '__all__'
+const MENU_KEY = '__menu__'
 
 export function MenuEditor({ slug, initial }: MenuEditorProps) {
   const t = useTranslations('Editor')
@@ -51,9 +55,19 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>(ALL)
   const [query, setQuery] = useState('')
   const [addingToCategory, setAddingToCategory] = useState<string | null>(null)
-  const [saveState, setSaveState] = useState<SaveState>('idle')
-  const [error, setError] = useState('')
-  const savedTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // Per-target save state so indicators live next to the thing that's
+  // actually saving (the edited row, or the menu-name field) instead of a
+  // single global badge that had to be re-homed in the toolbar.
+  const [saves, setSaves] = useState<Saves>({})
+  const savedTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
+
+  // Latest items snapshot, read from inside stable callbacks so they don't
+  // have to close over `items` (which would bust useCallback's dep cache and
+  // defeat ItemRow memoization). Updated after commit via useEffect.
+  const itemsRef = useRef(items)
+  useEffect(() => {
+    itemsRef.current = items
+  }, [items])
 
   // Order categories by their first-seen position in the items list, so
   // re-renders after edits don't shuffle the rail.
@@ -102,66 +116,105 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
 
   const hasQuery = query.trim().length > 0
 
-  const flashSaved = useCallback(() => {
-    setSaveState('saved')
-    if (savedTimer.current) clearTimeout(savedTimer.current)
-    savedTimer.current = setTimeout(() => {
-      setSaveState((s) => (s === 'saved' ? 'idle' : s))
-    }, 1200)
+  useEffect(() => {
+    const timers = savedTimers.current
+    return () => {
+      for (const t of timers.values()) clearTimeout(t)
+      timers.clear()
+    }
   }, [])
 
-  const handleError = useCallback((err: unknown, fallback: string) => {
-    const message =
-      err instanceof Error ? err.message : typeof err === 'string' ? err : fallback
-    setError(message || fallback)
-    setSaveState('error')
+  const setSaveFor = useCallback((key: string, status: SaveStatus | null) => {
+    setSaves((prev) => {
+      if (status === null) {
+        if (!(key in prev)) return prev
+        const next = { ...prev }
+        delete next[key]
+        return next
+      }
+      return { ...prev, [key]: status }
+    })
   }, [])
 
-  async function saveMenu(patch: { name?: string }) {
-    setSaveState('saving')
-    setError('')
-    try {
-      const res = await fetch(`/api/menus/${slug}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patch),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.error ?? t('saveError'))
-      flashSaved()
-    } catch (err) {
-      handleError(err, t('saveError'))
-    }
-  }
+  const flashSavedFor = useCallback(
+    (key: string) => {
+      setSaveFor(key, { state: 'saved' })
+      const existing = savedTimers.current.get(key)
+      if (existing) clearTimeout(existing)
+      savedTimers.current.set(
+        key,
+        setTimeout(() => {
+          setSaveFor(key, null)
+          savedTimers.current.delete(key)
+        }, 2100),
+      )
+    },
+    [setSaveFor],
+  )
 
-  async function saveItem(
-    id: string,
-    patch: { name?: string; description?: string; price?: number; category?: string },
-    previous: EditorItem,
-  ) {
-    setSaveState('saving')
-    setError('')
-    try {
-      const res = await fetch(`/api/menus/${slug}/items/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(patch),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(data.error ?? t('saveError'))
-      flashSaved()
-    } catch (err) {
-      setItems((cur) => cur.map((it) => (it.id === id ? previous : it)))
-      handleError(err, t('saveError'))
-    }
-  }
+  const handleErrorFor = useCallback(
+    (key: string, err: unknown, fallback: string) => {
+      const message =
+        err instanceof Error ? err.message : typeof err === 'string' ? err : fallback
+      setSaveFor(key, { state: 'error', error: message || fallback })
+    },
+    [setSaveFor],
+  )
 
-  async function addItem(
+  const saveMenu = useCallback(
+    async (patch: { name?: string }) => {
+      setSaveFor(MENU_KEY, { state: 'saving' })
+      try {
+        const res = await fetch(`/api/menus/${slug}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(patch),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data.error ?? t('saveError'))
+        flashSavedFor(MENU_KEY)
+      } catch (err) {
+        handleErrorFor(MENU_KEY, err, t('saveError'))
+      }
+    },
+    [slug, setSaveFor, flashSavedFor, handleErrorFor, t],
+  )
+
+  // Stable callback: reads "previous" from itemsRef and owns the optimistic
+  // update so the render-site handler doesn't have to close over `items`.
+  const saveItem = useCallback(
+    async (
+      id: string,
+      patch: { name?: string; description?: string; price?: number; category?: string },
+    ) => {
+      const previous = itemsRef.current.find((it) => it.id === id)
+      if (!previous) return
+      setItems((cur) => cur.map((it) => (it.id === id ? { ...it, ...patch } : it)))
+      setSaveFor(id, { state: 'saving' })
+      try {
+        const res = await fetch(`/api/menus/${slug}/items/${id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(patch),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data.error ?? t('saveError'))
+        flashSavedFor(id)
+      } catch (err) {
+        setItems((cur) => cur.map((it) => (it.id === id ? previous : it)))
+        handleErrorFor(id, err, t('saveError'))
+      }
+    },
+    [slug, setSaveFor, flashSavedFor, handleErrorFor, t],
+  )
+
+  const addItem = useCallback(async (
     category: string,
     fields: { name: string; description?: string; price?: number },
-  ) {
-    setSaveState('saving')
-    setError('')
+  ) => {
+    // Adds have no row to anchor to until the server returns an id, so the
+    // DraftItemForm's own submitting state handles the progress UI and we
+    // surface failures via a toast instead.
     try {
       const res = await fetch(`/api/menus/${slug}/items`, {
         method: 'POST',
@@ -186,40 +239,49 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
           tags: data.tags ?? [],
         },
       ])
-      flashSaved()
       return true
     } catch (err) {
-      handleError(err, t('saveError'))
+      const message =
+        err instanceof Error ? err.message : typeof err === 'string' ? err : t('saveError')
+      toast.error(message || t('saveError'))
       return false
     }
-  }
+  }, [slug, t])
 
-  async function deleteItem(id: string) {
+  const deleteItem = useCallback(async (id: string) => {
     // Confirmation now happens inline in ItemRow — arrive here only after
-    // the user has clicked the destructive button a second time.
-    const previous = items
+    // the user has clicked the destructive button a second time. The row is
+    // optimistically removed; on failure we restore it and anchor the error
+    // indicator back onto the restored row.
+    const previous = itemsRef.current
     setItems((cur) => cur.filter((it) => it.id !== id))
-    setSaveState('saving')
-    setError('')
     try {
       const res = await fetch(`/api/menus/${slug}/items/${id}`, { method: 'DELETE' })
       if (!res.ok && res.status !== 204) {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error ?? t('saveError'))
       }
-      flashSaved()
+      // Success: row vanishing is feedback enough; no indicator needed.
+      setSaveFor(id, null)
     } catch (err) {
       setItems(previous)
-      handleError(err, t('saveError'))
+      handleErrorFor(id, err, t('saveError'))
     }
-  }
+  }, [slug, setSaveFor, handleErrorFor, t])
+
+  const liveMessage = useMemo(() => {
+    const values = Object.values(saves)
+    const err = values.find((v) => v.state === 'error')
+    if (err) return err.error ?? t('saveError')
+    if (values.some((v) => v.state === 'saving')) return t('saving')
+    if (values.some((v) => v.state === 'saved')) return t('saved')
+    return ''
+  }, [saves, t])
 
   return (
     <div>
       <div className="sr-only" aria-live="polite">
-        {saveState === 'saving' && t('saving')}
-        {saveState === 'saved' && t('saved')}
-        {saveState === 'error' && error}
+        {liveMessage}
       </div>
 
       <div className="lg:flex lg:gap-10">
@@ -230,6 +292,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
             <MenuSettingsCard
               menuName={menuName}
               initialName={initial.name}
+              save={saves[MENU_KEY]}
               onNameChange={setMenuName}
               onNameBlur={() => {
                 const trimmed = menuName.trim()
@@ -302,10 +365,12 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
             })}
           </nav>
 
-          {/* Toolbar: search + save indicator only. "Add dish" lives inside
-              each category section so the action is always contextual. */}
-          <div className="bg-background/90 sticky top-[65px] z-10 mb-6 flex items-center gap-2 py-3 backdrop-blur-md lg:top-[77px]">
-            <div className="relative flex-1">
+          {/* Toolbar: search only. "Add dish" lives inside each category section
+              so the action is always contextual. Save status is anchored on the
+              item card being edited, not here, so the search bar doesn't resize
+              when an autosave fires. */}
+          <div className="bg-background/90 sticky top-[65px] z-10 mb-6 py-3 backdrop-blur-md lg:top-[77px]">
+            <div className="relative">
               <Search
                 className="text-muted-foreground absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2"
                 aria-hidden="true"
@@ -332,7 +397,6 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
                 </button>
               )}
             </div>
-            <SaveIndicator state={saveState} error={error} />
           </div>
 
           {/* Items */}
@@ -399,17 +463,9 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
                           item={item}
                           isFirst={i === 0 && !isAdding}
                           symbol={symbol}
-                          onChange={(patch) => {
-                            const previous = items.find((it) => it.id === item.id)!
-                            setItems((cur) =>
-                              cur.map((it) =>
-                                it.id === item.id ? { ...it, ...patch } : it,
-                              ),
-                            )
-                            saveItem(item.id, patch, previous)
-                          }}
-                          onDelete={() => deleteItem(item.id)}
-                          t={t}
+                          save={saves[item.id]}
+                          onChange={saveItem}
+                          onDelete={deleteItem}
                         />
                       ))}
                     </ul>
@@ -427,11 +483,13 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
 function MenuSettingsCard({
   menuName,
   initialName,
+  save,
   onNameChange,
   onNameBlur,
 }: {
   menuName: string
   initialName: string
+  save: SaveStatus | undefined
   onNameChange: (v: string) => void
   onNameBlur: () => void
 }) {
@@ -439,9 +497,12 @@ function MenuSettingsCard({
   return (
     <div className="border-cream-line bg-card rounded-[20px] border p-5">
       <label className="block space-y-1.5">
-        <span className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-          {t('menuNameLabel')}
-        </span>
+        <div className="flex min-h-[28px] items-center justify-between gap-2">
+          <span className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
+            {t('menuNameLabel')}
+          </span>
+          <SaveIndicator save={save} />
+        </div>
         <input
           type="text"
           value={menuName}
@@ -647,21 +708,25 @@ function DraftItemForm({
   )
 }
 
-function ItemRow({
+const ItemRow = memo(function ItemRow({
   item,
   isFirst,
   symbol,
+  save,
   onChange,
   onDelete,
-  t,
 }: {
   item: EditorItem
   isFirst: boolean
   symbol: string
-  onChange: (patch: { name?: string; description?: string; price?: number }) => void
-  onDelete: () => void
-  t: ReturnType<typeof useTranslations<'Editor'>>
+  save: SaveStatus | undefined
+  onChange: (
+    id: string,
+    patch: { name?: string; description?: string; price?: number },
+  ) => void
+  onDelete: (id: string) => void
 }) {
+  const t = useTranslations('Editor')
   const [localName, setLocalName] = useState(item.name)
   const [localDesc, setLocalDesc] = useState(item.description)
   const [localPrice, setLocalPrice] = useState(formatPriceInput(item.price))
@@ -686,7 +751,7 @@ function ItemRow({
                 setLocalName(item.name)
                 return
               }
-              if (trimmed !== item.name) onChange({ name: trimmed })
+              if (trimmed !== item.name) onChange(item.id, { name: trimmed })
             }}
             className="border-transparent focus:border-foreground/30 focus:bg-card flex-1 rounded-md border bg-transparent px-2 py-1 text-[17px] font-semibold tracking-[-0.01em] outline-none"
           />
@@ -705,7 +770,7 @@ function ItemRow({
                   return
                 }
                 if (parsed !== item.price) {
-                  onChange({ price: parsed })
+                  onChange(item.id, { price: parsed })
                   setLocalPrice(formatPriceInput(parsed))
                 }
               }}
@@ -718,7 +783,7 @@ function ItemRow({
           value={localDesc}
           onChange={(e) => setLocalDesc(e.target.value)}
           onBlur={() => {
-            if (localDesc !== item.description) onChange({ description: localDesc })
+            if (localDesc !== item.description) onChange(item.id, { description: localDesc })
           }}
           placeholder={t('itemDescription')}
           // Override shadcn defaults to look inline (transparent, no border
@@ -737,6 +802,11 @@ function ItemRow({
             ))}
           </div>
         )}
+        {/* Reserved slot so showing/hiding the pill doesn't push the row's
+            height around. Height matches the pill (px-2.5 py-1 + 1px border). */}
+        <div className="flex min-h-[28px] items-center justify-end px-2 pt-0.5">
+          <SaveIndicator save={save} />
+        </div>
       </div>
 
       {/* Inline delete confirmation — first click arms, second confirms. */}
@@ -758,7 +828,7 @@ function ItemRow({
             variant="destructive"
             onClick={() => {
               setConfirming(false)
-              onDelete()
+              onDelete(item.id)
             }}
             className="rounded-full"
           >
@@ -780,7 +850,7 @@ function ItemRow({
       )}
     </li>
   )
-}
+})
 
 function EmptyState({
   query,
@@ -807,28 +877,47 @@ function EmptyState({
   )
 }
 
-function SaveIndicator({ state, error }: { state: SaveState; error: string }) {
+function SaveIndicator({ save }: { save: SaveStatus | undefined }) {
   const t = useTranslations('Editor')
-  if (state === 'idle') return null
-  if (state === 'saving') {
+  if (!save) return null
+
+  const base =
+    'relative inline-flex items-center gap-1.5 overflow-hidden rounded-full border px-2.5 py-1 text-xs font-medium'
+
+  if (save.state === 'saving') {
     return (
-      <span className="text-muted-foreground hidden items-center gap-1.5 text-xs sm:inline-flex">
+      <span
+        key="saving"
+        className={`${base} border-cream-line bg-card text-muted-foreground animate-save-pill-in`}
+      >
         <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
         {t('saving')}
       </span>
     )
   }
-  if (state === 'saved') {
+  if (save.state === 'saved') {
     return (
-      <span className="bg-accent text-accent-foreground inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium">
-        <Check className="h-3 w-3" aria-hidden="true" />
-        <span className="hidden sm:inline">{t('saved')}</span>
+      <span
+        key="saved"
+        className={`${base} animate-save-pill-saved border-emerald-500/40 bg-emerald-500/10 text-emerald-700`}
+      >
+        {/* Light sweep — runs once over the pill as it holds, then fades. */}
+        <span
+          aria-hidden="true"
+          className="animate-save-pill-wave pointer-events-none absolute inset-y-0 -inset-x-2 bg-[linear-gradient(100deg,transparent_0%,rgba(255,255,255,0.7)_50%,transparent_100%)]"
+        />
+        <Check className="relative h-3 w-3" aria-hidden="true" />
+        <span className="relative">{t('saved')}</span>
       </span>
     )
   }
   return (
-    <span role="alert" className="text-destructive text-xs">
-      {error || t('saveError')}
+    <span
+      key="error"
+      role="alert"
+      className={`${base} border-destructive/40 bg-destructive/10 text-destructive animate-save-pill-in`}
+    >
+      {save.error || t('saveError')}
     </span>
   )
 }

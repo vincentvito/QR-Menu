@@ -118,6 +118,11 @@ model Organization {
   qrBackgroundColor String       @default("#FDFCFB")
   qrCenterType      String       @default("none")
   qrCenterText      String?
+  wifiSsid          String?
+  wifiPassword      String?
+  wifiEncryption    String       @default("WPA")
+  wifiCenterType    String       @default("none")
+  wifiCenterText    String?
   members           Member[]
   invitations       Invitation[]
   menus             Menu[]

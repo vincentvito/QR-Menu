@@ -222,13 +222,13 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
       <div className="grid grid-cols-2 gap-4">
         <ColorField
           id="primary-color"
-          label="Primary color"
+          label="Main color"
           value={draft.primaryColor}
           onChange={(v) => setDraft({ ...draft, primaryColor: v })}
         />
         <ColorField
           id="secondary-color"
-          label="Secondary color"
+          label="Accent color"
           value={draft.secondaryColor}
           onChange={(v) => setDraft({ ...draft, secondaryColor: v })}
         />

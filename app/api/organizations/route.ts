@@ -5,11 +5,14 @@ import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { getActiveOrganization } from '@/lib/organizations/get-active-org'
 import { isSupportedCurrency } from '@/lib/menus/currency'
+import { isWifiEncryption } from '@/lib/wifi'
 
 export const runtime = 'nodejs'
 
 const MAX_NAME = 120
 const MAX_DESCRIPTION = 500
+const MAX_WIFI_SSID = 32 // IEEE 802.11 SSID max
+const MAX_WIFI_PASSWORD = 63 // WPA2 PSK max
 const HEX_RE = /^#[0-9A-Fa-f]{6}$/
 
 function cleanString(value: unknown, max: number): string | null | undefined {
@@ -190,6 +193,49 @@ export async function PATCH(request: Request) {
       updates.qrCenterText = body.qrCenterText.trim().slice(0, 4)
     } else {
       return NextResponse.json({ error: 'Invalid QR center text' }, { status: 400 })
+    }
+  }
+
+  // better-auth's additionalFields schema rejects null even for optional
+  // strings, so we persist "" to clear instead of null. Behaviorally the
+  // same — the public menu treats an empty SSID/text as "not set".
+  if ('wifiSsid' in body) {
+    const cleaned = cleanString(body.wifiSsid, MAX_WIFI_SSID)
+    if (cleaned === undefined) {
+      return NextResponse.json({ error: 'Invalid WiFi SSID' }, { status: 400 })
+    }
+    updates.wifiSsid = cleaned ?? ''
+  }
+
+  if ('wifiPassword' in body) {
+    const cleaned = cleanString(body.wifiPassword, MAX_WIFI_PASSWORD)
+    if (cleaned === undefined) {
+      return NextResponse.json({ error: 'Invalid WiFi password' }, { status: 400 })
+    }
+    updates.wifiPassword = cleaned ?? ''
+  }
+
+  if ('wifiEncryption' in body) {
+    if (!isWifiEncryption(body.wifiEncryption)) {
+      return NextResponse.json({ error: 'Invalid WiFi encryption' }, { status: 400 })
+    }
+    updates.wifiEncryption = body.wifiEncryption
+  }
+
+  if ('wifiCenterType' in body) {
+    if (typeof body.wifiCenterType !== 'string' || !VALID_CENTER_TYPES.has(body.wifiCenterType)) {
+      return NextResponse.json({ error: 'Invalid WiFi QR center type' }, { status: 400 })
+    }
+    updates.wifiCenterType = body.wifiCenterType
+  }
+
+  if ('wifiCenterText' in body) {
+    if (body.wifiCenterText === null || body.wifiCenterText === '') {
+      updates.wifiCenterText = ''
+    } else if (typeof body.wifiCenterText === 'string') {
+      updates.wifiCenterText = body.wifiCenterText.trim().slice(0, 4)
+    } else {
+      return NextResponse.json({ error: 'Invalid WiFi QR center text' }, { status: 400 })
     }
   }
 

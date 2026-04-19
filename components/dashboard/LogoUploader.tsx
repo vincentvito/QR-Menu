@@ -2,8 +2,19 @@
 
 import { useRef, useState } from 'react'
 import Image from 'next/image'
-import { Loader2, Upload, X } from 'lucide-react'
+import { Loader2, Trash2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -76,18 +87,9 @@ export function LogoUploader({
               alt=""
               fill
               unoptimized
-              className="object-contain"
+              className="object-cover"
               onError={() => onChange('')}
             />
-            <button
-              type="button"
-              aria-label="Remove logo"
-              onClick={() => onChange('')}
-              disabled={busy}
-              className="absolute top-0.5 right-0.5 bg-foreground/80 text-background flex size-4 items-center justify-center rounded-full hover:bg-foreground"
-            >
-              <X className="size-2.5" aria-hidden="true" />
-            </button>
           </div>
         ) : (
           <div className="border-cream-line bg-background text-muted-foreground flex size-14 shrink-0 items-center justify-center rounded-lg border border-dashed">
@@ -134,6 +136,43 @@ export function LogoUploader({
           </label>
         </div>
       </div>
+
+      {value && (
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={busy}
+              className="text-destructive hover:text-destructive hover:bg-destructive/5 ml-auto flex"
+            >
+              <Trash2 className="size-3.5" aria-hidden="true" />
+              Delete logo
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Delete logo?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Your restaurant and menu QR codes will stop showing the logo until you
+                upload a new one. This doesn&apos;t delete the file from storage — you
+                can re-use the URL later if you still have it.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                variant="outline"
+                onClick={() => onChange('')}
+                className="text-destructive hover:text-destructive hover:bg-destructive/5"
+              >
+                Delete logo
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
 
       <details className="text-muted-foreground text-xs">
         <summary className="hover:text-foreground cursor-pointer select-none">

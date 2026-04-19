@@ -45,6 +45,11 @@ export default async function SettingsPage() {
           qrBackgroundColor: org.qrBackgroundColor,
           qrCenterType: org.qrCenterType,
           qrCenterText: org.qrCenterText ?? '',
+          wifiSsid: org.wifiSsid ?? '',
+          wifiPassword: org.wifiPassword ?? '',
+          wifiEncryption: org.wifiEncryption,
+          wifiCenterType: org.wifiCenterType,
+          wifiCenterText: org.wifiCenterText ?? '',
         }}
       />
     </main>

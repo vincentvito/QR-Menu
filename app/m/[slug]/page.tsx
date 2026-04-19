@@ -6,6 +6,7 @@ import { getMenuBySlug } from '@/lib/menus/get'
 import { currencySymbol } from '@/lib/menus/currency'
 import { BrandMark } from '@/components/brand/BrandMark'
 import { PublicMenuBody } from '@/components/menu/PublicMenuBody'
+import { WifiReveal } from '@/components/menu/WifiReveal'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -53,11 +54,20 @@ export default async function PublicMenuPage({ params }: PageProps) {
           className="pointer-events-none absolute -bottom-24 -left-16 h-[320px] w-[320px] rounded-full bg-pop opacity-[0.18] blur-2xl"
         />
         <div className="relative mx-auto flex max-w-[720px] flex-col px-5 pt-8 pb-12 sm:px-8 sm:pt-12 sm:pb-16">
-          <BrandMark size="sm" invert className="mb-8" />
+          <div className="mb-8 flex items-center justify-between gap-3">
+            <BrandMark size="sm" invert />
+            {org.wifiSsid ? (
+              <WifiReveal
+                ssid={org.wifiSsid}
+                password={org.wifiPassword}
+                hasPassword={org.wifiEncryption !== 'nopass'}
+              />
+            ) : null}
+          </div>
           <div className="flex items-start gap-4">
             {org.logo ? (
               <div className="relative size-16 shrink-0 overflow-hidden rounded-2xl bg-background/10 backdrop-blur-sm sm:size-20">
-                <Image src={org.logo} alt="" fill unoptimized className="object-contain p-2" />
+                <Image src={org.logo} alt="" fill unoptimized className="object-cover" />
               </div>
             ) : null}
             <div className="min-w-0">

@@ -65,7 +65,7 @@ export function DashboardSidebar({ restaurant, viewer }: DashboardSidebarProps) 
                 alt=""
                 fill
                 unoptimized
-                className="object-contain"
+                className="object-cover"
               />
             </div>
           ) : (

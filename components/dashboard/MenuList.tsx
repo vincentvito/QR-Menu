@@ -54,7 +54,7 @@ export function MenuList({ menus, publicBaseUrl }: MenuListProps) {
             </div>
             <div className="flex shrink-0 flex-wrap gap-2">
               <Button asChild size="sm" variant="outline">
-                <Link href={`/m/${m.slug}/edit`}>
+                <Link href={`/dashboard/menus/${m.slug}/edit`}>
                   <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                   {t('edit')}
                 </Link>

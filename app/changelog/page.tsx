@@ -6,6 +6,21 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.11.0',
+    date: '2026-04-19',
+    title: 'WiFi password on your menu',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Add your restaurant WiFi in Settings — network name, password, and security type (WPA, WEP, or open)',
+          'Guests see a &quot;WiFi&quot; button in your public menu header — tap to reveal the password, tap again to copy it',
+          'Download a WiFi QR code from Settings (SVG or PNG) — print it on table cards so modern phones auto-join just by pointing the camera',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.10.0',
     date: '2026-04-18',
     title: 'Logo uploads, sidebar nav, profile',
