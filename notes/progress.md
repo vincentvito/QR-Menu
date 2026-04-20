@@ -1,6 +1,6 @@
 # QRmenucrafter — progress toward v1
 
-Last updated: 2026-04-19
+Last updated: 2026-04-20
 
 This note exists so context can be cleared without losing the plot. Pair it
 with `notes/v1-feature-list.md` (the target) and `app/changelog/page.tsx`
@@ -59,6 +59,73 @@ with `notes/v1-feature-list.md` (the target) and `app/changelog/page.tsx`
 - **Display name fallback** — `formatDisplayName()` renders email local part
   as "Vlad Palacio" when `user.name` is empty.
 
+### v1 feature sweep (shipped 2026-04-19 → 2026-04-20)
+
+- **WiFi reveal** — `Organization.wifiSsid` / `wifiPassword` / `wifiEncryption`.
+  `WifiReveal` sheet on `/m/[slug]` shows SSID, masked password with copy, and
+  a WiFi QR (`WIFI:T:…;S:…;P:…;;`). Uses a mount-deferred pattern to avoid a
+  Radix `aria-controls` hydration mismatch — SSR renders a plain button, the
+  real Sheet swaps in after `useEffect`.
+- **Google review button** — `Organization.googleReviewUrl`; rendered as a
+  pill in the public-menu footer.
+- **Social follow buttons** — `instagramUrl` / `tiktokUrl` / `facebookUrl` on
+  Organization; Settings accepts handles or full URLs (`lib/socials.ts`
+  normalizes both). Rendered as icon buttons in the public-menu footer
+  (icons in `components/brand/SocialIcons.tsx`).
+- **Editorial badges** — five curated: Best Seller, Chef's Pick, Signature,
+  New, Spicy. Stored as `MenuItem.badges String[]`; toggleable chips in the
+  editor; rendered via shared `components/menu/BadgeRow.tsx`. All five are
+  always available (the per-org disable toggle was shipped then removed in
+  0.20.0 — the `disabledBadges` column is gone).
+- **Today's Specials** — `MenuItem.specialUntil DateTime?` with auto-expiry.
+  Active specials are pinned at the top of the public menu in a highlighted
+  block (theme-aware `bg-pop/10` + `var(--pop)` color-mix glow). Editor has
+  a date picker per dish.
+- **Dish photos** — `MenuItem.imageUrl`. Upload via
+  `/api/upload/menu-item-image` (org-scoped R2 keys), drag-drop uploader in
+  the editor (`components/editor/DishPhotoUploader.tsx`). Public menu uses
+  `components/menu/ImageLightbox.tsx` for tap-to-zoom. Delete button lives
+  in the top-right above the dish name (was overlapping the price).
+- **AI photos (Gemini)** — `@google/genai` `gemini-3.1-flash-image-preview`.
+  Two endpoints: `.../enhance-image` (improve existing) and
+  `.../generate-image` (from dish name + description). UI in
+  `components/editor/AIPhotoPanel.tsx`. 20 MB API-level inline cap applies.
+- **Menu templates** — code-defined registry in
+  `components/menu/templates/`. Two shipped: `default` (Editorial list) and
+  `photo-grid`. `Organization.templateId` picks the active one; preview in
+  Settings runs inside an iPhone mockup (`components/menu/PhonePreview.tsx`).
+  `PublicMenuBody` dispatches to the template's `Body`. Shared primitives
+  (`PriceChip`, `BadgeRow`) lock brand decisions across templates.
+- **Themes** — `lib/menus/themes.ts` defines 5 palette+typography presets:
+  Editorial, Pastel, Luxury (parchment + espresso + classic gold +
+  burgundy, Fraunces headings), Midnight (dark-mode), Sunset.
+  `Organization.theme` + `buildInlineStyle()` inject CSS vars
+  (`--background`, `--foreground`, `--accent`, `--pop`,
+  `--heading-font-family`, …). Templates never import theme code.
+- **Seasonal overlays** — `Organization.seasonalOverlay`
+  (`snow | autumn | confetti | none`). `components/menu/SeasonalOverlay.tsx`
+  renders pure-CSS keyframe animations with `scope: 'viewport' | 'contained'`
+  so the Settings preview and the live menu share one component. Respects
+  `prefers-reduced-motion`.
+- **Header image banner** — `Organization.headerImage`. Landscape
+  drop-zone uploader (`components/dashboard/HeaderImageUploader.tsx`, 20 MB
+  cap, authed `/api/upload/header`). Public menu puts the image behind the
+  restaurant name with a bottom-weighted dark gradient for readability; no
+  image → the brand-color gradient fallback. Replacing/removing a header
+  cleans up the old R2 object via `after(() => deleteByUrl(prev))` in the
+  Organization PATCH (sequential `findUnique` before update is intentional —
+  parallelizing would race with the write and orphan the old file).
+- **SEO** — programmatic icons + OG images via `next/og` `ImageResponse`,
+  per-menu OG card (`revalidate = 3600`), Restaurant→Menu→MenuSection→
+  MenuItem JSON-LD on `/m/[slug]`, `robots: { index: false }` on
+  dashboard/admin, sitemap, web app manifest, branded favicons.
+- **Menu creation UX** — creating a menu now drops you into the editor
+  (not the public view). 20 MB client/server cap on menu uploads removed
+  (Gemini's API cap still applies). AED added to currency list.
+- **Public menu header tightening** — h1 shrunk from `44/56px` to `28/40px`,
+  logo from `16/20` to `12/16`, padding reduced. The QRmenucrafter wordmark
+  was removed from the public-menu header (it remains in the footer).
+
 ### Landing
 
 - **Session-aware CTAs** — every "Get started / Start free / Choose plan"
@@ -101,85 +168,63 @@ Source of truth: `notes/v1-feature-list.md`. Status relative to that:
 |---|---|
 | Admin / employee roles | ✅ |
 | Admin can manage menus | ✅ |
-| **Daily specials section** | ❌ |
-| **Best-seller tag (+ Chef's Pick, New, Vegan, Spicy badges)** | ⚠ Dietary tags exist (`V/VG/GF/DF/NF`) but no editorial badges |
-| **Dish photo uploads (+ AI enhancement)** | ❌ |
+| Daily specials section | ✅ (0.16) |
+| Best-seller + editorial badges (Chef's Pick, Signature, New, Spicy) | ✅ (0.15 / revised 0.20) |
+| Dish photo uploads (+ AI enhancement) | ✅ (0.14, Gemini 3.1 flash-image-preview) |
 | Customizable brand colors + logo + QR | ✅ |
-| **Call-waiter action bar → tablet / messaging bot** | ⚠ Button exists on `/m/[slug]` but click does nothing |
-| **WiFi password reveal** | ❌ (planned schema: `wifiSsid` + `wifiPassword` on Organization; menu-page reveal button + WiFi QR using `WIFI:T:WPA;S:…;P:…;;` standard) |
-| **Multi-language switcher for the public menu** (auto-translate + manual override) | ❌ (app i18n exists via next-intl, but menu *content* isn't translated) |
-| **Google review redirect button** | ❌ |
-| **Social media follow buttons** (IG, TikTok, FB) | ❌ |
-| **Owner analytics** — scan counts, views per dish, waiter-call frequency, language breakdown, peak hours | ❌ — start by shipping the event table + instrumentation now so there's real data when the dashboard is built |
+| **Call-waiter action bar → tablet / messaging bot** | ⚠ Button exists on `/m/[slug]` but click still does nothing |
+| WiFi password reveal | ✅ (0.13) |
+| **Multi-language switcher for the public menu** (auto-translate + manual override) | ❌ — app i18n is wired via next-intl, but menu *content* isn't translated |
+| Google review redirect button | ✅ (0.13) |
+| Social media follow buttons (IG, TikTok, FB) | ✅ (0.13) |
+| **Owner analytics** — scan counts, views per dish, waiter-call frequency, language breakdown, peak hours | ❌ — start by shipping the event table + instrumentation so there's real data when the dashboard is built |
+| Menu templates (big-bet differentiator) | ✅ 2 of 3–5 shipped (0.17) — Editorial + Photo Grid; Chalkboard / Minimal List / Brutalist still on the table |
+| Seasonal overlays | ✅ (0.18) — Snow / Autumn / Confetti |
+| Themes (palette + typography presets) | ✅ (0.18) — 5 shipped |
+| Header image banner | ✅ (0.21) |
+| SEO (JSON-LD, OG, favicons, sitemap, robots, manifest) | ✅ (0.19) |
 
 ### Prioritization suggestion
 
-The items break into three buckets:
+Three gaps remain against the v1 list:
 
-1. **Small scoped additions** (one phase each, low risk):
-   - WiFi password (field + reveal + WiFi QR)
-   - Google review redirect + social follow buttons (config fields on Org + render on public menu)
-   - Wire the call-waiter button to *something* (tablet URL field on Org,
-     basic alert log, or a webhook)
-   - Best-seller / editorial badges (extend `MenuItem.tags` or add a
-     `badges: string[]` field + UI chip picker in the editor)
-   - Daily specials (add `specialUntil: DateTime?` on `MenuItem` + a pinned
-     "Today's specials" section at the top of the public menu)
+1. **Call-waiter wiring** (small). The Bell button on `/m/[slug]` is wired
+   to nothing. Options: (a) tablet URL field on Org + a simple alert page
+   that polls for calls; (b) webhook field on Org so owners can route to
+   their own system; (c) a lightweight `WaiterCall` table + real-time page
+   at `/dashboard/waiter`. (a) or (b) is the fastest path.
 
-2. **Medium-sized features**:
-   - Dish photo uploads (R2 storage is already wired; add `imageUrl` field
-     to `MenuItem`, new `/api/upload/menu-item` endpoint gated by org
-     membership, uploader in the editor)
-   - Dish photo AI enhancement (defer — Replicate / similar; the sibling
-     project `menu-design-ai` has a prediction pattern you could mirror)
+2. **Owner analytics** (medium-bigger). Ship in two phases so there's real
+   data by the time the dashboard lands:
+   - Phase 1 (now): `MenuEvent` table + `POST /api/events` beacon +
+     `IntersectionObserver` for dish views. Privacy-friendly (no user id,
+     no IP, no fingerprint — just `slug`, `eventType`, `itemId?`, day bucket).
+   - Phase 2 (later): `/dashboard/analytics` with Recharts — scan counts,
+     views per dish, waiter-call frequency, peak hours.
 
-3. **Bigger commitments**:
-   - **Multi-language public menu** — translate item names + descriptions
-     per locale. Data model options:
-     (a) JSONB `translations: Record<locale, { name, description }>` on
-     MenuItem (simple, denormalized)
-     (b) `MenuItemTranslation` table (normalized, enables filtering).
-     Auto-translate via Gemini or DeepL; let owners manually override.
-     Public menu gets a language switcher.
-   - **Owner analytics** — events table (`MenuEvent`), public-menu
-     instrumentation (`POST /api/events` beacon, `IntersectionObserver`
-     for dish views), aggregation queries, `/dashboard/analytics` page
-     with Recharts. Privacy-friendly (no user id, no IP, no fingerprint).
-     Start with the table + instrumentation, ship dashboard later when
-     there's real data.
+3. **Multi-language public menu** (biggest). Translate item names +
+   descriptions per locale. Data model options:
+   (a) JSONB `translations: Record<locale, { name, description }>` on
+   `MenuItem` — simple, denormalized.
+   (b) `MenuItemTranslation` table — normalized, enables filtering.
+   Auto-translate via Gemini on save; owners can override per field.
+   Public menu gets a language switcher in the header; falls back to the
+   base language when a translation is missing.
 
-### Big-bet differentiator (post-v1, pre-launch wow-factor)
+### Big-bet differentiator — status
 
-**Menu templates + seasonal themes.** Goal: every restaurant's public menu
-feels *its own*, not the same layout with a different color. Intended as
-the main differentiator vs. generic QR-menu competitors.
+Templates + themes + seasonal overlays are all shipped (0.17 / 0.18).
+Two follow-ups worth considering before launch:
 
-Two orthogonal layers:
-
-1. **Templates** — core layout/typography variants selected per-menu or
-   per-org. Ship 3–5 curated ones (e.g. "Editorial", "Photo grid",
-   "Chalkboard", "Minimal list"). Each template already picks up the
-   org's brand colors via the `--accent` / `--pop` CSS vars we inject.
-   Owner picks a template in Settings; it renders immediately on `/m/[slug]`.
-2. **Seasonal themes** — lightweight *decoration overlay* that sits on top
-   of any template. Small Lottie/SVG ornaments: snow for December,
-   falling leaves, subtle pumpkin motifs, etc. Either date-scheduled
-   automatically or owner-toggled. Should work with any template.
-
-**Sequencing rationale (why we deferred):** templates need content to
-shine. A "Photo grid" template without dish photos is just a styled
-text list. Shipping templates before photos/badges/daily-specials means
-rebuilding the templates once that data lands. So the order is:
-
-> small bucket (badges, specials, call-waiter) → dish photos →
-> templates → seasonal themes.
-
-**Data-model implications to keep in mind** when we get there:
-- `Menu.templateId String?` (or on Organization if picked once)
-- Templates are code-defined (a registry), not DB rows.
-- Seasonal theme: `Organization.seasonalTheme String?` with values
-  like `'snow' | 'autumn' | 'halloween' | 'none'` + optional auto-pick
-  from date.
+- **More templates**. Shipped: Editorial (default) + Photo Grid. Targets
+  worth evaluating: Chalkboard (bistro/pub), Minimal List (fine-dining
+  single-page), Brutalist (modern-cocktail-bar). Each is ~1 day of work
+  once the template shape is set — `components/menu/templates/<id>/Body.tsx`
+  + thumbnail + registry entry.
+- **Date-scheduled seasonal overlays**. Today the owner manually picks
+  snow/autumn/confetti; auto-picking based on the current month (snow Dec–
+  Feb, autumn Sep–Nov) would make the feature feel alive without a
+  Settings visit.
 
 ### Nice-to-haves post-v1
 
@@ -203,3 +248,8 @@ rebuilding the templates once that data lands. So the order is:
   Needs a sweep before marketing in Spanish-speaking markets.
 - The changelog on `/changelog` is getting dense — fine for now, may want
   collapse/expand per version before launch.
+- `Organization.headerImage` is a string URL (Prisma migration
+  `20260420100000_org_header_image`). Rotation uses `after()` to delete the
+  previous R2 object post-update; if that ever needs to be atomic, add a
+  pre-update transaction instead — today's pattern is intentionally
+  best-effort.
