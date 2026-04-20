@@ -130,6 +130,7 @@ model Organization {
   templateId        String       @default("default")
   theme             String       @default("editorial")
   seasonalOverlay   String       @default("none")
+  headerImage       String?
   members           Member[]
   invitations       Invitation[]
   menus             Menu[]

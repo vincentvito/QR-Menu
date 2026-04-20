@@ -4,7 +4,6 @@ import Image from 'next/image'
 import { Bell } from 'lucide-react'
 import { getMenuBySlug } from '@/lib/menus/get'
 import { currencySymbol } from '@/lib/menus/currency'
-import { BrandMark } from '@/components/brand/BrandMark'
 import { PublicMenuBody } from '@/components/menu/PublicMenuBody'
 import { WifiReveal } from '@/components/menu/WifiReveal'
 import { SeasonalOverlay } from '@/components/menu/SeasonalOverlay'
@@ -151,41 +150,69 @@ export default async function PublicMenuPage({ params }: PageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <SeasonalOverlay id={org.seasonalOverlay} scope="viewport" />
-      {/* Cover / header block */}
+      {/* Cover / header block — falls back to the brand-color gradient when
+          no header image is set. With an image, we keep a dark gradient
+          overlay so the restaurant name stays readable on any photo. */}
       <section className="bg-foreground text-background relative overflow-hidden">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -top-24 -right-16 h-[360px] w-[360px] rounded-full bg-accent opacity-[0.12] blur-2xl"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-24 -left-16 h-[320px] w-[320px] rounded-full bg-pop opacity-[0.18] blur-2xl"
-        />
-        <div className="relative mx-auto flex max-w-[720px] flex-col px-5 pt-8 pb-12 sm:px-8 sm:pt-12 sm:pb-16">
-          <div className="mb-8 flex items-center justify-between gap-3">
-            <BrandMark size="sm" invert />
-            {org.wifiSsid ? (
+        {org.headerImage ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={org.headerImage}
+              alt=""
+              aria-hidden="true"
+              loading="eager"
+              decoding="async"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+            />
+            {/* Dark overlay keeps "restaurant name" white-on-bright
+                readable — bottom-weighted so faces/food at top of the
+                image aren't muddied. */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  'linear-gradient(to top, rgba(0,0,0,0.70) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0.30) 100%)',
+              }}
+            />
+          </>
+        ) : (
+          <>
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-24 -right-16 h-[360px] w-[360px] rounded-full bg-accent opacity-[0.12] blur-2xl"
+            />
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -bottom-24 -left-16 h-[320px] w-[320px] rounded-full bg-pop opacity-[0.18] blur-2xl"
+            />
+          </>
+        )}
+        <div className="relative mx-auto flex max-w-[720px] flex-col px-5 pt-6 pb-8 sm:px-8 sm:pt-10 sm:pb-12">
+          {org.wifiSsid ? (
+            <div className="mb-6 flex justify-end">
               <WifiReveal
                 ssid={org.wifiSsid}
                 password={org.wifiPassword}
                 hasPassword={org.wifiEncryption !== 'nopass'}
               />
-            ) : null}
-          </div>
-          <div className="flex items-start gap-4">
+            </div>
+          ) : null}
+          <div className="flex items-start gap-3">
             {org.logo ? (
-              <div className="relative size-16 shrink-0 overflow-hidden rounded-2xl bg-background/10 backdrop-blur-sm sm:size-20">
+              <div className="relative size-12 shrink-0 overflow-hidden rounded-xl bg-background/10 backdrop-blur-sm sm:size-16">
                 <Image src={org.logo} alt="" fill unoptimized className="object-cover" />
               </div>
             ) : null}
             <div className="min-w-0">
-              <p className="text-accent text-[12px] font-medium tracking-[0.18em] uppercase">
+              <p className="text-accent text-[11px] font-medium tracking-[0.18em] uppercase">
                 {menu.name}
               </p>
-              <h1 className="mt-2 text-[44px] leading-[1.02] font-semibold tracking-[-0.035em] sm:text-[56px]">
+              <h1 className="mt-1.5 text-[28px] leading-[1.08] font-semibold tracking-[-0.03em] sm:text-[40px]">
                 {org.name}
               </h1>
-              <p className="text-background/70 mt-3 text-sm">
+              <p className="text-background/70 mt-2 text-xs sm:text-sm">
                 {menu.items.length} {menu.items.length === 1 ? 'dish' : 'dishes'}
               </p>
             </div>

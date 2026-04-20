@@ -16,10 +16,10 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
 const ACCEPT = 'image/jpeg,image/png,image/webp,image/svg+xml'
+const MAX_BYTES = 2 * 1024 * 1024
 
 interface LogoUploaderProps {
   value: string
@@ -29,8 +29,8 @@ interface LogoUploaderProps {
   endpoint?: string
 }
 
-// Drop-zone + "Choose file" uploader. Falls back to typing a URL directly.
-// On upload success, writes the R2 URL into the bound form field.
+// Drop-zone + "Choose file" uploader for the restaurant logo. Small square
+// thumbnail since logos are square-ish by convention.
 export function LogoUploader({
   value,
   onChange,
@@ -46,7 +46,7 @@ export function LogoUploader({
       toast.error('Pick a PNG, JPG, WEBP, or SVG file')
       return
     }
-    if (file.size > 2 * 1024 * 1024) {
+    if (file.size > MAX_BYTES) {
       toast.error('Logo must be under 2 MB')
       return
     }
@@ -129,8 +129,10 @@ export function LogoUploader({
               </span>
             ) : (
               <span>
-                <span className="text-foreground font-medium">Drop a logo</span>{' '}
-                <span className="text-muted-foreground">or click to browse · PNG, JPG, WEBP, SVG up to 2 MB</span>
+                <span className="text-foreground font-medium">Drop your logo</span>{' '}
+                <span className="text-muted-foreground">
+                  or click to browse · PNG, JPG, WEBP, SVG up to 2 MB
+                </span>
               </span>
             )}
           </label>
@@ -148,16 +150,16 @@ export function LogoUploader({
               className="text-destructive hover:text-destructive hover:bg-destructive/5 ml-auto flex"
             >
               <Trash2 className="size-3.5" aria-hidden="true" />
-              Delete logo
+              Remove logo
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Delete logo?</AlertDialogTitle>
+              <AlertDialogTitle>Remove logo?</AlertDialogTitle>
               <AlertDialogDescription>
-                Your restaurant and menu QR codes will stop showing the logo until you
-                upload a new one. This doesn&apos;t delete the file from storage — you
-                can re-use the URL later if you still have it.
+                Your restaurant and menu QR codes will stop showing the logo until
+                you upload a new one. The file stays in storage — nothing is
+                permanently deleted.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -167,26 +169,12 @@ export function LogoUploader({
                 onClick={() => onChange('')}
                 className="text-destructive hover:text-destructive hover:bg-destructive/5"
               >
-                Delete logo
+                Remove logo
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
       )}
-
-      <details className="text-muted-foreground text-xs">
-        <summary className="hover:text-foreground cursor-pointer select-none">
-          …or paste a URL instead
-        </summary>
-        <Input
-          type="url"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          disabled={busy}
-          placeholder="https://…"
-          className="mt-2"
-        />
-      </details>
     </div>
   )
 }

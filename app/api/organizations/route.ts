@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
@@ -10,6 +10,7 @@ import { normalizeSocialHandle } from '@/lib/socials'
 import { isTemplateId } from '@/components/menu/templates'
 import { isThemeId } from '@/lib/menus/themes'
 import { isSeasonalOverlayId } from '@/lib/menus/seasonal-overlays'
+import { deleteByUrl } from '@/lib/storage/r2'
 
 export const runtime = 'nodejs'
 
@@ -114,6 +115,14 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Invalid logo URL' }, { status: 400 })
     }
     updates.logo = cleaned ?? ''
+  }
+
+  if ('headerImage' in body) {
+    const cleaned = cleanUrl(body.headerImage)
+    if (cleaned === undefined) {
+      return NextResponse.json({ error: 'Invalid header image URL' }, { status: 400 })
+    }
+    updates.headerImage = cleaned ?? ''
   }
 
   if ('sourceUrl' in body) {
@@ -295,6 +304,19 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
   }
 
+  // If the header image is changing, capture the previous value before the
+  // update so we can clean up its R2 object afterwards. Fire-and-forget via
+  // after() so the user's save doesn't wait on R2 round-trips.
+  const previousHeaderImage =
+    'headerImage' in updates
+      ? (
+          await prisma.organization.findUnique({
+            where: { id: org.id },
+            select: { headerImage: true },
+          })
+        )?.headerImage ?? null
+      : null
+
   const updated = await auth.api.updateOrganization({
     body: { organizationId: org.id, data: updates },
     headers: requestHeaders,
@@ -302,6 +324,13 @@ export async function PATCH(request: Request) {
 
   if (!updated) {
     return NextResponse.json({ error: 'Update failed' }, { status: 500 })
+  }
+
+  if (
+    previousHeaderImage &&
+    previousHeaderImage !== (updates.headerImage as string | undefined | null)
+  ) {
+    after(() => deleteByUrl(previousHeaderImage))
   }
 
   // Bust the RSC cache for every dashboard + public-menu route so changes

@@ -27,17 +27,18 @@ function PhotoGridBody({
         <section
           id={specialsAnchorId}
           className={cn(
-            'border-pop/30 bg-pop/5 scroll-mt-40 mt-6 rounded-[20px] border p-5 sm:p-7',
+            'border-pop/50 bg-pop/10 scroll-mt-40 mt-6 rounded-[20px] border p-5 sm:p-7',
             preview && 'mt-0',
           )}
+          style={{
+            boxShadow:
+              '0 0 36px -4px color-mix(in oklab, var(--pop) 35%, transparent), 0 6px 18px -10px rgba(0,0,0,0.15)',
+          }}
         >
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-pop text-[11px] font-semibold tracking-[0.18em] uppercase">
-              Today&apos;s Specials
-            </h2>
-            <span className="text-muted-foreground text-xs">{specials.length}</span>
-          </div>
-          <ul className="mt-4 grid grid-cols-2 gap-3 sm:gap-4">
+          <h2 className="bg-pop text-pop-foreground mb-4 inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold tracking-[0.18em] uppercase">
+            Today&apos;s Specials
+          </h2>
+          <ul className="grid grid-cols-2 gap-3 sm:gap-4">
             {specials.map((item) => (
               <PhotoGridTile
                 key={item.id}

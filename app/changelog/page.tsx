@@ -6,6 +6,34 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.21.0',
+    date: '2026-04-20',
+    title: 'Header image banner + public menu polish',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Upload a header image in Settings — it sits behind your restaurant name on the public menu with a soft dark gradient so the name stays readable on any photo. When no image is set, the brand-color gradient still shows as before',
+          'Today&apos;s Specials section now glows in your brand&apos;s accent color — the block lifts off the page so specials feel like the first thing guests notice',
+        ],
+      },
+      {
+        type: 'changed' as const,
+        items: [
+          'Tightened the public menu header — restaurant name, logo, and menu label shrunk so guests see dishes sooner without scrolling',
+          'Removed the QRmenucrafter wordmark from the public menu header — it already appears in the footer, so the top of the page is fully your restaurant',
+        ],
+      },
+      {
+        type: 'fixed' as const,
+        items: [
+          'WiFi reveal button no longer causes a hydration warning on first render — the sheet opens cleanly on the first tap',
+          'Removing or replacing a header image now cleans up the previous file from storage, so unused images don&apos;t linger',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.20.0',
     date: '2026-04-20',
     title: 'Menu creation polish + currency update',

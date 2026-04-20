@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { LogoUploader } from '@/components/dashboard/LogoUploader'
+import { HeaderImageUploader } from '@/components/dashboard/HeaderImageUploader'
 import { SectionHeading } from '@/components/ui/section-heading'
 import {
   Select,
@@ -66,6 +67,7 @@ interface SettingsDraft {
   name: string
   description: string
   logo: string
+  headerImage: string
   sourceUrl: string
   primaryColor: string
   secondaryColor: string
@@ -96,6 +98,7 @@ interface SettingsFormProps {
     name: string
     description: string
     logo: string
+    headerImage: string
     sourceUrl: string
     primaryColor: string
     secondaryColor: string
@@ -157,6 +160,7 @@ export function SettingsForm({
     name: initial.name,
     description: initial.description,
     logo: initial.logo,
+    headerImage: initial.headerImage,
     sourceUrl: initial.sourceUrl,
     primaryColor: initial.primaryColor,
     secondaryColor: initial.secondaryColor,
@@ -541,6 +545,20 @@ export function SettingsForm({
             onChange={(url) => setDraft({ ...draft, logo: url })}
             disabled={disabled}
           />
+        </div>
+
+        <div className="space-y-2">
+          <Label>Header image</Label>
+          <HeaderImageUploader
+            value={draft.headerImage}
+            onChange={(url) => setDraft({ ...draft, headerImage: url })}
+            disabled={disabled}
+          />
+          <p className="text-muted-foreground text-xs">
+            Shown behind your restaurant name at the top of the menu. Wide
+            landscape photos read best (roughly 1600×900). Leave empty to keep
+            the brand-color gradient.
+          </p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">

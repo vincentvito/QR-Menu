@@ -25,17 +25,21 @@ function DefaultBody({
         <section
           id={specialsAnchorId}
           className={cn(
-            'border-pop/30 bg-pop/5 scroll-mt-40 mt-6 rounded-[20px] border p-6 sm:p-8',
+            'border-pop/50 bg-pop/10 scroll-mt-40 mt-6 rounded-[20px] border p-6 sm:p-8',
             preview && 'mt-0',
           )}
+          style={{
+            // Theme-aware glow: the halo picks up whichever --pop the
+            // active theme sets, so the specials section pops in its own
+            // palette rather than always being persimmon.
+            boxShadow:
+              '0 0 36px -4px color-mix(in oklab, var(--pop) 35%, transparent), 0 6px 18px -10px rgba(0,0,0,0.15)',
+          }}
         >
-          <div className="flex items-baseline justify-between gap-3">
-            <h2 className="text-pop text-[11px] font-semibold tracking-[0.18em] uppercase">
-              Today&apos;s Specials
-            </h2>
-            <span className="text-muted-foreground text-xs">{specials.length}</span>
-          </div>
-          <ul className="mt-5 space-y-6">
+          <h2 className="bg-pop text-pop-foreground mb-5 inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold tracking-[0.18em] uppercase">
+            Today&apos;s Specials
+          </h2>
+          <ul className="space-y-6">
             {specials.map((item) => (
               <DefaultDishCard
                 key={item.id}

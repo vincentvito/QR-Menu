@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Check, Copy, Eye, EyeOff, Wifi } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -19,10 +19,35 @@ interface WifiRevealProps {
   hasPassword: boolean
 }
 
+// Class reused by both the SSR placeholder and the real trigger — keeps
+// the pill identical through hydration so the swap is invisible.
+const TRIGGER_CLASS =
+  'bg-background/10 text-background hover:bg-background/20 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium backdrop-blur-sm transition-colors'
+
 export function WifiReveal({ ssid, password, hasPassword }: WifiRevealProps) {
   const [open, setOpen] = useState(false)
   const [revealed, setRevealed] = useState(false)
   const [copied, setCopied] = useState(false)
+  // Radix Dialog generates an `aria-controls` via a counter-based useId.
+  // In Next 16 + Turbopack the counter offsets differ between server and
+  // client, producing a hydration mismatch. Deferring the Sheet mount
+  // until after hydration avoids the SSR-vs-client ID difference entirely.
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) {
+    // Render an identical-looking placeholder during SSR and the first
+    // client render. Non-interactive until the real Sheet takes over —
+    // imperceptible because it lands instantly post-hydration.
+    return (
+      <button type="button" className={TRIGGER_CLASS} aria-hidden="true" tabIndex={-1}>
+        <Wifi className="size-3.5" aria-hidden="true" />
+        WiFi
+      </button>
+    )
+  }
 
   async function copy() {
     if (!password) return
@@ -45,10 +70,7 @@ export function WifiReveal({ ssid, password, hasPassword }: WifiRevealProps) {
       }}
     >
       <SheetTrigger asChild>
-        <button
-          type="button"
-          className="bg-background/10 text-background hover:bg-background/20 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium backdrop-blur-sm transition-colors"
-        >
+        <button type="button" className={TRIGGER_CLASS}>
           <Wifi className="size-3.5" aria-hidden="true" />
           WiFi
         </button>

@@ -57,6 +57,13 @@ export function keyForUserLogo(userId: string, ext: string, stamp: string): stri
   return `${KEY_PREFIX}/users/${userId}/logo-${stamp}.${safeExt}`
 }
 
+// Per-org header image rendered behind the restaurant name on the public
+// menu. Keyed by org; stamp busts caches on reupload.
+export function keyForOrgHeader(orgId: string, ext: string, stamp: string): string {
+  const safeExt = ext.replace(/^\./, '').toLowerCase() || 'webp'
+  return `${KEY_PREFIX}/orgs/${orgId}/header-${stamp}.${safeExt}`
+}
+
 // Per-dish photo. Keyed by org (not menu) so moving a dish between menus
 // doesn't orphan its image. The stamp busts browser/CDN caches on reupload.
 export function keyForMenuItemImage(

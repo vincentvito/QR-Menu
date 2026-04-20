@@ -20,6 +20,10 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: false,
   },
+  advanced: {
+    // Force secure cookies only in production
+    useSecureCookies: process.env.NODE_ENV === 'production',
+  },
   databaseHooks: {
     user: {
       create: {
@@ -72,14 +76,14 @@ export const auth = betterAuth({
             templateId: { type: 'string', required: false, defaultValue: 'default' },
             theme: { type: 'string', required: false, defaultValue: 'editorial' },
             seasonalOverlay: { type: 'string', required: false, defaultValue: 'none' },
+            headerImage: { type: 'string', required: false },
           },
         },
       },
       sendInvitationEmail: async ({ email, invitation, organization, inviter }) => {
         const baseUrl = process.env.BETTER_AUTH_URL || 'http://localhost:3000'
         const acceptUrl = `${baseUrl}/accept-invite?invitationId=${invitation.id}`
-        const inviterName =
-          inviter.user.name?.trim() || inviter.user.email || 'A teammate'
+        const inviterName = inviter.user.name?.trim() || inviter.user.email || 'A teammate'
         const { subject, html } = inviteEmailTemplate({
           inviterName,
           restaurantName: organization.name,
