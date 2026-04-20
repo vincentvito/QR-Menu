@@ -3,7 +3,6 @@
 import { useMemo } from 'react'
 import { getTemplate } from '@/components/menu/templates'
 import {
-  DEMO_DISABLED_BADGES,
   DEMO_GROUPS,
   DEMO_SPECIALS,
   DEMO_SYMBOL,
@@ -21,7 +20,6 @@ export interface TemplatePreviewRealData {
   items: TemplateItem[]
   specialIds: string[]
   symbol: string
-  disabledBadges: string[]
 }
 
 interface TemplatePreviewProps {
@@ -67,7 +65,6 @@ export function TemplatePreview({
         groups: DEMO_GROUPS,
         specials: DEMO_SPECIALS,
         symbol: DEMO_SYMBOL,
-        disabledBadges: DEMO_DISABLED_BADGES,
       }
     }
 
@@ -95,7 +92,6 @@ export function TemplatePreview({
       groups,
       specials: realData.items.filter((it) => specialsSet.has(it.id)),
       symbol: realData.symbol,
-      disabledBadges: realData.disabledBadges,
     }
   }, [realData])
 
@@ -145,7 +141,6 @@ export function TemplatePreview({
               specials={bodyData.specials}
               specialsAnchorId="preview-specials"
               symbol={bodyData.symbol}
-              disabledBadges={bodyData.disabledBadges}
               preview
               onOpenImage={() => {
                 /* no-op */

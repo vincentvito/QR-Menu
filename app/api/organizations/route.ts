@@ -7,7 +7,6 @@ import { getActiveOrganization } from '@/lib/organizations/get-active-org'
 import { isSupportedCurrency } from '@/lib/menus/currency'
 import { isWifiEncryption } from '@/lib/wifi'
 import { normalizeSocialHandle } from '@/lib/socials'
-import { isBadgeKey } from '@/lib/menus/badges'
 import { isTemplateId } from '@/components/menu/templates'
 import { isThemeId } from '@/lib/menus/themes'
 import { isSeasonalOverlayId } from '@/lib/menus/seasonal-overlays'
@@ -269,15 +268,6 @@ export async function PATCH(request: Request) {
       }
       updates[key] = raw ? normalizeSocialHandle(raw).slice(0, 64) : ''
     }
-  }
-
-  if ('disabledBadges' in body) {
-    if (!Array.isArray(body.disabledBadges)) {
-      return NextResponse.json({ error: 'Invalid disabledBadges' }, { status: 400 })
-    }
-    const filtered = body.disabledBadges.filter(isBadgeKey)
-    // Dedup + keep order stable via Set.
-    updates.disabledBadges = Array.from(new Set(filtered))
   }
 
   if ('templateId' in body) {

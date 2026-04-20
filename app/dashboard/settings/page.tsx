@@ -43,7 +43,6 @@ export default async function SettingsPage() {
           .filter((i) => i.specialUntil && i.specialUntil.getTime() > now)
           .map((i) => i.id),
         symbol: currencySymbol(org.currency),
-        disabledBadges: org.disabledBadges,
       }
     : null
 
@@ -84,7 +83,6 @@ export default async function SettingsPage() {
           instagramUrl: org.instagramUrl ?? '',
           tiktokUrl: org.tiktokUrl ?? '',
           facebookUrl: org.facebookUrl ?? '',
-          disabledBadges: org.disabledBadges,
           templateId: org.templateId,
           theme: org.theme,
           seasonalOverlay: org.seasonalOverlay,

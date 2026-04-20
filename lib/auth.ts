@@ -69,7 +69,6 @@ export const auth = betterAuth({
             instagramUrl: { type: 'string', required: false },
             tiktokUrl: { type: 'string', required: false },
             facebookUrl: { type: 'string', required: false },
-            disabledBadges: { type: 'string[]', required: false },
             templateId: { type: 'string', required: false, defaultValue: 'default' },
             theme: { type: 'string', required: false, defaultValue: 'editorial' },
             seasonalOverlay: { type: 'string', required: false, defaultValue: 'none' },

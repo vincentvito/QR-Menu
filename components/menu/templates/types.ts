@@ -24,7 +24,6 @@ export interface TemplateBodyProps {
   specials: TemplateItem[]
   specialsAnchorId: string
   symbol: string
-  disabledBadges: string[]
   onOpenImage: (src: string) => void
   // When true, templates must render image thumbnails as non-interactive
   // elements (<div> instead of <button>). Used by TemplatePreview, which

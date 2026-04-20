@@ -6,6 +6,34 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.20.0',
+    date: '2026-04-20',
+    title: 'Menu creation polish + currency update',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'AED (UAE dirham) added to the currency list',
+          'The phone mockup in Menu design is now clickable — tap it to open your real menu in a new tab and see exactly how it looks live',
+        ],
+      },
+      {
+        type: 'changed' as const,
+        items: [
+          'Creating a new menu drops you into the editor to review the extracted items, instead of the public menu view — you can polish before sharing',
+          'Removed the 20 MB file size cap on menu uploads — drop in any PDF or photo your device can send',
+          'Luxury theme price chips brightened to true gold — reads clearly as gold on the parchment page rather than olive-green on some displays',
+        ],
+      },
+      {
+        type: 'removed' as const,
+        items: [
+          'The Badges enable/disable section in Settings — all five badges (Best Seller, Chef&apos;s Pick, Signature, New, Spicy) are now always available as toggleable chips on every dish in the editor',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.19.0',
     date: '2026-04-20',
     title: 'Share-ready menus — search + social polish',

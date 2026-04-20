@@ -15,9 +15,6 @@ const ALLOWED_MIME = new Set([
   'image/heif',
   'application/pdf',
 ])
-// 20 MB: Gemini's hard limit for inline file data per request. Bigger files
-// would need the Files API upload path — not worth the complexity yet.
-const MAX_FILE_BYTES = 20 * 1024 * 1024
 const MAX_TEXT_CHARS = 50_000
 
 export async function POST(request: Request) {
@@ -55,12 +52,6 @@ export async function POST(request: Request) {
           return NextResponse.json(
             { error: `Unsupported file type: ${rawFile.type || 'unknown'}` },
             { status: 400 },
-          )
-        }
-        if (rawFile.size > MAX_FILE_BYTES) {
-          return NextResponse.json(
-            { error: 'File is larger than 20 MB — try a smaller photo or PDF.' },
-            { status: 413 },
           )
         }
         const buf = Buffer.from(await rawFile.arrayBuffer())

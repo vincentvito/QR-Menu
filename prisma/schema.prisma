@@ -127,7 +127,6 @@ model Organization {
   instagramUrl      String?
   tiktokUrl         String?
   facebookUrl       String?
-  disabledBadges    String[]     @default([])
   templateId        String       @default("default")
   theme             String       @default("editorial")
   seasonalOverlay   String       @default("none")

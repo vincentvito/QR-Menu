@@ -55,7 +55,6 @@ interface MenuEditorProps {
   initial: {
     name: string
     currency: string
-    disabledBadges: string[]
     items: EditorItem[]
   }
 }
@@ -75,10 +74,10 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
   // The symbol drives price rendering; if we ever add per-menu overrides,
   // this becomes state again.
   const symbol = currencySymbol(initial.currency)
-  const enabledBadgeKeys = useMemo<BadgeKey[]>(
-    () => BADGE_KEYS.filter((k) => !initial.disabledBadges.includes(k)),
-    [initial.disabledBadges],
-  )
+  // All badges always available in the per-dish picker. The old per-org
+  // enable/disable list was a step without payoff — owners either use a
+  // badge or they don't, and that choice lives naturally on the dish chip.
+  const enabledBadgeKeys: BadgeKey[] = [...BADGE_KEYS]
   const [selectedCategory, setSelectedCategory] = useState<string>(ALL)
   const [query, setQuery] = useState('')
   const [addingToCategory, setAddingToCategory] = useState<string | null>(null)

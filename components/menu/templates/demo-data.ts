@@ -97,4 +97,3 @@ export const DEMO_SPECIALS: TemplateItem[] = DEMO_ITEMS.filter((it) =>
 )
 
 export const DEMO_SYMBOL = '$'
-export const DEMO_DISABLED_BADGES: string[] = []

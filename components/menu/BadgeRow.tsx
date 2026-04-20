@@ -2,14 +2,13 @@ import { visibleBadges } from '@/lib/menus/badges'
 
 interface BadgeRowProps {
   badges: string[]
-  disabled: string[]
 }
 
 // Renders editorial badges as filled pills. Order is driven by the canonical
 // BADGE_KEYS ordering inside visibleBadges(), not by the dish's array order
 // so the same two badges render identically across every dish.
-export function BadgeRow({ badges, disabled }: BadgeRowProps) {
-  const list = visibleBadges(badges, disabled)
+export function BadgeRow({ badges }: BadgeRowProps) {
+  const list = visibleBadges(badges)
   if (list.length === 0) return null
   return (
     <div className="mb-2 flex flex-wrap gap-1.5">

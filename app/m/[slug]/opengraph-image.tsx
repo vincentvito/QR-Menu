@@ -5,16 +5,20 @@ import { getTheme } from '@/lib/menus/themes'
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 export const alt = 'Restaurant menu'
+// Cache the rendered PNG for an hour. Link-preview scrapers hammer the
+// same URL repeatedly; regenerating the same image from Prisma + Satori
+// on every hit is expensive and pointless when menu data hasn't changed.
+export const revalidate = 3600
 
 interface Props {
-  params: { slug: string }
+  params: Promise<{ slug: string }>
 }
 
 // Per-menu share card. Uses the restaurant's brand colors (with theme
 // fallback) so share previews feel like that specific restaurant, not a
 // generic QRmenucrafter card.
 export default async function MenuOpenGraphImage({ params }: Props) {
-  const { slug } = params
+  const { slug } = await params
   const menu = await getMenuBySlug(slug)
 
   // Fall back to the generic landing image when the slug is unknown.

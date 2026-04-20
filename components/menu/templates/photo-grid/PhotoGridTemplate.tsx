@@ -18,7 +18,6 @@ function PhotoGridBody({
   specials,
   specialsAnchorId,
   symbol,
-  disabledBadges,
   onOpenImage,
   preview,
 }: TemplateBodyProps) {
@@ -44,7 +43,6 @@ function PhotoGridBody({
                 key={item.id}
                 item={item}
                 symbol={symbol}
-                disabledBadges={disabledBadges}
                 onOpenImage={onOpenImage}
                 preview={preview}
               />
@@ -70,7 +68,6 @@ function PhotoGridBody({
                 key={item.id}
                 item={item}
                 symbol={symbol}
-                disabledBadges={disabledBadges}
                 onOpenImage={onOpenImage}
                 preview={preview}
               />
@@ -85,7 +82,6 @@ function PhotoGridBody({
 interface TileProps {
   item: TemplateItem
   symbol: string
-  disabledBadges: string[]
   onOpenImage: (src: string) => void
   preview?: boolean
 }
@@ -93,7 +89,6 @@ interface TileProps {
 const PhotoGridTile = memo(function PhotoGridTile({
   item,
   symbol,
-  disabledBadges,
   onOpenImage,
   preview,
 }: TileProps) {
@@ -154,7 +149,7 @@ const PhotoGridTile = memo(function PhotoGridTile({
         </div>
       )}
       <div className="mt-2.5 space-y-1">
-        <BadgeRow badges={item.badges} disabled={disabledBadges} />
+        <BadgeRow badges={item.badges} />
         <h3 className="text-[15px] font-semibold leading-tight tracking-[-0.01em]">
           {item.name}
         </h3>

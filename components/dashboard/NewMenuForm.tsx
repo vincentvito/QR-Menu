@@ -27,8 +27,6 @@ const ACCEPTED_MIME = [
   'application/pdf',
 ]
 const ACCEPT_ATTR = ACCEPTED_MIME.join(',')
-// Matches the server — Gemini inline data caps at ~20 MB per request.
-const MAX_FILE_BYTES = 20 * 1024 * 1024
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`
@@ -57,10 +55,6 @@ export function NewMenuForm() {
     }
     if (!ACCEPTED_MIME.includes(f.type)) {
       setError(t('errors.badType'))
-      return
-    }
-    if (f.size > MAX_FILE_BYTES) {
-      setError(t('errors.tooLarge'))
       return
     }
     setError('')
@@ -95,7 +89,9 @@ export function NewMenuForm() {
         setIsLoading(false)
         return
       }
-      startTransition(() => router.push(`/m/${data.slug}`))
+      // Route straight to the editor so the owner can review/tweak items
+      // before sharing. The public menu is one click away via "View public".
+      startTransition(() => router.push(`/dashboard/menus/${data.slug}/edit`))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Network error')
       setIsLoading(false)

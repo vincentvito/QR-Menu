@@ -16,7 +16,6 @@ function DefaultBody({
   specials,
   specialsAnchorId,
   symbol,
-  disabledBadges,
   onOpenImage,
   preview,
 }: TemplateBodyProps) {
@@ -42,7 +41,6 @@ function DefaultBody({
                 key={item.id}
                 item={item}
                 symbol={symbol}
-                disabledBadges={disabledBadges}
                 onOpenImage={onOpenImage}
                 preview={preview}
               />
@@ -68,7 +66,6 @@ function DefaultBody({
                 key={item.id}
                 item={item}
                 symbol={symbol}
-                disabledBadges={disabledBadges}
                 onOpenImage={onOpenImage}
                 preview={preview}
               />
@@ -83,7 +80,6 @@ function DefaultBody({
 interface DishCardProps {
   item: TemplateItem
   symbol: string
-  disabledBadges: string[]
   onOpenImage: (src: string) => void
   preview?: boolean
 }
@@ -91,7 +87,6 @@ interface DishCardProps {
 const DefaultDishCard = memo(function DefaultDishCard({
   item,
   symbol,
-  disabledBadges,
   onOpenImage,
   preview,
 }: DishCardProps) {
@@ -129,7 +124,7 @@ const DefaultDishCard = memo(function DefaultDishCard({
         )
       ) : null}
       <div className="min-w-0 flex-1">
-        <BadgeRow badges={item.badges} disabled={disabledBadges} />
+        <BadgeRow badges={item.badges} />
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
           <h3 className="min-w-0 text-[17px] font-semibold leading-tight tracking-[-0.01em]">
             {item.name}

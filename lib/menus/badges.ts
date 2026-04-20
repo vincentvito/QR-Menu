@@ -64,16 +64,10 @@ export function getBadge(key: string): BadgeDef | null {
   return isBadgeKey(key) ? BADGES[key] : null
 }
 
-// Given an org's disabled list and a dish's badge assignments, return the
-// badges to actually render — preserves the canonical BADGE_KEYS order so
-// "Best Seller" always precedes "Spicy" regardless of assignment order.
-export function visibleBadges(
-  assigned: string[],
-  disabled: string[] | null | undefined,
-): BadgeDef[] {
-  const disabledSet = new Set(disabled ?? [])
+// Given a dish's badge assignments, return the badges to render —
+// preserves the canonical BADGE_KEYS order so "Best Seller" always
+// precedes "Spicy" regardless of assignment order.
+export function visibleBadges(assigned: string[]): BadgeDef[] {
   const assignedSet = new Set(assigned)
-  return BADGE_KEYS.filter((k) => assignedSet.has(k) && !disabledSet.has(k)).map(
-    (k) => BADGES[k],
-  )
+  return BADGE_KEYS.filter((k) => assignedSet.has(k)).map((k) => BADGES[k])
 }

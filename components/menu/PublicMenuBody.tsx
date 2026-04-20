@@ -16,7 +16,6 @@ interface PublicMenuBodyProps {
   // client-side so we don't serialize the same dish twice.
   specialIds: string[]
   symbol: string
-  disabledBadges: string[]
   // Which template to render. Falls back to default if unknown.
   templateId: string
 }
@@ -31,7 +30,6 @@ export function PublicMenuBody({
   items,
   specialIds,
   symbol,
-  disabledBadges,
   templateId,
 }: PublicMenuBodyProps) {
   const t = useTranslations('MenuView')
@@ -163,7 +161,6 @@ export function PublicMenuBody({
             specials={visibleSpecials}
             specialsAnchorId={SPECIALS_ANCHOR_ID}
             symbol={symbol}
-            disabledBadges={disabledBadges}
             onOpenImage={setLightboxSrc}
           />
         )}
