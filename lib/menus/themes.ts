@@ -87,26 +87,31 @@ export const THEMES: ThemeDef[] = [
   {
     id: 'luxury',
     label: 'Luxury',
-    description: 'Antique gold on deep forest, served in Fraunces serif.',
+    description: 'Warm parchment with espresso text and gold price chips. Fraunces serif headings.',
     headingFontFamily: FONT_FRAUNCES,
     colors: {
-      background: '#F5EEDF',
-      foreground: '#1F2B20',
-      card: '#EAE0CC',
-      // Gold as the accent stays; pop is now a richer burgundy so price
-      // chips stand out from the ivory page instead of receding into the
-      // forest tone.
-      accent: '#C99B3E',
-      accentForeground: '#1F2B20',
-      accentDeep: '#A07A28',
-      pop: '#7C2E2A',
-      popForeground: '#F5EEDF',
-      popDeep: '#5C1F1C',
-      muted: '#EAE0CC',
-      mutedForeground: '#5C6856',
-      border: '#D6C9A8',
-      chip: '#D1A444',
-      chipForeground: '#1F2B20',
+      // Deeper warm parchment — clearly richer than Editorial's cream so
+      // the two themes read as genuinely different at a glance, not just
+      // a font swap.
+      background: '#EDE2C6',
+      foreground: '#24180E',
+      card: '#DFD0AE',
+      // Burgundy as the quiet accent — classic gold-and-wine pairing,
+      // much warmer next to the espresso text and gold price pill than a
+      // forest green that fought both of them.
+      accent: '#6B2025',
+      accentForeground: '#F4E9CD',
+      accentDeep: '#4A1319',
+      // Classic web gold for price chips — pure, saturated, unambiguously
+      // "gold" rather than olive. The espresso text pops against it.
+      pop: '#D4AF37',
+      popForeground: '#24180E',
+      popDeep: '#A8862C',
+      muted: '#DFD0AE',
+      mutedForeground: '#6B5E47',
+      border: '#B59D73',
+      chip: '#D4AF37',
+      chipForeground: '#24180E',
     },
   },
   {

@@ -23,6 +23,7 @@ const changelog = [
         type: 'changed' as const,
         items: [
           'Private dashboard routes (settings, menus, team, admin) now tell search engines not to index them — only your public menu pages, the landing, and the changelog are discoverable',
+          'Luxury theme repainted — deeper parchment page, espresso-brown text, and antique gold price chips. Now looks and feels clearly distinct from Editorial instead of just swapping the font',
         ],
       },
     ],

@@ -572,6 +572,7 @@ export function SettingsForm({
                 realData={templatePreviewData}
                 themeId={draft.theme}
                 seasonalOverlayId={draft.seasonalOverlay}
+                liveUrl={previewMenu.name ? previewMenu.url : null}
               />
             </div>
           </div>

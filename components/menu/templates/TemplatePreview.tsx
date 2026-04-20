@@ -39,6 +39,10 @@ interface TemplatePreviewProps {
   // owner picks new options in Settings.
   themeId?: string
   seasonalOverlayId?: string
+  // When set, clicking the mockup opens this URL (the live public menu)
+  // in a new tab. Also flips the cursor to pointer on hover so the
+  // interactive affordance is honest.
+  liveUrl?: string | null
 }
 
 // Renders the phone mockup with the chosen template inside its screen area.
@@ -52,6 +56,7 @@ export function TemplatePreview({
   realData,
   themeId,
   seasonalOverlayId = 'none',
+  liveUrl,
 }: TemplatePreviewProps) {
   const template = getTemplate(templateId)
   const theme = getTheme(themeId)
@@ -99,10 +104,25 @@ export function TemplatePreview({
   // accent/pop so the preview honors both layers live.
   const themedStyle = buildInlineStyle(theme, primaryColor, secondaryColor)
 
+  const clickable = Boolean(liveUrl)
+  const containerClass = clickable
+    ? 'group relative block w-full cursor-pointer transition-transform hover:scale-[1.01]'
+    : 'relative block w-full'
+  const Wrapper: React.ElementType = clickable ? 'a' : 'div'
+  const wrapperProps: Record<string, unknown> = clickable
+    ? {
+        href: liveUrl,
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        'aria-label': 'Open the live menu in a new tab',
+      }
+    : {}
+
   return (
-    <div
+    <Wrapper
+      {...wrapperProps}
       data-theme={theme.id}
-      className="relative w-full"
+      className={containerClass}
       style={{
         aspectRatio: `${TEMPLATE_PREVIEW_MOCKUP_SIZE.width} / ${TEMPLATE_PREVIEW_MOCKUP_SIZE.height}`,
         ...(themedStyle as React.CSSProperties),
@@ -146,6 +166,6 @@ export function TemplatePreview({
         loading="lazy"
         decoding="async"
       />
-    </div>
+    </Wrapper>
   )
 }
