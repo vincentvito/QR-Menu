@@ -698,7 +698,7 @@ function DraftItemForm({
           disabled={submitting}
           className="flex-1 text-[17px] font-semibold tracking-[-0.01em]"
         />
-        <div className="bg-foreground text-accent flex shrink-0 items-center rounded-full pl-3 pr-1 text-[13px] font-semibold">
+        <div className="bg-pop text-pop-foreground flex shrink-0 items-center rounded-full pl-3 pr-1 text-[13px] font-semibold">
           <span>{symbol}</span>
           <input
             type="text"
@@ -708,7 +708,7 @@ function DraftItemForm({
             value={priceInput}
             onChange={(e) => setPriceInput(e.target.value)}
             disabled={submitting}
-            className="placeholder:text-accent/60 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none focus:bg-background/10"
+            className="placeholder:text-pop-foreground/70 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none focus:bg-background/15"
           />
         </div>
       </div>
@@ -840,7 +840,7 @@ const ItemRow = memo(function ItemRow({
             }}
             className="border-transparent focus:border-foreground/30 focus:bg-card flex-1 rounded-md border bg-transparent px-2 py-1 text-[17px] font-semibold tracking-[-0.01em] outline-none"
           />
-          <div className="bg-foreground text-accent flex shrink-0 items-center rounded-full pl-3 pr-1 text-[13px] font-semibold">
+          <div className="bg-pop text-pop-foreground flex shrink-0 items-center rounded-full pl-3 pr-1 text-[13px] font-semibold">
             <span>{symbol}</span>
             <input
               type="text"
@@ -859,7 +859,7 @@ const ItemRow = memo(function ItemRow({
                   setLocalPrice(formatPriceInput(parsed))
                 }
               }}
-              className="w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none focus:bg-background/10"
+              className="placeholder:text-pop-foreground/70 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none focus:bg-background/15"
             />
           </div>
         </div>

@@ -611,7 +611,7 @@ function MenuPreview({ t }: { t: T }) {
                           `preview.menuCard.dishes.${d}.origin` as 'preview.menuCard.dishes.bourguignon.origin',
                         )}
                       </div>
-                      <div className="bg-foreground text-accent absolute bottom-2.5 right-2.5 rounded-full px-3 py-1.5 text-[15px] font-semibold">
+                      <div className="bg-pop text-pop-foreground absolute bottom-2.5 right-2.5 rounded-full px-3 py-1.5 text-[15px] font-semibold">
                         €
                         {t(
                           `preview.menuCard.dishes.${d}.price` as 'preview.menuCard.dishes.bourguignon.price',

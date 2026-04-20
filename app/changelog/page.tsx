@@ -17,7 +17,21 @@ const changelog = [
           '&ldquo;Enhance&rdquo; an existing photo — improves lighting, background, and framing while preserving the exact dish and plating',
           'Review panel shows before/after so you never lose your original by accident — keep the new one, keep the old one, or try again',
           'Preview the exact prompt being sent to the AI in a collapsible section before you generate — updates live as you tweak the extra direction',
-          'Generated images default to bright, overhead, Instagram-food-blog styling tuned for restaurant menus',
+          'Drinks (smoothies, cocktails, coffees, juices) are now shot front-on with studio lighting, condensation, and garnishes — plated food stays overhead',
+          'Success toast appears when an AI photo is ready, with a button that jumps back to the dish if you&apos;ve scrolled away',
+          'Generated and enhanced photos default to bright, appetite-forward styling — visible glisten, steam, caramelization, richer color — instead of a muted editorial look',
+        ],
+      },
+      {
+        type: 'changed' as const,
+        items: [
+          'Price chips switched from dark ink to persimmon so prices pop against the menu without fighting the dish names for attention',
+        ],
+      },
+      {
+        type: 'fixed' as const,
+        items: [
+          'Dish photos are now cleaned up from storage when you remove them or delete a dish — no more orphaned images lingering behind',
         ],
       },
     ],

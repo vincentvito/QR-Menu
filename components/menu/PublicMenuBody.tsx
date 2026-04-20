@@ -262,7 +262,7 @@ const DishCard = memo(function DishCard({
             {item.name}
           </h3>
           {item.price > 0 && (
-            <span className="bg-foreground text-accent shrink-0 rounded-full px-2.5 py-1 text-[13px] font-semibold tabular-nums">
+            <span className="bg-pop text-pop-foreground shrink-0 rounded-full px-2.5 py-1 text-[13px] font-semibold tabular-nums">
               {symbol}
               {formatPrice(item.price)}
             </span>
