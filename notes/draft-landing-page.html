@@ -1,288 +1,459 @@
 <!doctype html>
-<html lang="en"><head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MenuCraft - Digital QR Menus</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-</head>
-<body class="bg-[#FDFCFB] font-sans antialiased min-h-screen selection:bg-orange-100 selection:text-orange-900 text-stone-800" style="background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.015) 0px, rgba(0,0,0,0.015) 1px, transparent 1px, transparent 12px);">
-
+  </head>
+  <body
+    class="min-h-screen bg-[#FDFCFB] font-sans text-stone-800 antialiased selection:bg-orange-100 selection:text-orange-900"
+    style="
+      background-image: repeating-linear-gradient(
+        45deg,
+        rgba(0, 0, 0, 0.015) 0px,
+        rgba(0, 0, 0, 0.015) 1px,
+        transparent 1px,
+        transparent 12px
+      );
+    "
+  >
     <!-- Main Framed Container -->
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-20">
-        
-        <div class="relative border shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex flex-col bg-white border-stone-200">
-            
-            <!-- Frame Corner Brackets (L-Shapes) -->
-            <div class="absolute -top-[1px] -left-[1px] w-4 h-4 border-t border-l z-10 border-stone-400"></div>
-            <div class="absolute -top-[1px] -right-[1px] w-4 h-4 border-t border-r z-10 border-stone-400"></div>
-            <div class="absolute -bottom-[1px] -left-[1px] w-4 h-4 border-b border-l z-10 border-stone-400"></div>
-            <div class="absolute -bottom-[1px] -right-[1px] w-4 h-4 border-b border-r z-10 border-stone-400"></div>
+    <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12 md:py-20 lg:px-8">
+      <div
+        class="relative flex flex-col border border-stone-200 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)]"
+      >
+        <!-- Frame Corner Brackets (L-Shapes) -->
+        <div
+          class="absolute -top-[1px] -left-[1px] z-10 h-4 w-4 border-t border-l border-stone-400"
+        ></div>
+        <div
+          class="absolute -top-[1px] -right-[1px] z-10 h-4 w-4 border-t border-r border-stone-400"
+        ></div>
+        <div
+          class="absolute -bottom-[1px] -left-[1px] z-10 h-4 w-4 border-b border-l border-stone-400"
+        ></div>
+        <div
+          class="absolute -right-[1px] -bottom-[1px] z-10 h-4 w-4 border-r border-b border-stone-400"
+        ></div>
 
-            <!-- Header / Nav -->
-            <header class="flex items-center justify-between px-6 py-5 border-b backdrop-blur-md sticky top-0 z-40 border-stone-200 bg-white/80">
-                <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 rounded bg-gradient-to-tr flex items-center justify-center from-orange-200 to-red-200 text-stone-900">
-                        <iconify-icon icon="lucide:qr-code" class="text-sm"></iconify-icon>
-                    </div>
-                    <span class="text-lg tracking-tight font-medium text-stone-900">MenuCraft</span>
+        <!-- Header / Nav -->
+        <header
+          class="sticky top-0 z-40 flex items-center justify-between border-b border-stone-200 bg-white/80 px-6 py-5 backdrop-blur-md"
+        >
+          <div class="flex items-center gap-2">
+            <div
+              class="flex h-6 w-6 items-center justify-center rounded bg-gradient-to-tr from-orange-200 to-red-200 text-stone-900"
+            >
+              <iconify-icon icon="lucide:qr-code" class="text-sm"></iconify-icon>
+            </div>
+            <span class="text-lg font-medium tracking-tight text-stone-900">MenuCraft</span>
+          </div>
+          <nav class="hidden items-center gap-8 text-sm font-normal text-stone-500 md:flex">
+            <a href="#" class="transition-colors hover:text-stone-900">How it works</a>
+            <a href="#" class="transition-colors hover:text-stone-900">Examples</a>
+            <a href="#" class="transition-colors hover:text-stone-900">Pricing</a>
+          </nav>
+          <div>
+            <!-- Premium Gradient Border Button -->
+            <div
+              class="group relative cursor-pointer rounded-full bg-gradient-to-r from-stone-200 via-orange-200 to-red-200 p-[1px] transition-all duration-500 hover:from-orange-300 hover:to-red-300"
+            >
+              <button
+                class="block rounded-full bg-white px-5 py-2 text-sm font-normal text-stone-800 transition-colors group-hover:bg-stone-50/50"
+              >
+                Create Menu
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="grid min-h-[600px] grid-cols-1 border-b border-stone-200 lg:grid-cols-2">
+          <!-- Left: Typography & Copy -->
+          <div
+            class="masked-reveal-container relative flex flex-col justify-center overflow-hidden border-b border-stone-200 p-8 sm:p-12 lg:border-r lg:border-b-0 lg:p-16"
+          >
+            <!-- Subtle background element -->
+            <div
+              class="pointer-events-none absolute top-0 left-0 h-full w-full opacity-30"
+              style="
+                background-image: radial-gradient(
+                  circle at 0% 0%,
+                  rgba(254, 215, 170, 0.3) 0%,
+                  transparent 60%
+                );
+              "
+            ></div>
+
+            <div
+              class="mb-8 inline-flex w-fit items-center gap-2 rounded-full border border-stone-200 bg-stone-50 px-3 py-1.5"
+            >
+              <span class="relative h-2 w-2 rounded-full bg-orange-500">
+                <span
+                  class="absolute inset-0 animate-ping rounded-full bg-orange-500 opacity-50"
+                ></span>
+              </span>
+              <span class="text-xs font-normal tracking-widest text-stone-600 uppercase"
+                >New: PDF Auto-Convert</span
+              >
+            </div>
+
+            <!-- Masked Reveal Headline -->
+            <h1
+              class="mb-6 text-4xl leading-[1.1] font-medium tracking-tight text-stone-900 sm:text-5xl lg:text-6xl"
+            >
+              <span class="inline-block overflow-hidden pb-1"
+                ><span class="reveal-word inline-block translate-y-[110%] transform"
+                  >Turn</span
+                ></span
+              >
+              <span class="inline-block overflow-hidden pb-1"
+                ><span class="reveal-word inline-block translate-y-[110%] transform"
+                  >your</span
+                ></span
+              >
+              <span class="inline-block overflow-hidden pb-1"
+                ><span class="reveal-word inline-block translate-y-[110%] transform"
+                  >static</span
+                ></span
+              ><br />
+              <span class="inline-block overflow-hidden pb-1"
+                ><span class="reveal-word inline-block translate-y-[110%] transform"
+                  >menu</span
+                ></span
+              >
+              <span class="inline-block overflow-hidden pb-1"
+                ><span class="reveal-word inline-block translate-y-[110%] transform"
+                  >into</span
+                ></span
+              >
+              <span class="inline-block overflow-hidden pb-1"
+                ><span class="reveal-word inline-block translate-y-[110%] transform">a</span></span
+              >
+              <span
+                class="inline-block overflow-hidden bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text pb-1 text-transparent"
+                ><span class="reveal-word inline-block translate-y-[110%] transform"
+                  >digital</span
+                ></span
+              >
+              <span
+                class="inline-block overflow-hidden bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text pb-1 text-transparent"
+                ><span class="reveal-word inline-block translate-y-[110%] transform"
+                  >experience.</span
+                ></span
+              >
+            </h1>
+
+            <p
+              class="mb-10 max-w-md text-base leading-relaxed font-normal text-stone-500 sm:text-lg"
+            >
+              Upload a photo of your physical menu. We automatically extract the items and generate
+              a beautiful, mobile-optimized webpage and a custom QR code for your tables.
+            </p>
+
+            <div class="flex items-center gap-4">
+              <button
+                class="rounded-lg bg-stone-900 px-6 py-3 text-sm font-normal text-white shadow-sm transition-colors hover:bg-stone-800"
+              >
+                Get started free
+              </button>
+              <button
+                class="flex items-center gap-2 rounded-lg border border-stone-200 bg-white px-6 py-3 text-sm font-normal text-stone-700 transition-colors hover:bg-stone-50"
+              >
+                <iconify-icon icon="solar:scanner-line-duotone" class="text-lg"></iconify-icon>
+                View live demo
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: App UI Mockup (The Digital Menu) -->
+          <div
+            class="relative flex items-center justify-center overflow-hidden bg-[#FDFCFB] p-8 sm:p-12 lg:p-16"
+          >
+            <!-- Premium Framed UI Mockup -->
+            <div
+              class="relative z-10 w-full max-w-sm rounded-[2rem] bg-gradient-to-b from-stone-200 via-stone-100 to-stone-300 p-[1px] shadow-2xl"
+            >
+              <div
+                class="flex h-[640px] flex-col overflow-hidden rounded-[31px] border border-white bg-white"
+              >
+                <!-- App Header / Cover Image -->
+                <div class="relative h-40 flex-shrink-0 bg-stone-200">
+                  <img
+                    src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/d14dc069-558a-4c51-8aad-5cc237f9b61d_1600w.jpg"
+                    alt="Restaurant Vibe"
+                    class="h-full w-full object-cover opacity-90 mix-blend-multiply"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  <div class="absolute right-5 bottom-4 left-5 text-white">
+                    <h2 class="text-2xl font-medium tracking-tight">Maison Rustique</h2>
+                    <p class="mt-1 flex items-center gap-1 text-xs font-normal text-white/80">
+                      <iconify-icon icon="lucide:map"></iconify-icon> 12 Rue de la Paix, Paris
+                    </p>
+                  </div>
                 </div>
-                <nav class="hidden md:flex items-center gap-8 text-sm text-stone-500 font-normal">
-                    <a href="#" class="transition-colors hover:text-stone-900">How it works</a>
-                    <a href="#" class="transition-colors hover:text-stone-900">Examples</a>
-                    <a href="#" class="transition-colors hover:text-stone-900">Pricing</a>
-                </nav>
-                <div>
-                    <!-- Premium Gradient Border Button -->
-                    <div class="relative rounded-full p-[1px] bg-gradient-to-r transition-all duration-500 cursor-pointer group from-stone-200 via-orange-200 to-red-200 hover:from-orange-300 hover:to-red-300">
-                        <button class="block rounded-full px-5 py-2 text-sm font-normal group-hover:bg-stone-50/50 transition-colors bg-white text-stone-800">
-                            Create Menu
-                        </button>
-                    </div>
+
+                <!-- Categories (Horizontal Scroll) -->
+                <div
+                  class="flex-shrink-0 overflow-x-auto border-b border-stone-100 bg-white px-5 pt-4 pb-3 whitespace-nowrap"
+                  style="scrollbar-width: none; -ms-overflow-style: none"
+                >
+                  <div class="flex gap-2">
+                    <button
+                      class="rounded-full bg-stone-900 px-4 py-1.5 text-xs font-medium text-white shadow-sm"
+                    >
+                      Starters
+                    </button>
+                    <button
+                      class="rounded-full border border-stone-200/50 bg-stone-100 px-4 py-1.5 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-200"
+                    >
+                      Mains
+                    </button>
+                    <button
+                      class="rounded-full border border-stone-200/50 bg-stone-100 px-4 py-1.5 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-200"
+                    >
+                      Desserts
+                    </button>
+                    <button
+                      class="rounded-full border border-stone-200/50 bg-stone-100 px-4 py-1.5 text-xs font-medium text-stone-600 transition-colors hover:bg-stone-200"
+                    >
+                      Wine List
+                    </button>
+                  </div>
                 </div>
-            </header>
 
-            <!-- Hero Section -->
-            <section class="grid grid-cols-1 lg:grid-cols-2 min-h-[600px] border-b border-stone-200">
-                
-                <!-- Left: Typography & Copy -->
-                <div class="p-8 sm:p-12 lg:p-16 flex flex-col justify-center border-b lg:border-b-0 lg:border-r relative overflow-hidden masked-reveal-container border-stone-200">
-                    <!-- Subtle background element -->
-                    <div class="absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none" style="background-image: radial-gradient(circle at 0% 0%, rgba(254,215,170,0.3) 0%, transparent 60%);"></div>
+                <!-- Menu Items List -->
+                <div
+                  class="flex-1 overflow-y-auto bg-white p-5"
+                  style="scrollbar-width: none; -ms-overflow-style: none"
+                >
+                  <div class="mb-5 flex items-center gap-2">
+                    <div class="h-[1px] flex-1 bg-stone-100"></div>
+                    <span class="text-xs font-medium tracking-widest text-stone-400 uppercase"
+                      >Starters</span
+                    >
+                    <div class="h-[1px] flex-1 bg-stone-100"></div>
+                  </div>
 
-                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border w-fit mb-8 border-stone-200 bg-stone-50">
-                        <span class="w-2 h-2 rounded-full bg-orange-500 relative">
-                            <span class="absolute inset-0 rounded-full bg-orange-500 animate-ping opacity-50"></span>
+                  <div class="space-y-6">
+                    <!-- Item 1 -->
+                    <div class="group">
+                      <div class="mb-1 flex items-baseline justify-between gap-4">
+                        <h3 class="text-sm font-medium tracking-tight text-stone-900">
+                          Soupe à l'Oignon
+                        </h3>
+                        <div
+                          class="relative -top-1 flex-1 border-b border-dotted border-stone-300"
+                        ></div>
+                        <span class="text-sm font-medium text-stone-900">$12</span>
+                      </div>
+                      <p class="pr-8 text-xs leading-relaxed font-normal text-stone-500">
+                        Classic caramelized onion broth, gruyère cheese crouton, fresh thyme.
+                      </p>
+                    </div>
+
+                    <!-- Item 2 -->
+                    <div class="group">
+                      <div class="mb-1 flex items-baseline justify-between gap-4">
+                        <h3
+                          class="flex items-center gap-1.5 text-sm font-medium tracking-tight text-stone-900"
+                        >
+                          Escargots de Bourgogne
+                          <span
+                            class="rounded bg-orange-100 px-1.5 py-0.5 text-[9px] font-medium text-orange-700"
+                            >Chef's Pick</span
+                          >
+                        </h3>
+                        <div
+                          class="relative -top-1 flex-1 border-b border-dotted border-stone-300"
+                        ></div>
+                        <span class="text-sm font-medium text-stone-900">$16</span>
+                      </div>
+                      <p class="pr-8 text-xs leading-relaxed font-normal text-stone-500">
+                        Six wild Burgundy snails baked in rich garlic and parsley herb butter.
+                      </p>
+                    </div>
+
+                    <!-- Item 3 -->
+                    <div class="group">
+                      <div class="mb-1 flex items-baseline justify-between gap-4">
+                        <h3 class="text-sm font-medium tracking-tight text-stone-900">
+                          Salade Lyonnaise
+                        </h3>
+                        <div
+                          class="relative -top-1 flex-1 border-b border-dotted border-stone-300"
+                        ></div>
+                        <span class="text-sm font-medium text-stone-900">$14</span>
+                      </div>
+                      <p class="pr-8 text-xs leading-relaxed font-normal text-stone-500">
+                        Frisée lettuce, warm bacon lardons, soft poached egg, Dijon mustard
+                        vinaigrette.
+                      </p>
+                      <div class="mt-2 flex gap-1">
+                        <span
+                          class="inline-flex h-5 w-5 items-center justify-center rounded-full bg-stone-100 text-stone-400"
+                          title="Gluten Free"
+                        >
+                          <iconify-icon icon="lucide:leaf" class="text-[10px]"></iconify-icon>
                         </span>
-                        <span class="text-xs font-normal uppercase tracking-widest text-stone-600">New: PDF Auto-Convert</span>
+                      </div>
                     </div>
 
-                    <!-- Masked Reveal Headline -->
-                    <h1 class="text-4xl sm:text-5xl lg:text-6xl tracking-tight font-medium mb-6 leading-[1.1] text-stone-900">
-                        <span class="inline-block overflow-hidden pb-1"><span class="reveal-word inline-block transform translate-y-[110%]">Turn</span></span>
-                        <span class="inline-block overflow-hidden pb-1"><span class="reveal-word inline-block transform translate-y-[110%]">your</span></span>
-                        <span class="inline-block overflow-hidden pb-1"><span class="reveal-word inline-block transform translate-y-[110%]">static</span></span><br>
-                        <span class="inline-block overflow-hidden pb-1"><span class="reveal-word inline-block transform translate-y-[110%]">menu</span></span>
-                        <span class="inline-block overflow-hidden pb-1"><span class="reveal-word inline-block transform translate-y-[110%]">into</span></span>
-                        <span class="inline-block overflow-hidden pb-1"><span class="reveal-word inline-block transform translate-y-[110%]">a</span></span>
-                        <span class="inline-block overflow-hidden pb-1 text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600"><span class="reveal-word inline-block transform translate-y-[110%]">digital</span></span>
-                        <span class="inline-block overflow-hidden pb-1 text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-600"><span class="reveal-word inline-block transform translate-y-[110%]">experience.</span></span>
-                    </h1>
-
-                    <p class="text-base sm:text-lg text-stone-500 font-normal mb-10 max-w-md leading-relaxed">
-                        Upload a photo of your physical menu. We automatically extract the items and generate a beautiful, mobile-optimized webpage and a custom QR code for your tables.
-                    </p>
-
-                    <div class="flex items-center gap-4">
-                        <button class="px-6 py-3 rounded-lg text-sm font-normal transition-colors shadow-sm bg-stone-900 text-white hover:bg-stone-800">
-                            Get started free
-                        </button>
-                        <button class="px-6 py-3 rounded-lg border text-sm font-normal transition-colors flex items-center gap-2 bg-white border-stone-200 text-stone-700 hover:bg-stone-50">
-                            <iconify-icon icon="solar:scanner-line-duotone" class="text-lg"></iconify-icon>
-                            View live demo
-                        </button>
+                    <!-- Item 4 -->
+                    <div class="group">
+                      <div class="mb-1 flex items-baseline justify-between gap-4">
+                        <h3 class="text-sm font-medium tracking-tight text-stone-900">
+                          Steak Tartare
+                        </h3>
+                        <div
+                          class="relative -top-1 flex-1 border-b border-dotted border-stone-300"
+                        ></div>
+                        <span class="text-sm font-medium text-stone-900">$18</span>
+                      </div>
+                      <p class="pr-8 text-xs leading-relaxed font-normal text-stone-500">
+                        Hand-cut beef filet, capers, shallots, egg yolk, served with crostini.
+                      </p>
                     </div>
+                  </div>
                 </div>
 
-                <!-- Right: App UI Mockup (The Digital Menu) -->
-                <div class="p-8 sm:p-12 lg:p-16 flex items-center justify-center bg-[#FDFCFB] relative overflow-hidden">
-                    
-                    <!-- Premium Framed UI Mockup -->
-                    <div class="w-full max-w-sm rounded-[2rem] p-[1px] bg-gradient-to-b shadow-2xl relative z-10 from-stone-200 via-stone-100 to-stone-300">
-                        <div class="rounded-[31px] overflow-hidden flex flex-col h-[640px] border bg-white border-white">
-                            
-                            <!-- App Header / Cover Image -->
-                            <div class="h-40 relative flex-shrink-0 bg-stone-200">
-                                <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/d14dc069-558a-4c51-8aad-5cc237f9b61d_1600w.jpg" alt="Restaurant Vibe" class="w-full h-full object-cover opacity-90 mix-blend-multiply">
-                                <div class="absolute inset-0 bg-gradient-to-t to-transparent from-black/60"></div>
-                                <div class="absolute bottom-4 left-5 right-5 text-white">
-                                    <h2 class="text-2xl font-medium tracking-tight">Maison Rustique</h2>
-                                    <p class="text-xs font-normal mt-1 flex items-center gap-1 text-white/80">
-                                        <iconify-icon icon="lucide:map"></iconify-icon> 12 Rue de la Paix, Paris
-                                    </p>
-                                </div>
-                            </div>
-
-                            <!-- Categories (Horizontal Scroll) -->
-                            <div class="border-b flex-shrink-0 pt-4 pb-3 px-5 overflow-x-auto whitespace-nowrap bg-white border-stone-100" style="scrollbar-width: none; -ms-overflow-style: none;">
-                                <div class="flex gap-2">
-                                    <button class="px-4 py-1.5 text-xs font-medium rounded-full shadow-sm bg-stone-900 text-white">Starters</button>
-                                    <button class="px-4 py-1.5 text-xs font-medium rounded-full border transition-colors bg-stone-100 text-stone-600 border-stone-200/50 hover:bg-stone-200">Mains</button>
-                                    <button class="px-4 py-1.5 text-xs font-medium rounded-full border transition-colors bg-stone-100 text-stone-600 border-stone-200/50 hover:bg-stone-200">Desserts</button>
-                                    <button class="px-4 py-1.5 text-xs font-medium rounded-full border transition-colors bg-stone-100 text-stone-600 border-stone-200/50 hover:bg-stone-200">Wine List</button>
-                                </div>
-                            </div>
-
-                            <!-- Menu Items List -->
-                            <div class="flex-1 p-5 overflow-y-auto bg-white" style="scrollbar-width: none; -ms-overflow-style: none;">
-                                
-                                <div class="flex items-center gap-2 mb-5">
-                                    <div class="h-[1px] flex-1 bg-stone-100"></div>
-                                    <span class="text-xs font-medium uppercase tracking-widest text-stone-400">Starters</span>
-                                    <div class="h-[1px] flex-1 bg-stone-100"></div>
-                                </div>
-
-                                <div class="space-y-6">
-                                    <!-- Item 1 -->
-                                    <div class="group">
-                                        <div class="flex justify-between items-baseline gap-4 mb-1">
-                                            <h3 class="text-sm font-medium tracking-tight text-stone-900">Soupe à l'Oignon</h3>
-                                            <div class="flex-1 border-b border-dotted relative -top-1 border-stone-300"></div>
-                                            <span class="text-sm font-medium text-stone-900">$12</span>
-                                        </div>
-                                        <p class="text-xs text-stone-500 font-normal leading-relaxed pr-8">
-                                            Classic caramelized onion broth, gruyère cheese crouton, fresh thyme.
-                                        </p>
-                                    </div>
-
-                                    <!-- Item 2 -->
-                                    <div class="group">
-                                        <div class="flex justify-between items-baseline gap-4 mb-1">
-                                            <h3 class="text-sm font-medium tracking-tight flex items-center gap-1.5 text-stone-900">
-                                                Escargots de Bourgogne
-                                                <span class="text-[9px] px-1.5 py-0.5 rounded font-medium bg-orange-100 text-orange-700">Chef's Pick</span>
-                                            </h3>
-                                            <div class="flex-1 border-b border-dotted relative -top-1 border-stone-300"></div>
-                                            <span class="text-sm font-medium text-stone-900">$16</span>
-                                        </div>
-                                        <p class="text-xs text-stone-500 font-normal leading-relaxed pr-8">
-                                            Six wild Burgundy snails baked in rich garlic and parsley herb butter.
-                                        </p>
-                                    </div>
-
-                                    <!-- Item 3 -->
-                                    <div class="group">
-                                        <div class="flex justify-between items-baseline gap-4 mb-1">
-                                            <h3 class="text-sm font-medium tracking-tight text-stone-900">Salade Lyonnaise</h3>
-                                            <div class="flex-1 border-b border-dotted relative -top-1 border-stone-300"></div>
-                                            <span class="text-sm font-medium text-stone-900">$14</span>
-                                        </div>
-                                        <p class="text-xs text-stone-500 font-normal leading-relaxed pr-8">
-                                            Frisée lettuce, warm bacon lardons, soft poached egg, Dijon mustard vinaigrette.
-                                        </p>
-                                        <div class="mt-2 flex gap-1">
-                                            <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-stone-100 text-stone-400" title="Gluten Free">
-                                                <iconify-icon icon="lucide:leaf" class="text-[10px]"></iconify-icon>
-                                            </span>
-                                        </div>
-                                    </div>
-                                    
-                                     <!-- Item 4 -->
-                                    <div class="group">
-                                        <div class="flex justify-between items-baseline gap-4 mb-1">
-                                            <h3 class="text-sm font-medium tracking-tight text-stone-900">Steak Tartare</h3>
-                                            <div class="flex-1 border-b border-dotted relative -top-1 border-stone-300"></div>
-                                            <span class="text-sm font-medium text-stone-900">$18</span>
-                                        </div>
-                                        <p class="text-xs text-stone-500 font-normal leading-relaxed pr-8">
-                                            Hand-cut beef filet, capers, shallots, egg yolk, served with crostini.
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Floating Action -->
-                            <div class="absolute bottom-6 right-6">
-                                <button class="w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-105 bg-orange-600 text-white hover:bg-orange-700">
-                                    <iconify-icon icon="lucide:bell" class="text-xl"></iconify-icon>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Decorative ambient background -->
-                    <div class="absolute inset-0 z-0 opacity-20 pointer-events-none overflow-hidden flex items-center justify-center">
-                         <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/bfef5098-c30f-4cd9-b4ac-04b2673ab943_1600w.jpg" alt="" class="w-full h-full object-cover blur-3xl scale-125">
-                    </div>
+                <!-- Floating Action -->
+                <div class="absolute right-6 bottom-6">
+                  <button
+                    class="flex h-12 w-12 items-center justify-center rounded-full bg-orange-600 text-white shadow-lg transition-transform hover:scale-105 hover:bg-orange-700"
+                  >
+                    <iconify-icon icon="lucide:bell" class="text-xl"></iconify-icon>
+                  </button>
                 </div>
-            </section>
+              </div>
+            </div>
 
-            <!-- Features Grid Section -->
-            <section class="grid grid-cols-1 md:grid-cols-3 border-b border-stone-200 bg-white">
-                <div class="p-8 md:p-10 border-b md:border-b-0 md:border-r border-stone-200">
-                    <div class="w-10 h-10 rounded-lg border flex items-center justify-center mb-6 bg-stone-50 border-stone-200 text-stone-700">
-                        <iconify-icon icon="solar:magic-stick-3-line-duotone" class="text-xl"></iconify-icon>
-                    </div>
-                    <h3 class="text-lg font-medium tracking-tight mb-2 text-stone-900">AI Menu Extraction</h3>
-                    <p class="text-sm text-stone-500 font-normal leading-relaxed">
-                        Skip the manual data entry. Upload a photo or PDF, and our system automatically structures your dishes, descriptions, and prices.
-                    </p>
-                </div>
-                <div class="p-8 md:p-10 border-b md:border-b-0 md:border-r border-stone-200">
-                    <div class="w-10 h-10 rounded-lg border flex items-center justify-center mb-6 bg-stone-50 border-stone-200 text-stone-700">
-                        <iconify-icon icon="lucide:smartphone" class="text-xl"></iconify-icon>
-                    </div>
-                    <h3 class="text-lg font-medium tracking-tight mb-2 text-stone-900">Real-time Edits</h3>
-                    <p class="text-sm text-stone-500 font-normal leading-relaxed">
-                        86'd an item? Change the price instantly from your dashboard. Your printed QR codes never need to change.
-                    </p>
-                </div>
-                <div class="p-8 md:p-10">
-                    <div class="w-10 h-10 rounded-lg border flex items-center justify-center mb-6 bg-stone-50 border-stone-200 text-stone-700">
-                        <iconify-icon icon="lucide:palette" class="text-xl"></iconify-icon>
-                    </div>
-                    <h3 class="text-lg font-medium tracking-tight mb-2 text-stone-900">Branded Aesthetics</h3>
-                    <p class="text-sm text-stone-500 font-normal leading-relaxed">
-                        Customize colors, fonts, and layouts to match your restaurant's interior design and brand identity perfectly.
-                    </p>
-                </div>
-            </section>
+            <!-- Decorative ambient background -->
+            <div
+              class="pointer-events-none absolute inset-0 z-0 flex items-center justify-center overflow-hidden opacity-20"
+            >
+              <img
+                src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/bfef5098-c30f-4cd9-b4ac-04b2673ab943_1600w.jpg"
+                alt=""
+                class="h-full w-full scale-125 object-cover blur-3xl"
+              />
+            </div>
+          </div>
+        </section>
 
-            <!-- Testimonial / Story Section -->
-            <section class="grid grid-cols-1 lg:grid-cols-5 border-b border-stone-200">
-                <div class="lg:col-span-2 border-b lg:border-b-0 lg:border-r p-0 relative h-64 lg:h-auto overflow-hidden border-stone-200 bg-stone-100">
-                    <!-- Image from Aura Assets -->
-                    <img src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/2f563338-39fa-47ea-9761-658d4f3f84db_1600w.jpg" alt="Smiling restaurant owner" class="absolute inset-0 w-full h-full object-cover object-center grayscale hover:grayscale-0 transition-all duration-700">
-                </div>
-                <div class="lg:col-span-3 p-8 sm:p-12 lg:p-16 flex flex-col justify-center bg-white">
-                    <iconify-icon icon="lucide:quote" class="text-3xl mb-6 text-stone-300"></iconify-icon>
-                    <p class="text-xl sm:text-2xl font-medium tracking-tight leading-snug mb-8 text-stone-900">
-                        "Switching from clunky PDFs to this responsive platform increased our dessert and cocktail orders by 18%. Customers actually enjoy browsing the menu on their phones now."
-                    </p>
-                    <div>
-                        <p class="text-sm font-medium text-stone-900">Marcus Chen</p>
-                        <p class="text-xs font-normal text-stone-500">Owner, The Daily Catch</p>
-                    </div>
-                </div>
-            </section>
+        <!-- Features Grid Section -->
+        <section class="grid grid-cols-1 border-b border-stone-200 bg-white md:grid-cols-3">
+          <div class="border-b border-stone-200 p-8 md:border-r md:border-b-0 md:p-10">
+            <div
+              class="mb-6 flex h-10 w-10 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-stone-700"
+            >
+              <iconify-icon icon="solar:magic-stick-3-line-duotone" class="text-xl"></iconify-icon>
+            </div>
+            <h3 class="mb-2 text-lg font-medium tracking-tight text-stone-900">
+              AI Menu Extraction
+            </h3>
+            <p class="text-sm leading-relaxed font-normal text-stone-500">
+              Skip the manual data entry. Upload a photo or PDF, and our system automatically
+              structures your dishes, descriptions, and prices.
+            </p>
+          </div>
+          <div class="border-b border-stone-200 p-8 md:border-r md:border-b-0 md:p-10">
+            <div
+              class="mb-6 flex h-10 w-10 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-stone-700"
+            >
+              <iconify-icon icon="lucide:smartphone" class="text-xl"></iconify-icon>
+            </div>
+            <h3 class="mb-2 text-lg font-medium tracking-tight text-stone-900">Real-time Edits</h3>
+            <p class="text-sm leading-relaxed font-normal text-stone-500">
+              86'd an item? Change the price instantly from your dashboard. Your printed QR codes
+              never need to change.
+            </p>
+          </div>
+          <div class="p-8 md:p-10">
+            <div
+              class="mb-6 flex h-10 w-10 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-stone-700"
+            >
+              <iconify-icon icon="lucide:palette" class="text-xl"></iconify-icon>
+            </div>
+            <h3 class="mb-2 text-lg font-medium tracking-tight text-stone-900">
+              Branded Aesthetics
+            </h3>
+            <p class="text-sm leading-relaxed font-normal text-stone-500">
+              Customize colors, fonts, and layouts to match your restaurant's interior design and
+              brand identity perfectly.
+            </p>
+          </div>
+        </section>
 
-            <!-- Footer -->
-            <footer class="p-8 sm:p-12 flex flex-col sm:flex-row items-center justify-between gap-4 bg-[#FDFCFB]">
-                <div class="flex items-center gap-2">
-                    <div class="w-5 h-5 rounded flex items-center justify-center bg-stone-200 text-stone-600">
-                        <iconify-icon icon="lucide:qr-code" class="text-xs"></iconify-icon>
-                    </div>
-                    <span class="text-sm font-medium text-stone-900">MenuCraft</span>
-                </div>
-                <div class="text-xs text-stone-500 font-normal">
-                    © 2024 MenuCraft Technologies. Beautiful menus, structured data.
-                </div>
-            </footer>
+        <!-- Testimonial / Story Section -->
+        <section class="grid grid-cols-1 border-b border-stone-200 lg:grid-cols-5">
+          <div
+            class="relative h-64 overflow-hidden border-b border-stone-200 bg-stone-100 p-0 lg:col-span-2 lg:h-auto lg:border-r lg:border-b-0"
+          >
+            <!-- Image from Aura Assets -->
+            <img
+              src="https://hoirqrkdgbmvpwutwuwj.supabase.co/storage/v1/object/public/assets/assets/2f563338-39fa-47ea-9761-658d4f3f84db_1600w.jpg"
+              alt="Smiling restaurant owner"
+              class="absolute inset-0 h-full w-full object-cover object-center grayscale transition-all duration-700 hover:grayscale-0"
+            />
+          </div>
+          <div class="flex flex-col justify-center bg-white p-8 sm:p-12 lg:col-span-3 lg:p-16">
+            <iconify-icon icon="lucide:quote" class="mb-6 text-3xl text-stone-300"></iconify-icon>
+            <p
+              class="mb-8 text-xl leading-snug font-medium tracking-tight text-stone-900 sm:text-2xl"
+            >
+              "Switching from clunky PDFs to this responsive platform increased our dessert and
+              cocktail orders by 18%. Customers actually enjoy browsing the menu on their phones
+              now."
+            </p>
+            <div>
+              <p class="text-sm font-medium text-stone-900">Marcus Chen</p>
+              <p class="text-xs font-normal text-stone-500">Owner, The Daily Catch</p>
+            </div>
+          </div>
+        </section>
 
-        </div>
+        <!-- Footer -->
+        <footer
+          class="flex flex-col items-center justify-between gap-4 bg-[#FDFCFB] p-8 sm:flex-row sm:p-12"
+        >
+          <div class="flex items-center gap-2">
+            <div
+              class="flex h-5 w-5 items-center justify-center rounded bg-stone-200 text-stone-600"
+            >
+              <iconify-icon icon="lucide:qr-code" class="text-xs"></iconify-icon>
+            </div>
+            <span class="text-sm font-medium text-stone-900">MenuCraft</span>
+          </div>
+          <div class="text-xs font-normal text-stone-500">
+            © 2024 MenuCraft Technologies. Beautiful menus, structured data.
+          </div>
+        </footer>
+      </div>
     </main>
 
     <!-- GSAP Animation Script -->
     <script>
-        document.addEventListener("DOMContentLoaded", () => {
-            gsap.registerPlugin(ScrollTrigger);
-            
-            // Masked word reveal
-            gsap.to(".reveal-word", {
-                y: "0%",
-                duration: 1.2,
-                ease: "power4.out",
-                stagger: 0.08,
-                scrollTrigger: {
-                    trigger: ".masked-reveal-container",
-                    start: "top 80%",
-                    toggleActions: "play none none none"
-                }
-            });
-        });
+      document.addEventListener('DOMContentLoaded', () => {
+        gsap.registerPlugin(ScrollTrigger)
+
+        // Masked word reveal
+        gsap.to('.reveal-word', {
+          y: '0%',
+          duration: 1.2,
+          ease: 'power4.out',
+          stagger: 0.08,
+          scrollTrigger: {
+            trigger: '.masked-reveal-container',
+            start: 'top 80%',
+            toggleActions: 'play none none none',
+          },
+        })
+      })
     </script>
-
-</body></html>
-
+  </body>
+</html>

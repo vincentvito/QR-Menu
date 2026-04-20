@@ -106,11 +106,17 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     } else if (typeof body.specialUntil === 'string') {
       const d = new Date(body.specialUntil)
       if (Number.isNaN(d.getTime())) {
-        return NextResponse.json({ error: 'specialUntil must be an ISO date string' }, { status: 400 })
+        return NextResponse.json(
+          { error: 'specialUntil must be an ISO date string' },
+          { status: 400 },
+        )
       }
       updates.specialUntil = d
     } else {
-      return NextResponse.json({ error: 'specialUntil must be ISO string or null' }, { status: 400 })
+      return NextResponse.json(
+        { error: 'specialUntil must be ISO string or null' },
+        { status: 400 },
+      )
     }
   }
   if (Object.keys(updates).length === 0) {

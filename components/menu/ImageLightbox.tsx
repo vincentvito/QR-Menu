@@ -40,7 +40,7 @@ export function ImageLightbox({ src, onClose }: ImageLightboxProps) {
       aria-modal="true"
       aria-label="Dish photo"
       onClick={onClose}
-      className="bg-foreground/85 fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 p-4 backdrop-blur-sm animate-in fade-in-0 duration-150"
+      className="bg-foreground/85 animate-in fade-in-0 fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 p-4 backdrop-blur-sm duration-150"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img

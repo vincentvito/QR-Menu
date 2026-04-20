@@ -3,11 +3,7 @@ import { headers } from 'next/headers'
 import { randomBytes } from 'node:crypto'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
-import {
-  extFromMimeType,
-  keyForMenuItemImage,
-  uploadBuffer,
-} from '@/lib/storage/r2'
+import { extFromMimeType, keyForMenuItemImage, uploadBuffer } from '@/lib/storage/r2'
 
 export const runtime = 'nodejs'
 
@@ -47,10 +43,7 @@ export async function POST(request: Request) {
     )
   }
   if (file.size > MAX_BYTES) {
-    return NextResponse.json(
-      { error: 'Photo must be under 5 MB' },
-      { status: 413 },
-    )
+    return NextResponse.json({ error: 'Photo must be under 5 MB' }, { status: 413 })
   }
 
   // Authorize: the dish must belong to a menu in an org the viewer is a

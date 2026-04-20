@@ -4,21 +4,11 @@ import { randomBytes } from 'node:crypto'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { getActiveOrganization } from '@/lib/organizations/get-active-org'
-import {
-  extFromMimeType,
-  keyForOrgLogo,
-  keyForUserLogo,
-  uploadBuffer,
-} from '@/lib/storage/r2'
+import { extFromMimeType, keyForOrgLogo, keyForUserLogo, uploadBuffer } from '@/lib/storage/r2'
 
 export const runtime = 'nodejs'
 
-const ALLOWED_MIME = new Set([
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/svg+xml',
-])
+const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'])
 // 2 MB cap — logos are small. Bigger files go back as 413.
 const MAX_BYTES = 2 * 1024 * 1024
 
@@ -65,18 +55,13 @@ export async function POST(request: Request) {
     )
   }
   if (file.size > MAX_BYTES) {
-    return NextResponse.json(
-      { error: 'Logo must be under 2 MB' },
-      { status: 413 },
-    )
+    return NextResponse.json({ error: 'Logo must be under 2 MB' }, { status: 413 })
   }
 
   const buffer = Buffer.from(await file.arrayBuffer())
   const ext = extFromMimeType(file.type)
   const stamp = randomBytes(4).toString('hex')
-  const key = org
-    ? keyForOrgLogo(org.id, ext, stamp)
-    : keyForUserLogo(session.user.id, ext, stamp)
+  const key = org ? keyForOrgLogo(org.id, ext, stamp) : keyForUserLogo(session.user.id, ext, stamp)
 
   try {
     const { url } = await uploadBuffer({

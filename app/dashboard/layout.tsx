@@ -5,10 +5,7 @@ import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
 import { ImpersonationBanner } from '@/components/dashboard/ImpersonationBanner'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [{ session, org }, cookieStore] = await Promise.all([
-    getDashboardContext(),
-    cookies(),
-  ])
+  const [{ session, org }, cookieStore] = await Promise.all([getDashboardContext(), cookies()])
 
   // Read persisted sidebar state so the first paint matches the user's last
   // choice — avoids a flash where the sidebar toggles after hydration.

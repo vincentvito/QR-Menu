@@ -4,17 +4,17 @@ A production-ready Next.js starter template with authentication, database, and i
 
 ## Tech Stack
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| [Next.js](https://nextjs.org) | 16.1.6 | React framework with App Router |
-| [React](https://react.dev) | 19.2.3 | UI library |
-| [TypeScript](https://www.typescriptlang.org) | 5.x | Type safety |
-| [Tailwind CSS](https://tailwindcss.com) | 4.x | Styling |
-| [Prisma](https://www.prisma.io) | 7.3.0 | Database ORM |
-| [Better Auth](https://www.better-auth.com) | 1.4.18 | Authentication |
-| [next-intl](https://next-intl.dev) | 4.8.1 | Internationalization |
-| [shadcn/ui](https://ui.shadcn.com) | - | UI components (Radix UI based) |
-| [Lucide React](https://lucide.dev) | 0.563.0 | Icons |
+| Technology                                   | Version | Purpose                         |
+| -------------------------------------------- | ------- | ------------------------------- |
+| [Next.js](https://nextjs.org)                | 16.1.6  | React framework with App Router |
+| [React](https://react.dev)                   | 19.2.3  | UI library                      |
+| [TypeScript](https://www.typescriptlang.org) | 5.x     | Type safety                     |
+| [Tailwind CSS](https://tailwindcss.com)      | 4.x     | Styling                         |
+| [Prisma](https://www.prisma.io)              | 7.3.0   | Database ORM                    |
+| [Better Auth](https://www.better-auth.com)   | 1.4.18  | Authentication                  |
+| [next-intl](https://next-intl.dev)           | 4.8.1   | Internationalization            |
+| [shadcn/ui](https://ui.shadcn.com)           | -       | UI components (Radix UI based)  |
+| [Lucide React](https://lucide.dev)           | 0.563.0 | Icons                           |
 
 ## Features
 
@@ -121,6 +121,7 @@ To add more social providers, update `lib/auth.ts`.
 Languages are managed via JSON files in `/messages`. The current locale is stored in a cookie.
 
 To add a new language:
+
 1. Create `messages/{locale}.json`
 2. Update the language switcher component
 

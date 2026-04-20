@@ -44,10 +44,7 @@ export function ProfileForm({ initial }: ProfileFormProps) {
   }
 
   return (
-    <form
-      onSubmit={save}
-      className="border-cream-line bg-card space-y-5 rounded-2xl border p-8"
-    >
+    <form onSubmit={save} className="border-cream-line bg-card space-y-5 rounded-2xl border p-8">
       <div className="space-y-2">
         <Label htmlFor="profile-name">Display name</Label>
         <Input
@@ -58,9 +55,7 @@ export function ProfileForm({ initial }: ProfileFormProps) {
           placeholder="Your name"
           disabled={saving}
         />
-        <p className="text-muted-foreground text-xs">
-          Shown to your teammates and in the sidebar.
-        </p>
+        <p className="text-muted-foreground text-xs">Shown to your teammates and in the sidebar.</p>
       </div>
 
       <div className="space-y-2">

@@ -34,8 +34,7 @@ export interface ThemeDef {
 const FONT_SANS = "'DM Sans', ui-sans-serif, system-ui, sans-serif"
 const FONT_SERIF = "'Instrument Serif', 'DM Sans', Georgia, serif"
 const FONT_FRAUNCES = "'Fraunces', Georgia, serif"
-const FONT_UNBOUNDED =
-  "'Unbounded', ui-sans-serif, system-ui, sans-serif"
+const FONT_UNBOUNDED = "'Unbounded', ui-sans-serif, system-ui, sans-serif"
 
 export const THEMES: ThemeDef[] = [
   {

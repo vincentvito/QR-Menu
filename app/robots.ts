@@ -11,14 +11,7 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: ['/', '/m/', '/changelog'],
-        disallow: [
-          '/api/',
-          '/auth/',
-          '/dashboard/',
-          '/admin/',
-          '/onboarding',
-          '/accept-invite',
-        ],
+        disallow: ['/api/', '/auth/', '/dashboard/', '/admin/', '/onboarding', '/accept-invite'],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

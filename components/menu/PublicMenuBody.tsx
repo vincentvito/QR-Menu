@@ -5,10 +5,7 @@ import { useTranslations } from 'next-intl'
 import { Search, X } from 'lucide-react'
 import { ImageLightbox } from '@/components/menu/ImageLightbox'
 import { getTemplate } from '@/components/menu/templates'
-import type {
-  TemplateCategoryGroup,
-  TemplateItem,
-} from '@/components/menu/templates/types'
+import type { TemplateCategoryGroup, TemplateItem } from '@/components/menu/templates/types'
 
 interface PublicMenuBodyProps {
   items: TemplateItem[]
@@ -26,12 +23,7 @@ const SPECIALS_ANCHOR_ID = 'todays-specials'
 // empty states. Item rendering is delegated to the selected template so
 // each layout (Editorial, Photo Grid, etc.) can diverge without
 // reimplementing search/scroll logic.
-export function PublicMenuBody({
-  items,
-  specialIds,
-  symbol,
-  templateId,
-}: PublicMenuBodyProps) {
+export function PublicMenuBody({ items, specialIds, symbol, templateId }: PublicMenuBodyProps) {
   const t = useTranslations('MenuView')
   const [query, setQuery] = useState('')
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
@@ -79,8 +71,7 @@ export function PublicMenuBody({
 
   const template = getTemplate(templateId)
   const bottomChrome = template.chrome === 'bottom'
-  const showCategoryNav =
-    !hasQuery && (visibleSpecials.length > 0 || visibleGroups.length > 1)
+  const showCategoryNav = !hasQuery && (visibleSpecials.length > 0 || visibleGroups.length > 1)
   const nothingToShow = visibleGroups.length === 0 && visibleSpecials.length === 0
 
   return (
@@ -105,7 +96,7 @@ export function PublicMenuBody({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t('searchPlaceholder')}
-                className="border-cream-line bg-card focus:border-foreground/40 focus:bg-background h-11 w-full rounded-full border pl-10 pr-10 text-[14px] outline-none transition-colors"
+                className="border-cream-line bg-card focus:border-foreground/40 focus:bg-background h-11 w-full rounded-full border pr-10 pl-10 text-[14px] transition-colors outline-none"
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}

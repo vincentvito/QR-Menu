@@ -48,7 +48,7 @@ export function MenuList({ menus, publicBaseUrl }: MenuListProps) {
                   {t('itemsCount', { count: m.itemCount })}
                 </span>
               </div>
-              <div className="text-muted-foreground mt-0.5 truncate text-xs font-mono">
+              <div className="text-muted-foreground mt-0.5 truncate font-mono text-xs">
                 /m/{m.slug}
               </div>
             </div>

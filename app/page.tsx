@@ -74,15 +74,7 @@ type T = Awaited<ReturnType<typeof getTranslations<'Landing'>>>
 // ─────────────────────────────────────────────────────────────────────────
 // NAV
 // ─────────────────────────────────────────────────────────────────────────
-function Nav({
-  t,
-  ctaHref,
-  isAuthed,
-}: {
-  t: T
-  ctaHref: string
-  isAuthed: boolean
-}) {
+function Nav({ t, ctaHref, isAuthed }: { t: T; ctaHref: string; isAuthed: boolean }) {
   const links = [
     { label: t('nav.howItWorks'), href: '#how-it-works' },
     { label: t('nav.examples'), href: '#examples' },
@@ -95,7 +87,7 @@ function Nav({
   const ctaLabel = isAuthed ? 'Dashboard' : t('nav.getStarted')
 
   return (
-    <header className="bg-background/80 sticky top-0 z-50 border-b border-cream-line backdrop-blur-md">
+    <header className="bg-background/80 border-cream-line sticky top-0 z-50 border-b backdrop-blur-md">
       <div className="mx-auto flex max-w-[1240px] items-center gap-4 px-[clamp(20px,5vw,80px)] py-4 sm:gap-9">
         <Link href="/" aria-label={t('nav.brand')}>
           <BrandMark size="md" />
@@ -138,7 +130,7 @@ function Hero({ t, ctaHref }: { t: T; ctaHref: string }) {
       <svg
         aria-hidden="true"
         viewBox="0 0 500 500"
-        className="pointer-events-none absolute -left-24 top-10 h-[500px] w-[500px] text-accent opacity-35"
+        className="text-accent pointer-events-none absolute top-10 -left-24 h-[500px] w-[500px] opacity-35"
       >
         <path
           d="M250,80 C360,60 440,160 430,280 C420,400 310,440 220,420 C110,400 60,290 80,200 C100,120 160,90 250,80 Z"
@@ -148,7 +140,7 @@ function Hero({ t, ctaHref }: { t: T; ctaHref: string }) {
       <svg
         aria-hidden="true"
         viewBox="0 0 380 380"
-        className="pointer-events-none absolute -right-20 -bottom-12 h-[380px] w-[380px] text-pop opacity-20"
+        className="text-pop pointer-events-none absolute -right-20 -bottom-12 h-[380px] w-[380px] opacity-20"
       >
         <path
           d="M190,40 C290,60 350,170 320,260 C290,350 180,360 100,310 C30,270 30,160 80,100 C120,50 150,35 190,40 Z"
@@ -156,11 +148,13 @@ function Hero({ t, ctaHref }: { t: T; ctaHref: string }) {
         />
       </svg>
 
-      <div className={`${SECTION} relative grid items-center gap-10 pt-14 pb-16 md:pt-20 md:pb-24 lg:grid-cols-[1.1fr_1fr] lg:gap-16`}>
+      <div
+        className={`${SECTION} relative grid items-center gap-10 pt-14 pb-16 md:pt-20 md:pb-24 lg:grid-cols-[1.1fr_1fr] lg:gap-16`}
+      >
         {/* Left: copy */}
         <div className="relative z-10">
           <div className="bg-card mb-7 inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-[13px] font-medium">
-            <span className="h-1.5 w-1.5 rounded-full bg-pop" aria-hidden="true" />
+            <span className="bg-pop h-1.5 w-1.5 rounded-full" aria-hidden="true" />
             {t('hero.badge')}
           </div>
 
@@ -183,7 +177,7 @@ function Hero({ t, ctaHref }: { t: T; ctaHref: string }) {
                 aria-hidden="true"
                 viewBox="0 0 200 20"
                 preserveAspectRatio="none"
-                className="pointer-events-none absolute -bottom-1 -left-2 -right-2 z-0 h-4 w-[calc(100%+16px)] text-pop"
+                className="text-pop pointer-events-none absolute -right-2 -bottom-1 -left-2 z-0 h-4 w-[calc(100%+16px)]"
               >
                 <path
                   d="M4,10 Q50,2 100,10 T196,10"
@@ -236,9 +230,7 @@ function Hero({ t, ctaHref }: { t: T; ctaHref: string }) {
                 <span className="text-pop">★★★★★</span>
                 <span>{t('hero.trustStars')}</span>
               </div>
-              <div className="text-muted-foreground mt-0.5 text-[13px]">
-                {t('hero.trustLine')}
-              </div>
+              <div className="text-muted-foreground mt-0.5 text-[13px]">{t('hero.trustLine')}</div>
             </div>
           </div>
         </div>
@@ -251,10 +243,7 @@ function Hero({ t, ctaHref }: { t: T; ctaHref: string }) {
         <div className="bg-foreground overflow-hidden rounded-[28px]">
           <div className="bg-background/[0.08] grid grid-cols-2 gap-px md:grid-cols-4">
             {stats.map((key, i) => (
-              <div
-                key={key}
-                className="bg-foreground text-background px-[26px] py-[22px]"
-              >
+              <div key={key} className="bg-foreground text-background px-[26px] py-[22px]">
                 <div
                   className={`text-[32px] leading-none font-semibold tracking-[-0.03em] ${
                     i === 0 ? 'text-accent' : ''
@@ -300,11 +289,7 @@ function PhoneMock({ t }: { t: T }) {
           <span>9:41</span>
           <div className="flex items-center gap-1">
             <svg width="14" height="10" viewBox="0 0 14 10" fill="none">
-              <path
-                d="M1 8h2v1M4 6h2v3M7 4h2v5M10 2h2v7"
-                stroke="currentColor"
-                strokeWidth="1.2"
-              />
+              <path d="M1 8h2v1M4 6h2v3M7 4h2v5M10 2h2v7" stroke="currentColor" strokeWidth="1.2" />
             </svg>
             <svg width="18" height="10" viewBox="0 0 18 10" fill="none">
               <rect x="0.5" y="0.5" width="15" height="9" rx="2" stroke="currentColor" />
@@ -321,9 +306,7 @@ function PhoneMock({ t }: { t: T }) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
           <div className="absolute bottom-3 left-3.5 text-white">
-            <div className="text-lg font-semibold tracking-[-0.02em]">
-              {t('mockup.restaurant')}
-            </div>
+            <div className="text-lg font-semibold tracking-[-0.02em]">{t('mockup.restaurant')}</div>
             <div className="mt-0.5 flex items-center gap-1.5 text-[11px] opacity-90">
               <span>{t('mockup.rating')}</span>
               <span className="opacity-60">·</span>
@@ -347,7 +330,7 @@ function PhoneMock({ t }: { t: T }) {
         </div>
 
         {/* Dishes */}
-        <div className="px-3 pb-3 pt-1">
+        <div className="px-3 pt-1 pb-3">
           {dishes.map((d) => (
             <div
               key={d.key}
@@ -359,7 +342,7 @@ function PhoneMock({ t }: { t: T }) {
               />
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-1.5">
-                  <div className="text-[13px] font-semibold leading-tight">
+                  <div className="text-[13px] leading-tight font-semibold">
                     {t(`mockup.dishes.${d.key}.name` as 'mockup.dishes.bourguignon.name')}
                   </div>
                   <div className="text-[13px] font-semibold whitespace-nowrap">
@@ -380,7 +363,7 @@ function PhoneMock({ t }: { t: T }) {
         </div>
 
         {/* Call waiter */}
-        <div className="bg-pop text-background absolute bottom-3.5 right-3.5 grid h-10 w-10 place-items-center rounded-full shadow-[0_8px_20px_-6px_rgba(232,85,43,0.67)]">
+        <div className="bg-pop text-background absolute right-3.5 bottom-3.5 grid h-10 w-10 place-items-center rounded-full shadow-[0_8px_20px_-6px_rgba(232,85,43,0.67)]">
           <Bell className="h-4 w-4" />
         </div>
       </div>
@@ -388,7 +371,7 @@ function PhoneMock({ t }: { t: T }) {
       {/* Floating QR card — tilted */}
       <div
         aria-hidden="true"
-        className="bg-background border-cream-line absolute -left-6 bottom-3 z-20 w-[118px] -rotate-[7deg] rounded-[20px] border p-3 shadow-[0_20px_40px_-20px_rgba(26,30,23,0.25)]"
+        className="bg-background border-cream-line absolute bottom-3 -left-6 z-20 w-[118px] -rotate-[7deg] rounded-[20px] border p-3 shadow-[0_20px_40px_-20px_rgba(26,30,23,0.25)]"
       >
         <QRCode size={94} />
         <div className="text-muted-foreground mt-1.5 text-center text-[10px] font-medium tracking-[0.08em]">
@@ -399,7 +382,7 @@ function PhoneMock({ t }: { t: T }) {
       {/* Floating price chip — tilted */}
       <div
         aria-hidden="true"
-        className="bg-accent text-accent-foreground absolute -right-4 top-5 z-20 flex items-center gap-1.5 rotate-[6deg] rounded-full px-3.5 py-2 text-[12px] font-semibold shadow-[0_10px_20px_-8px_rgba(26,30,23,0.2)]"
+        className="bg-accent text-accent-foreground absolute top-5 -right-4 z-20 flex rotate-[6deg] items-center gap-1.5 rounded-full px-3.5 py-2 text-[12px] font-semibold shadow-[0_10px_20px_-8px_rgba(26,30,23,0.2)]"
       >
         <span className="text-sm">🍷</span>
         {t('mockup.floatingChip')}
@@ -572,9 +555,7 @@ function MenuPreview({ t }: { t: T }) {
               </div>
               <div className="bg-card inline-flex items-center gap-2 rounded-full px-3.5 py-2 text-xs">
                 <span className="relative h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_0_3px_rgba(34,197,94,0.15)]" />
-                <span className="text-muted-foreground">
-                  {t('preview.menuCard.domain')}
-                </span>
+                <span className="text-muted-foreground">{t('preview.menuCard.domain')}</span>
               </div>
             </div>
 
@@ -605,13 +586,13 @@ function MenuPreview({ t }: { t: T }) {
                       className="relative h-40 overflow-hidden rounded-[20px] bg-cover bg-center"
                       style={{ backgroundImage: `url(${dishImgs[d]})` }}
                     >
-                      <div className="bg-background text-foreground absolute left-2.5 top-2.5 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium">
+                      <div className="bg-background text-foreground absolute top-2.5 left-2.5 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-medium">
                         <span className="bg-pop h-1 w-1 rounded-full" />
                         {t(
                           `preview.menuCard.dishes.${d}.origin` as 'preview.menuCard.dishes.bourguignon.origin',
                         )}
                       </div>
-                      <div className="bg-pop text-pop-foreground absolute bottom-2.5 right-2.5 rounded-full px-3 py-1.5 text-[15px] font-semibold">
+                      <div className="bg-pop text-pop-foreground absolute right-2.5 bottom-2.5 rounded-full px-3 py-1.5 text-[15px] font-semibold">
                         €
                         {t(
                           `preview.menuCard.dishes.${d}.price` as 'preview.menuCard.dishes.bourguignon.price',
@@ -669,7 +650,7 @@ function QrDemo({ t, ctaHref }: { t: T; ctaHref: string }) {
               </div>
               <div
                 aria-hidden="true"
-                className="motion-safe:animate-scan-line bg-pop absolute left-[20%] right-[20%] h-0.5 rounded-[2px] shadow-[0_0_20px_var(--pop)] opacity-90"
+                className="motion-safe:animate-scan-line bg-pop absolute right-[20%] left-[20%] h-0.5 rounded-[2px] opacity-90 shadow-[0_0_20px_var(--pop)]"
                 style={{ top: '22%' }}
               />
             </div>
@@ -696,7 +677,10 @@ function QrDemo({ t, ctaHref }: { t: T; ctaHref: string }) {
             <div className="mt-7 grid grid-cols-3 gap-3">
               {(
                 [
-                  { key: 'classic', swatch: 'bg-background text-foreground border border-cream-line' },
+                  {
+                    key: 'classic',
+                    swatch: 'bg-background text-foreground border border-cream-line',
+                  },
                   { key: 'accent', swatch: 'bg-accent text-accent-foreground' },
                   { key: 'bold', swatch: 'bg-pop text-background' },
                 ] as const
@@ -827,7 +811,7 @@ function Pricing({ t, ctaHref }: { t: T; ctaHref: string }) {
                 }`}
               >
                 {featured && (
-                  <div className="bg-accent text-accent-foreground absolute right-4 top-4 rounded-full px-2.5 py-1 text-[11px] font-medium tracking-[0.04em]">
+                  <div className="bg-accent text-accent-foreground absolute top-4 right-4 rounded-full px-2.5 py-1 text-[11px] font-medium tracking-[0.04em]">
                     {t('pricing.mostPopular')}
                   </div>
                 )}
@@ -862,7 +846,9 @@ function Pricing({ t, ctaHref }: { t: T; ctaHref: string }) {
                     <li key={f} className="flex items-start gap-2.5 text-sm">
                       <span
                         className={`mt-0.5 grid h-[18px] w-[18px] flex-shrink-0 place-items-center rounded-full ${
-                          featured ? 'bg-accent text-accent-foreground' : 'bg-background text-foreground'
+                          featured
+                            ? 'bg-accent text-accent-foreground'
+                            : 'bg-background text-foreground'
                         }`}
                       >
                         <Check className="h-2.5 w-2.5" strokeWidth={2.4} aria-hidden="true" />

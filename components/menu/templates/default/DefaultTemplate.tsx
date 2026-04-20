@@ -24,7 +24,7 @@ function DefaultBody({
       {specials.length > 0 && (
         <section
           id={specialsAnchorId}
-          className="border-pop/50 bg-pop/10 scroll-mt-40 mt-6 rounded-[20px] border p-6 sm:p-8"
+          className="border-pop/50 bg-pop/10 mt-6 scroll-mt-40 rounded-[20px] border p-6 sm:p-8"
           style={{
             // Theme-aware glow: the halo picks up whichever --pop the
             // active theme sets, so the specials section pops in its own
@@ -111,7 +111,7 @@ const DefaultDishCard = memo(function DefaultDishCard({
             type="button"
             aria-label={`Open photo of ${item.name}`}
             onClick={() => onOpenImage(imageUrl)}
-            className="border-cream-line bg-card size-[84px] shrink-0 overflow-hidden rounded-[14px] border transition-transform hover:scale-[1.03] focus-visible:ring-2 focus-visible:ring-foreground focus-visible:outline-none"
+            className="border-cream-line bg-card focus-visible:ring-foreground size-[84px] shrink-0 overflow-hidden rounded-[14px] border transition-transform hover:scale-[1.03] focus-visible:ring-2 focus-visible:outline-none"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -127,7 +127,7 @@ const DefaultDishCard = memo(function DefaultDishCard({
       <div className="min-w-0 flex-1">
         <BadgeRow badges={item.badges} />
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
-          <h3 className="min-w-0 text-[17px] font-semibold leading-tight tracking-[-0.01em]">
+          <h3 className="min-w-0 text-[17px] leading-tight font-semibold tracking-[-0.01em]">
             {item.name}
           </h3>
           <PriceChip symbol={symbol} price={item.price} />

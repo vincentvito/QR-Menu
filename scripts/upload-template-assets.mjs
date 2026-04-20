@@ -5,8 +5,7 @@ import 'dotenv/config'
 import { readFile, stat } from 'node:fs/promises'
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 
-const DEFAULT_SOURCE =
-  '/mnt/e/projects/screenslick/public/mockups/iPhone-17-pro-cosmic-orange.png'
+const DEFAULT_SOURCE = '/mnt/e/projects/screenslick/public/mockups/iPhone-17-pro-cosmic-orange.png'
 
 const KEY = 'qrmenucrafter/assets/template-preview-iphone-17-pro.png'
 

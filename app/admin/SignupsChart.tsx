@@ -60,9 +60,7 @@ export function SignupsChart({ data }: SignupsChartProps) {
             width={28}
             allowDecimals={false}
           />
-          <ChartTooltip
-            content={<ChartTooltipContent labelFormatter={formatTooltipLabel} />}
-          />
+          <ChartTooltip content={<ChartTooltipContent labelFormatter={formatTooltipLabel} />} />
           <Area
             type="monotone"
             dataKey="count"

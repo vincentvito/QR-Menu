@@ -37,15 +37,7 @@ function textToDataUrl(text: string, fg: string, bg: string): string {
   const len = [...text].length || 1
   const fontSize = len <= 1 ? 58 : len === 2 ? 46 : len === 3 ? 36 : 28
   const safe = text.replace(/[<>&"']/g, (c) =>
-    c === '<'
-      ? '&lt;'
-      : c === '>'
-        ? '&gt;'
-        : c === '&'
-          ? '&amp;'
-          : c === '"'
-            ? '&quot;'
-            : '&apos;',
+    c === '<' ? '&lt;' : c === '>' ? '&gt;' : c === '&' ? '&amp;' : c === '"' ? '&quot;' : '&apos;',
   )
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="12" fill="${bg}"/><text x="50" y="50" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif" font-size="${fontSize}" font-weight="700" fill="${fg}" text-anchor="middle" dominant-baseline="central">${safe}</text></svg>`
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`

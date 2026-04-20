@@ -1,9 +1,5 @@
 import { GoogleGenAI } from '@google/genai'
-import {
-  buildEnhancePrompt,
-  buildGeneratePrompt,
-  type DishContext,
-} from './dish-image-prompts'
+import { buildEnhancePrompt, buildGeneratePrompt, type DishContext } from './dish-image-prompts'
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY! })
 const MODEL = 'gemini-3.1-flash-image-preview'

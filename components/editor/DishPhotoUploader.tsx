@@ -86,7 +86,7 @@ export function DishPhotoUploader({
           aria-label="Remove photo"
           disabled={busy}
           onClick={() => onChange(null)}
-          className="bg-foreground/70 text-background absolute top-1 right-1 grid size-5 place-items-center rounded-full backdrop-blur-sm transition-opacity hover:bg-foreground disabled:opacity-50"
+          className="bg-foreground/70 text-background hover:bg-foreground absolute top-1 right-1 grid size-5 place-items-center rounded-full backdrop-blur-sm transition-opacity disabled:opacity-50"
         >
           <X className="size-3" aria-hidden="true" />
         </button>

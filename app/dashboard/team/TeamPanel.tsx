@@ -146,8 +146,8 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
             </Button>
           </form>
           <p className="text-muted-foreground mt-3 text-xs">
-            <strong>Member</strong> can edit menus. <strong>Admin</strong> can also edit
-            restaurant settings and invite other teammates.
+            <strong>Member</strong> can edit menus. <strong>Admin</strong> can also edit restaurant
+            settings and invite other teammates.
           </p>
         </section>
       )}
@@ -162,7 +162,9 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
                 .map((n) => n[0])
                 .join('')
                 .toUpperCase()
-                .slice(0, 2) || m.user.email[0]?.toUpperCase() || '?'
+                .slice(0, 2) ||
+              m.user.email[0]?.toUpperCase() ||
+              '?'
             const isViewer = m.user.id === viewerUserId
             return (
               <li key={m.id} className="flex items-center gap-3 px-5 py-4">
@@ -175,13 +177,9 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <span className="truncate">{m.user.name || m.user.email}</span>
-                    {isViewer && (
-                      <span className="text-muted-foreground text-xs">(you)</span>
-                    )}
+                    {isViewer && <span className="text-muted-foreground text-xs">(you)</span>}
                   </div>
-                  <div className="text-muted-foreground truncate text-xs">
-                    {m.user.email}
-                  </div>
+                  <div className="text-muted-foreground truncate text-xs">{m.user.email}</div>
                 </div>
                 <span className="border-cream-line bg-background text-muted-foreground shrink-0 rounded-full border px-2.5 py-0.5 text-xs">
                   {ROLE_LABEL[m.role] ?? m.role}

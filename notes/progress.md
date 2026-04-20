@@ -164,25 +164,25 @@ with `notes/v1-feature-list.md` (the target) and `app/changelog/page.tsx`
 
 Source of truth: `notes/v1-feature-list.md`. Status relative to that:
 
-| Feature | Status |
-|---|---|
-| Admin / employee roles | ✅ |
-| Admin can manage menus | ✅ |
-| Daily specials section | ✅ (0.16) |
-| Best-seller + editorial badges (Chef's Pick, Signature, New, Spicy) | ✅ (0.15 / revised 0.20) |
-| Dish photo uploads (+ AI enhancement) | ✅ (0.14, Gemini 3.1 flash-image-preview) |
-| Customizable brand colors + logo + QR | ✅ |
-| **Call-waiter action bar → tablet / messaging bot** | ⚠ Button exists on `/m/[slug]` but click still does nothing |
-| WiFi password reveal | ✅ (0.13) |
-| **Multi-language switcher for the public menu** (auto-translate + manual override) | ❌ — app i18n is wired via next-intl, but menu *content* isn't translated |
-| Google review redirect button | ✅ (0.13) |
-| Social media follow buttons (IG, TikTok, FB) | ✅ (0.13) |
-| **Owner analytics** — scan counts, views per dish, waiter-call frequency, language breakdown, peak hours | ❌ — start by shipping the event table + instrumentation so there's real data when the dashboard is built |
-| Menu templates (big-bet differentiator) | ✅ 2 of 3–5 shipped (0.17) — Editorial + Photo Grid; Chalkboard / Minimal List / Brutalist still on the table |
-| Seasonal overlays | ✅ (0.18) — Snow / Autumn / Confetti |
-| Themes (palette + typography presets) | ✅ (0.18) — 5 shipped |
-| Header image banner | ✅ (0.21) |
-| SEO (JSON-LD, OG, favicons, sitemap, robots, manifest) | ✅ (0.19) |
+| Feature                                                                                                  | Status                                                                                                        |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Admin / employee roles                                                                                   | ✅                                                                                                            |
+| Admin can manage menus                                                                                   | ✅                                                                                                            |
+| Daily specials section                                                                                   | ✅ (0.16)                                                                                                     |
+| Best-seller + editorial badges (Chef's Pick, Signature, New, Spicy)                                      | ✅ (0.15 / revised 0.20)                                                                                      |
+| Dish photo uploads (+ AI enhancement)                                                                    | ✅ (0.14, Gemini 3.1 flash-image-preview)                                                                     |
+| Customizable brand colors + logo + QR                                                                    | ✅                                                                                                            |
+| **Call-waiter action bar → tablet / messaging bot**                                                      | ⚠ Button exists on `/m/[slug]` but click still does nothing                                                   |
+| WiFi password reveal                                                                                     | ✅ (0.13)                                                                                                     |
+| **Multi-language switcher for the public menu** (auto-translate + manual override)                       | ❌ — app i18n is wired via next-intl, but menu _content_ isn't translated                                     |
+| Google review redirect button                                                                            | ✅ (0.13)                                                                                                     |
+| Social media follow buttons (IG, TikTok, FB)                                                             | ✅ (0.13)                                                                                                     |
+| **Owner analytics** — scan counts, views per dish, waiter-call frequency, language breakdown, peak hours | ❌ — start by shipping the event table + instrumentation so there's real data when the dashboard is built     |
+| Menu templates (big-bet differentiator)                                                                  | ✅ 2 of 3–5 shipped (0.17) — Editorial + Photo Grid; Chalkboard / Minimal List / Brutalist still on the table |
+| Seasonal overlays                                                                                        | ✅ (0.18) — Snow / Autumn / Confetti                                                                          |
+| Themes (palette + typography presets)                                                                    | ✅ (0.18) — 5 shipped                                                                                         |
+| Header image banner                                                                                      | ✅ (0.21)                                                                                                     |
+| SEO (JSON-LD, OG, favicons, sitemap, robots, manifest)                                                   | ✅ (0.19)                                                                                                     |
 
 ### Prioritization suggestion
 
@@ -220,7 +220,7 @@ Two follow-ups worth considering before launch:
   worth evaluating: Chalkboard (bistro/pub), Minimal List (fine-dining
   single-page), Brutalist (modern-cocktail-bar). Each is ~1 day of work
   once the template shape is set — `components/menu/templates/<id>/Body.tsx`
-  + thumbnail + registry entry.
+  - thumbnail + registry entry.
 - **Date-scheduled seasonal overlays**. Today the owner manually picks
   snow/autumn/confetti; auto-picking based on the current month (snow Dec–
   Feb, autumn Sep–Nov) would make the feature feel alive without a

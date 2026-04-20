@@ -617,8 +617,8 @@ export function SettingsForm({
                 onChange={(v) => setDraft((prev) => ({ ...prev, headerTextColor: v }))}
               />
               <p className="text-muted-foreground text-[11px] leading-snug">
-                Overrides the restaurant name color on the public menu — useful when a header
-                image makes the default hard to read. Leave empty to use the theme default.
+                Overrides the restaurant name color on the public menu — useful when a header image
+                makes the default hard to read. Leave empty to use the theme default.
               </p>
             </div>
           </div>

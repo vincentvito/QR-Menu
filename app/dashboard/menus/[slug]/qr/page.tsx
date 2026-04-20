@@ -35,8 +35,7 @@ export default async function MenuQRPage({ params }: PageProps) {
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">QR code · {menu.name}</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Download as SVG (scales infinitely) or PNG (for quick sharing).
-          Customize the style in{' '}
+          Download as SVG (scales infinitely) or PNG (for quick sharing). Customize the style in{' '}
           <Link
             href="/dashboard/settings"
             className="text-foreground underline-offset-2 hover:underline"

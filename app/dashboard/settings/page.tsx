@@ -66,40 +66,40 @@ export default async function SettingsPage() {
         </aside>
 
         <SettingsForm
-        canEdit={canEdit}
-        previewMenu={previewMenu}
-        templatePreviewMockupUrl={templatePreviewMockupUrl()}
-        templatePreviewData={templatePreviewData}
-        initial={{
-          name: org.name,
-          description: org.description ?? '',
-          logo: org.logo ?? '',
-          headerImage: org.headerImage ?? '',
-          headerTextColor: org.headerTextColor ?? '',
-          sourceUrl: org.sourceUrl ?? '',
-          primaryColor: org.primaryColor ?? '',
-          secondaryColor: org.secondaryColor ?? '',
-          currency: org.currency,
-          qrDotStyle: org.qrDotStyle,
-          qrCornerStyle: org.qrCornerStyle,
-          qrForegroundColor: org.qrForegroundColor,
-          qrBackgroundColor: org.qrBackgroundColor,
-          qrCenterType: org.qrCenterType,
-          qrCenterText: org.qrCenterText ?? '',
-          wifiSsid: org.wifiSsid ?? '',
-          wifiPassword: org.wifiPassword ?? '',
-          wifiEncryption: org.wifiEncryption,
-          wifiCenterType: org.wifiCenterType,
-          wifiCenterText: org.wifiCenterText ?? '',
-          googleReviewUrl: org.googleReviewUrl ?? '',
-          instagramUrl: org.instagramUrl ?? '',
-          tiktokUrl: org.tiktokUrl ?? '',
-          facebookUrl: org.facebookUrl ?? '',
-          templateId: org.templateId,
-          theme: org.theme,
-          seasonalOverlay: org.seasonalOverlay,
-        }}
-      />
+          canEdit={canEdit}
+          previewMenu={previewMenu}
+          templatePreviewMockupUrl={templatePreviewMockupUrl()}
+          templatePreviewData={templatePreviewData}
+          initial={{
+            name: org.name,
+            description: org.description ?? '',
+            logo: org.logo ?? '',
+            headerImage: org.headerImage ?? '',
+            headerTextColor: org.headerTextColor ?? '',
+            sourceUrl: org.sourceUrl ?? '',
+            primaryColor: org.primaryColor ?? '',
+            secondaryColor: org.secondaryColor ?? '',
+            currency: org.currency,
+            qrDotStyle: org.qrDotStyle,
+            qrCornerStyle: org.qrCornerStyle,
+            qrForegroundColor: org.qrForegroundColor,
+            qrBackgroundColor: org.qrBackgroundColor,
+            qrCenterType: org.qrCenterType,
+            qrCenterText: org.qrCenterText ?? '',
+            wifiSsid: org.wifiSsid ?? '',
+            wifiPassword: org.wifiPassword ?? '',
+            wifiEncryption: org.wifiEncryption,
+            wifiCenterType: org.wifiCenterType,
+            wifiCenterText: org.wifiCenterText ?? '',
+            googleReviewUrl: org.googleReviewUrl ?? '',
+            instagramUrl: org.instagramUrl ?? '',
+            tiktokUrl: org.tiktokUrl ?? '',
+            facebookUrl: org.facebookUrl ?? '',
+            templateId: org.templateId,
+            theme: org.theme,
+            seasonalOverlay: org.seasonalOverlay,
+          }}
+        />
       </div>
     </main>
   )

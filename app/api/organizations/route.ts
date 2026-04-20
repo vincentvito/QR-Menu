@@ -317,12 +317,12 @@ export async function PATCH(request: Request) {
   // after() so the user's save doesn't wait on R2 round-trips.
   const previousHeaderImage =
     'headerImage' in updates
-      ? (
+      ? ((
           await prisma.organization.findUnique({
             where: { id: org.id },
             select: { headerImage: true },
           })
-        )?.headerImage ?? null
+        )?.headerImage ?? null)
       : null
 
   const updated = await auth.api.updateOrganization({

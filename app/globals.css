@@ -1,49 +1,104 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
 /* ---- Keyframes ---- */
 
 @keyframes fade-up {
-  0% { opacity: 0; transform: translateY(16px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes pulse-step {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 @keyframes scan-line {
-  0% { top: 22%; }
-  100% { top: 78%; }
+  0% {
+    top: 22%;
+  }
+  100% {
+    top: 78%;
+  }
 }
 
 /* Seasonal overlays: animate top + transform. Top is animated so particles
    naturally scale with the overlay's container (viewport or preview), not a
    fixed vh distance that looks wrong at small sizes. */
 @keyframes seasonal-snow {
-  0%   { top: -6%;  transform: translateX(0); opacity: 0; }
-  10%  { opacity: 0.85; }
-  50%  { transform: translateX(14px); }
-  90%  { opacity: 0.85; }
-  100% { top: 106%; transform: translateX(-8px); opacity: 0; }
+  0% {
+    top: -6%;
+    transform: translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateX(14px);
+  }
+  90% {
+    opacity: 0.85;
+  }
+  100% {
+    top: 106%;
+    transform: translateX(-8px);
+    opacity: 0;
+  }
 }
 
 @keyframes seasonal-autumn {
-  0%   { top: -8%;  transform: translate(0, 0) rotate(0deg); opacity: 0; }
-  10%  { opacity: 0.9; }
-  50%  { transform: translate(18px, 0) rotate(540deg); }
-  90%  { opacity: 0.9; }
-  100% { top: 108%; transform: translate(-12px, 0) rotate(1080deg); opacity: 0; }
+  0% {
+    top: -8%;
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(18px, 0) rotate(540deg);
+  }
+  90% {
+    opacity: 0.9;
+  }
+  100% {
+    top: 108%;
+    transform: translate(-12px, 0) rotate(1080deg);
+    opacity: 0;
+  }
 }
 
 @keyframes seasonal-confetti {
-  0%   { top: -6%;  transform: rotate(0deg); opacity: 0; }
-  8%   { opacity: 0.95; }
-  92%  { opacity: 0.95; }
-  100% { top: 106%; transform: rotate(720deg); opacity: 0; }
+  0% {
+    top: -6%;
+    transform: rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.95;
+  }
+  92% {
+    opacity: 0.95;
+  }
+  100% {
+    top: 106%;
+    transform: rotate(720deg);
+    opacity: 0;
+  }
 }
 
 /* Heading font — applied by any template rendered inside a [data-theme]
@@ -57,26 +112,54 @@
 
 /* Save pill: mount + gentle exit (used for saving/error states). */
 @keyframes save-pill-in {
-  0%   { opacity: 0; transform: translateY(4px) scale(0.96); }
-  100% { opacity: 1; transform: translateY(0)  scale(1); }
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Save pill: full lifecycle for the "Saved" confirmation — fades in,
    holds, then fades out. Timed to run within the 2100ms auto-clear window. */
 @keyframes save-pill-saved {
-  0%   { opacity: 0; transform: translateY(4px) scale(0.96); }
-  8%   { opacity: 1; transform: translateY(0)  scale(1); }
-  88%  { opacity: 1; transform: translateY(0)  scale(1); }
-  100% { opacity: 0; transform: translateY(-2px) scale(0.98); }
+  0% {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+  8% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  88% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-2px) scale(0.98);
+  }
 }
 
 /* Light sweep that travels across the pill once. Delay on the animation
    holds it off the leading edge until the pill has settled in place. */
 @keyframes save-pill-wave {
-  0%   { transform: translateX(-140%); opacity: 0; }
-  20%  { opacity: 1; }
-  80%  { opacity: 1; }
-  100% { transform: translateX(180%);  opacity: 0; }
+  0% {
+    transform: translateX(-140%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(180%);
+    opacity: 0;
+  }
 }
 
 @utility animate-fade-up {
@@ -175,101 +258,101 @@
      are applied via arbitrary Tailwind values where needed. */
   --radius: 0.625rem;
 
-  --background: #F6F2E7;
-  --foreground: #1A1E17;
+  --background: #f6f2e7;
+  --foreground: #1a1e17;
 
-  --card: #EFE8D4;
-  --card-foreground: #1A1E17;
-  --popover: #F6F2E7;
-  --popover-foreground: #1A1E17;
+  --card: #efe8d4;
+  --card-foreground: #1a1e17;
+  --popover: #f6f2e7;
+  --popover-foreground: #1a1e17;
 
-  --primary: #1A1E17;
-  --primary-foreground: #F6F2E7;
+  --primary: #1a1e17;
+  --primary-foreground: #f6f2e7;
 
-  --secondary: #EFE8D4;
-  --secondary-foreground: #1A1E17;
+  --secondary: #efe8d4;
+  --secondary-foreground: #1a1e17;
 
-  --muted: #EFE8D4;
-  --muted-foreground: #6B6B5E;
+  --muted: #efe8d4;
+  --muted-foreground: #6b6b5e;
 
-  --accent: #C8E06A;
-  --accent-foreground: #1A1E17;
-  --accent-deep: #9DB84A;
+  --accent: #c8e06a;
+  --accent-foreground: #1a1e17;
+  --accent-deep: #9db84a;
 
   --destructive: oklch(0.577 0.245 27.325);
 
-  --border: #D9CFB4;
-  --input: #D9CFB4;
-  --ring: #1A1E17;
+  --border: #d9cfb4;
+  --input: #d9cfb4;
+  --ring: #1a1e17;
 
-  --pop: #E8552B;
-  --pop-foreground: #FFFFFF;
-  --pop-deep: #C43E18;
-  --chip: #FFD36B;
-  --chip-foreground: #1A1E17;
+  --pop: #e8552b;
+  --pop-foreground: #ffffff;
+  --pop-deep: #c43e18;
+  --chip: #ffd36b;
+  --chip-foreground: #1a1e17;
 
-  --cream-line: #D9CFB4;
+  --cream-line: #d9cfb4;
 
-  --chart-1: #1A1E17;
-  --chart-2: #C8E06A;
-  --chart-3: #E8552B;
-  --chart-4: #FFD36B;
-  --chart-5: #6B6B5E;
+  --chart-1: #1a1e17;
+  --chart-2: #c8e06a;
+  --chart-3: #e8552b;
+  --chart-4: #ffd36b;
+  --chart-5: #6b6b5e;
 
-  --sidebar: #F6F2E7;
-  --sidebar-foreground: #1A1E17;
-  --sidebar-primary: #1A1E17;
-  --sidebar-primary-foreground: #F6F2E7;
-  --sidebar-accent: #EFE8D4;
-  --sidebar-accent-foreground: #1A1E17;
-  --sidebar-border: #D9CFB4;
-  --sidebar-ring: #1A1E17;
+  --sidebar: #f6f2e7;
+  --sidebar-foreground: #1a1e17;
+  --sidebar-primary: #1a1e17;
+  --sidebar-primary-foreground: #f6f2e7;
+  --sidebar-accent: #efe8d4;
+  --sidebar-accent-foreground: #1a1e17;
+  --sidebar-border: #d9cfb4;
+  --sidebar-ring: #1a1e17;
 }
 
 .dark {
-  --background: #1A1E17;
-  --foreground: #F6F2E7;
+  --background: #1a1e17;
+  --foreground: #f6f2e7;
 
-  --card: #22261F;
-  --card-foreground: #F6F2E7;
-  --popover: #22261F;
-  --popover-foreground: #F6F2E7;
+  --card: #22261f;
+  --card-foreground: #f6f2e7;
+  --popover: #22261f;
+  --popover-foreground: #f6f2e7;
 
-  --primary: #F6F2E7;
-  --primary-foreground: #1A1E17;
+  --primary: #f6f2e7;
+  --primary-foreground: #1a1e17;
 
-  --secondary: #262A23;
-  --secondary-foreground: #F6F2E7;
+  --secondary: #262a23;
+  --secondary-foreground: #f6f2e7;
 
-  --muted: #262A23;
-  --muted-foreground: #A8AB9F;
+  --muted: #262a23;
+  --muted-foreground: #a8ab9f;
 
-  --accent: #C8E06A;
-  --accent-foreground: #1A1E17;
-  --accent-deep: #9DB84A;
+  --accent: #c8e06a;
+  --accent-foreground: #1a1e17;
+  --accent-deep: #9db84a;
 
   --destructive: oklch(0.704 0.191 22.216);
 
   --border: rgba(246, 242, 231, 0.12);
   --input: rgba(246, 242, 231, 0.14);
-  --ring: #C8E06A;
+  --ring: #c8e06a;
 
-  --pop: #F26A3E;
-  --pop-foreground: #FFFFFF;
-  --pop-deep: #C43E18;
-  --chip: #FFD36B;
-  --chip-foreground: #1A1E17;
+  --pop: #f26a3e;
+  --pop-foreground: #ffffff;
+  --pop-deep: #c43e18;
+  --chip: #ffd36b;
+  --chip-foreground: #1a1e17;
 
   --cream-line: rgba(246, 242, 231, 0.12);
 
-  --sidebar: #22261F;
-  --sidebar-foreground: #F6F2E7;
-  --sidebar-primary: #C8E06A;
-  --sidebar-primary-foreground: #1A1E17;
-  --sidebar-accent: #262A23;
-  --sidebar-accent-foreground: #F6F2E7;
+  --sidebar: #22261f;
+  --sidebar-foreground: #f6f2e7;
+  --sidebar-primary: #c8e06a;
+  --sidebar-primary-foreground: #1a1e17;
+  --sidebar-accent: #262a23;
+  --sidebar-accent-foreground: #f6f2e7;
   --sidebar-border: rgba(246, 242, 231, 0.12);
-  --sidebar-ring: #C8E06A;
+  --sidebar-ring: #c8e06a;
 }
 
 @layer base {
@@ -288,12 +371,15 @@
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
   }
-  i, em {
+  i,
+  em {
     font-family: 'Instrument Serif', 'DM Sans', Georgia, serif;
     font-style: italic;
     font-weight: 400;
   }
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     font-family: 'DM Sans', ui-sans-serif, system-ui, sans-serif;
   }
   ::selection {
@@ -302,16 +388,27 @@
   }
 
   /* Mobile nav disclosure icon swap */
-  details[data-nav] > summary .icon-closed { display: inline-block; }
-  details[data-nav] > summary .icon-open { display: none; }
-  details[data-nav][open] > summary .icon-closed { display: none; }
-  details[data-nav][open] > summary .icon-open { display: inline-block; }
+  details[data-nav] > summary .icon-closed {
+    display: inline-block;
+  }
+  details[data-nav] > summary .icon-open {
+    display: none;
+  }
+  details[data-nav][open] > summary .icon-closed {
+    display: none;
+  }
+  details[data-nav][open] > summary .icon-open {
+    display: inline-block;
+  }
 
   /* FAQ accordion: active state + plus icon rotation */
   details[data-faq] > summary .faq-icon {
     background: var(--card);
     color: var(--foreground);
-    transition: transform 0.2s, background 0.2s, color 0.2s;
+    transition:
+      transform 0.2s,
+      background 0.2s,
+      color 0.2s;
   }
   details[data-faq][open] {
     background: var(--background);
@@ -350,7 +447,9 @@
 @layer components {
   .btn-pill-shadow-primary {
     box-shadow: 0 2px 0 #0a0c08;
-    transition: transform 120ms ease, box-shadow 120ms ease;
+    transition:
+      transform 120ms ease,
+      box-shadow 120ms ease;
   }
   .btn-pill-shadow-primary:hover {
     transform: translateY(-1px);
@@ -358,7 +457,9 @@
   }
   .btn-pill-shadow-accent {
     box-shadow: 0 2px 0 var(--accent-deep);
-    transition: transform 120ms ease, box-shadow 120ms ease;
+    transition:
+      transform 120ms ease,
+      box-shadow 120ms ease;
   }
   .btn-pill-shadow-accent:hover {
     transform: translateY(-1px);

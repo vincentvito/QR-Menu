@@ -93,7 +93,7 @@ export function HeaderImageUploader({
           // doesn't dominate the Settings form. Closer to the actual
           // public-menu header proportions (wide, thin) than a full 16:9
           // preview would be.
-          'border-cream-line focus-within:border-foreground focus-within:ring-2 focus-within:ring-foreground/20 relative block h-32 w-full cursor-pointer overflow-hidden rounded-[14px] border-2 border-dashed transition-colors sm:h-40',
+          'border-cream-line focus-within:border-foreground focus-within:ring-foreground/20 relative block h-32 w-full cursor-pointer overflow-hidden rounded-[14px] border-2 border-dashed transition-colors focus-within:ring-2 sm:h-40',
           value ? 'border-solid' : 'hover:border-foreground/40',
           dragging && 'border-foreground bg-background',
           busy && 'pointer-events-none opacity-60',
@@ -143,9 +143,7 @@ export function HeaderImageUploader({
                   <Upload className="size-5" aria-hidden="true" />
                 </div>
                 <div className="space-y-0.5">
-                  <div className="text-foreground text-sm font-medium">
-                    Drop your header image
-                  </div>
+                  <div className="text-foreground text-sm font-medium">Drop your header image</div>
                   <div className="text-muted-foreground text-xs">
                     or click to browse · PNG, JPG, WEBP up to 20 MB
                   </div>
@@ -174,9 +172,8 @@ export function HeaderImageUploader({
             <AlertDialogHeader>
               <AlertDialogTitle>Remove header image?</AlertDialogTitle>
               <AlertDialogDescription>
-                Your public menu will fall back to the brand-color gradient behind
-                your restaurant name. The file stays in storage — nothing is
-                permanently deleted.
+                Your public menu will fall back to the brand-color gradient behind your restaurant
+                name. The file stays in storage — nothing is permanently deleted.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

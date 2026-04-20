@@ -33,19 +33,13 @@ export async function POST(request: Request, { params }: RouteContext) {
   if (!category) {
     return NextResponse.json({ error: 'Category is required' }, { status: 400 })
   }
-  const name =
-    typeof body.name === 'string' && body.name.trim() ? body.name.trim() : 'New dish'
-  const description =
-    typeof body.description === 'string' ? body.description.slice(0, 1000) : ''
+  const name = typeof body.name === 'string' && body.name.trim() ? body.name.trim() : 'New dish'
+  const description = typeof body.description === 'string' ? body.description.slice(0, 1000) : ''
   let price = 0
   if (body.price !== undefined) {
-    const p =
-      typeof body.price === 'number' ? body.price : parseFloat(String(body.price))
+    const p = typeof body.price === 'number' ? body.price : parseFloat(String(body.price))
     if (!Number.isFinite(p) || p < 0) {
-      return NextResponse.json(
-        { error: 'price must be a non-negative number' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: 'price must be a non-negative number' }, { status: 400 })
     }
     price = Math.round(p * 100) / 100
   }

@@ -10,12 +10,7 @@ import { SeasonalOverlay } from '@/components/menu/SeasonalOverlay'
 import { buildInlineStyle } from '@/components/menu/ThemeStyles'
 import { getTemplate } from '@/components/menu/templates'
 import { getTheme } from '@/lib/menus/themes'
-import {
-  FacebookIcon,
-  GoogleIcon,
-  InstagramIcon,
-  TikTokIcon,
-} from '@/components/brand/SocialIcons'
+import { FacebookIcon, GoogleIcon, InstagramIcon, TikTokIcon } from '@/components/brand/SocialIcons'
 import { socialUrl } from '@/lib/socials'
 
 interface PageProps {
@@ -187,11 +182,11 @@ export default async function PublicMenuPage({ params }: PageProps) {
           <>
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute -top-24 -right-16 h-[360px] w-[360px] rounded-full bg-accent opacity-[0.12] blur-2xl"
+              className="bg-accent pointer-events-none absolute -top-24 -right-16 h-[360px] w-[360px] rounded-full opacity-[0.12] blur-2xl"
             />
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute -bottom-24 -left-16 h-[320px] w-[320px] rounded-full bg-pop opacity-[0.18] blur-2xl"
+              className="bg-pop pointer-events-none absolute -bottom-24 -left-16 h-[320px] w-[320px] rounded-full opacity-[0.18] blur-2xl"
             />
           </>
         )}
@@ -207,7 +202,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
           ) : null}
           <div className="flex items-start gap-3">
             {org.logo ? (
-              <div className="relative size-12 shrink-0 overflow-hidden rounded-xl bg-background/10 backdrop-blur-sm sm:size-16">
+              <div className="bg-background/10 relative size-12 shrink-0 overflow-hidden rounded-xl backdrop-blur-sm sm:size-16">
                 <Image src={org.logo} alt="" fill unoptimized className="object-cover" />
               </div>
             ) : null}

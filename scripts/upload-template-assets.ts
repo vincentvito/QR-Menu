@@ -6,8 +6,7 @@ import { readFile, stat } from 'node:fs/promises'
 import { uploadBuffer } from '../lib/storage/r2'
 import { TEMPLATE_PREVIEW_MOCKUP_KEY } from '../lib/menus/template-assets'
 
-const DEFAULT_SOURCE =
-  '/mnt/e/projects/screenslick/public/mockups/iPhone-17-pro-cosmic-orange.png'
+const DEFAULT_SOURCE = '/mnt/e/projects/screenslick/public/mockups/iPhone-17-pro-cosmic-orange.png'
 
 const REQUIRED_ENV = [
   'CLOUDFLARE_BUCKET_API',

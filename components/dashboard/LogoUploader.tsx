@@ -157,9 +157,8 @@ export function LogoUploader({
             <AlertDialogHeader>
               <AlertDialogTitle>Remove logo?</AlertDialogTitle>
               <AlertDialogDescription>
-                Your restaurant and menu QR codes will stop showing the logo until
-                you upload a new one. The file stays in storage — nothing is
-                permanently deleted.
+                Your restaurant and menu QR codes will stop showing the logo until you upload a new
+                one. The file stays in storage — nothing is permanently deleted.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

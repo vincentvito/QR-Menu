@@ -213,10 +213,7 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
 
       <div className="space-y-2">
         <Label>Logo</Label>
-        <LogoUploader
-          value={draft.logo}
-          onChange={(url) => setDraft({ ...draft, logo: url })}
-        />
+        <LogoUploader value={draft.logo} onChange={(url) => setDraft({ ...draft, logo: url })} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -289,7 +286,7 @@ function ColorField({
           type="color"
           value={pickerValue}
           onChange={(e) => onChange(e.target.value.toUpperCase())}
-          className="border-cream-line size-10 shrink-0 cursor-pointer overflow-hidden rounded-full border bg-transparent p-0 [&::-moz-color-swatch]:rounded-full [&::-moz-color-swatch]:border-none [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-full [&::-webkit-color-swatch]:border-none"
+          className="border-cream-line size-10 shrink-0 cursor-pointer overflow-hidden rounded-full border bg-transparent p-0 [&::-moz-color-swatch]:rounded-full [&::-moz-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-full [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch-wrapper]:p-0"
           aria-label={`${label} picker`}
         />
         <Input

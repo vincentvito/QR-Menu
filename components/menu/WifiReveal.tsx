@@ -148,7 +148,7 @@ export function WifiReveal({ ssid, password, hasPassword }: WifiRevealProps) {
               </Button>
             </div>
           ) : (
-            <p className="text-muted-foreground rounded-2xl border border-cream-line bg-background/50 p-4 text-sm">
+            <p className="text-muted-foreground border-cream-line bg-background/50 rounded-2xl border p-4 text-sm">
               This network is open — no password needed.
             </p>
           )}

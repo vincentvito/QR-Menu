@@ -18,7 +18,7 @@ function createPrismaClient() {
 
   const pool = new Pool({
     connectionString: url.toString(),
-    options: `-c search_path=${schema}`
+    options: `-c search_path=${schema}`,
   })
 
   const adapter = new PrismaPg(pool, { schema })

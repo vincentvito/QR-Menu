@@ -35,13 +35,11 @@ export function ImpersonationBanner({ impersonatedEmail }: ImpersonationBannerPr
         type="button"
         variant="outline"
         size="sm"
-        className="bg-transparent text-background hover:bg-background/10 h-6 border-white/30 px-2 text-[11px]"
+        className="text-background hover:bg-background/10 h-6 border-white/30 bg-transparent px-2 text-[11px]"
         disabled={stopping}
         onClick={stop}
       >
-        {stopping ? (
-          <Loader2 className="size-3 animate-spin" aria-hidden="true" />
-        ) : null}
+        {stopping ? <Loader2 className="size-3 animate-spin" aria-hidden="true" /> : null}
         Stop
       </Button>
     </div>

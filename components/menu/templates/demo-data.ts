@@ -1,7 +1,4 @@
-import type {
-  TemplateCategoryGroup,
-  TemplateItem,
-} from '@/components/menu/templates/types'
+import type { TemplateCategoryGroup, TemplateItem } from '@/components/menu/templates/types'
 
 // Compact demo menu used ONLY for template previews in Settings. Never
 // shown to customers. Mixes photo/no-photo dishes, a badge, and a special

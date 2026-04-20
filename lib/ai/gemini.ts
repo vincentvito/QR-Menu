@@ -18,9 +18,7 @@ export interface ExtractedMenu {
   items: ExtractedMenuItem[]
 }
 
-export type ExtractInput =
-  | { text: string }
-  | { fileBase64: string; mimeType: string }
+export type ExtractInput = { text: string } | { fileBase64: string; mimeType: string }
 
 const BASE_PROMPT = `You are a menu data extraction assistant.
 
@@ -59,9 +57,7 @@ function instructionFor(input: ExtractInput): string {
 export async function extractMenu(input: ExtractInput): Promise<ExtractedMenu> {
   const model = genAI.getGenerativeModel({ model: MODEL })
 
-  const parts: Array<
-    { text: string } | { inlineData: { data: string; mimeType: string } }
-  > = []
+  const parts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }> = []
 
   if ('fileBase64' in input) {
     parts.push({ inlineData: { data: input.fileBase64, mimeType: input.mimeType } })
@@ -93,11 +89,10 @@ export async function extractMenu(input: ExtractInput): Promise<ExtractedMenu> {
           return {
             name: String(obj.name ?? '').trim(),
             category: String(obj.category ?? 'Other').trim() || 'Other',
-            price:
-              typeof obj.price === 'number' ? obj.price : parseFloat(String(obj.price)) || 0,
+            price: typeof obj.price === 'number' ? obj.price : parseFloat(String(obj.price)) || 0,
             description: String(obj.description ?? '').trim(),
-            tags: (Array.isArray(obj.tags) ? obj.tags : []).filter(
-              (t): t is DietaryTag => ['V', 'VG', 'GF', 'DF', 'NF'].includes(String(t)),
+            tags: (Array.isArray(obj.tags) ? obj.tags : []).filter((t): t is DietaryTag =>
+              ['V', 'VG', 'GF', 'DF', 'NF'].includes(String(t)),
             ),
           }
         })

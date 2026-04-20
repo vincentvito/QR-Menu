@@ -63,12 +63,8 @@ export default async function AcceptInvitePage({ searchParams }: PageProps) {
       <p className="text-muted-foreground text-sm">
         <strong className="text-foreground">{inviterName}</strong> invited you to join
       </p>
-      <h1 className="mt-2 text-3xl font-semibold tracking-tight">
-        {invitation.organization.name}
-      </h1>
-      <p className="text-muted-foreground mt-1 text-xs">
-        as {invitation.role ?? 'member'}
-      </p>
+      <h1 className="mt-2 text-3xl font-semibold tracking-tight">{invitation.organization.name}</h1>
+      <p className="text-muted-foreground mt-1 text-xs">as {invitation.role ?? 'member'}</p>
 
       {emailMatches ? (
         <div className="mt-8">
@@ -77,9 +73,8 @@ export default async function AcceptInvitePage({ searchParams }: PageProps) {
       ) : (
         <div className="mt-8 space-y-3">
           <p className="bg-background/50 border-cream-line text-muted-foreground rounded-lg border p-3 text-sm">
-            This invite is for <strong className="text-foreground">{invitedEmail}</strong>,
-            but you&apos;re signed in as{' '}
-            <strong className="text-foreground">{viewerEmail}</strong>.
+            This invite is for <strong className="text-foreground">{invitedEmail}</strong>, but
+            you&apos;re signed in as <strong className="text-foreground">{viewerEmail}</strong>.
           </p>
           <Button asChild variant="outline" className="w-full">
             <Link href="/auth/login">Sign in with a different email</Link>

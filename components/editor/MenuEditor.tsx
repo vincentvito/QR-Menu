@@ -180,8 +180,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
 
   const handleErrorFor = useCallback(
     (key: string, err: unknown, fallback: string) => {
-      const message =
-        err instanceof Error ? err.message : typeof err === 'string' ? err : fallback
+      const message = err instanceof Error ? err.message : typeof err === 'string' ? err : fallback
       setSaveFor(key, { state: 'error', error: message || fallback })
     },
     [setSaveFor],
@@ -242,69 +241,72 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
     [slug, setSaveFor, flashSavedFor, handleErrorFor, t],
   )
 
-  const addItem = useCallback(async (
-    category: string,
-    fields: { name: string; description?: string; price?: number },
-  ) => {
-    // Adds have no row to anchor to until the server returns an id, so the
-    // DraftItemForm's own submitting state handles the progress UI and we
-    // surface failures via a toast instead.
-    try {
-      const res = await fetch(`/api/menus/${slug}/items`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          category,
-          name: fields.name,
-          description: fields.description ?? '',
-          price: fields.price ?? 0,
-        }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error ?? t('saveError'))
-      setItems((cur) => [
-        ...cur,
-        {
-          id: data.id,
-          category: data.category,
-          name: data.name,
-          description: data.description ?? '',
-          price: data.price ?? 0,
-          tags: data.tags ?? [],
-          badges: data.badges ?? [],
-          specialUntil: data.specialUntil ?? null,
-          imageUrl: data.imageUrl ?? null,
-        },
-      ])
-      return true
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : typeof err === 'string' ? err : t('saveError')
-      toast.error(message || t('saveError'))
-      return false
-    }
-  }, [slug, t])
-
-  const deleteItem = useCallback(async (id: string) => {
-    // Confirmation now happens inline in ItemRow — arrive here only after
-    // the user has clicked the destructive button a second time. The row is
-    // optimistically removed; on failure we restore it and anchor the error
-    // indicator back onto the restored row.
-    const previous = itemsRef.current
-    setItems((cur) => cur.filter((it) => it.id !== id))
-    try {
-      const res = await fetch(`/api/menus/${slug}/items/${id}`, { method: 'DELETE' })
-      if (!res.ok && res.status !== 204) {
-        const data = await res.json().catch(() => ({}))
-        throw new Error(data.error ?? t('saveError'))
+  const addItem = useCallback(
+    async (category: string, fields: { name: string; description?: string; price?: number }) => {
+      // Adds have no row to anchor to until the server returns an id, so the
+      // DraftItemForm's own submitting state handles the progress UI and we
+      // surface failures via a toast instead.
+      try {
+        const res = await fetch(`/api/menus/${slug}/items`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            category,
+            name: fields.name,
+            description: fields.description ?? '',
+            price: fields.price ?? 0,
+          }),
+        })
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error ?? t('saveError'))
+        setItems((cur) => [
+          ...cur,
+          {
+            id: data.id,
+            category: data.category,
+            name: data.name,
+            description: data.description ?? '',
+            price: data.price ?? 0,
+            tags: data.tags ?? [],
+            badges: data.badges ?? [],
+            specialUntil: data.specialUntil ?? null,
+            imageUrl: data.imageUrl ?? null,
+          },
+        ])
+        return true
+      } catch (err) {
+        const message =
+          err instanceof Error ? err.message : typeof err === 'string' ? err : t('saveError')
+        toast.error(message || t('saveError'))
+        return false
       }
-      // Success: row vanishing is feedback enough; no indicator needed.
-      setSaveFor(id, null)
-    } catch (err) {
-      setItems(previous)
-      handleErrorFor(id, err, t('saveError'))
-    }
-  }, [slug, setSaveFor, handleErrorFor, t])
+    },
+    [slug, t],
+  )
+
+  const deleteItem = useCallback(
+    async (id: string) => {
+      // Confirmation now happens inline in ItemRow — arrive here only after
+      // the user has clicked the destructive button a second time. The row is
+      // optimistically removed; on failure we restore it and anchor the error
+      // indicator back onto the restored row.
+      const previous = itemsRef.current
+      setItems((cur) => cur.filter((it) => it.id !== id))
+      try {
+        const res = await fetch(`/api/menus/${slug}/items/${id}`, { method: 'DELETE' })
+        if (!res.ok && res.status !== 204) {
+          const data = await res.json().catch(() => ({}))
+          throw new Error(data.error ?? t('saveError'))
+        }
+        // Success: row vanishing is feedback enough; no indicator needed.
+        setSaveFor(id, null)
+      } catch (err) {
+        setItems(previous)
+        handleErrorFor(id, err, t('saveError'))
+      }
+    },
+    [slug, setSaveFor, handleErrorFor, t],
+  )
 
   const liveMessage = useMemo(() => {
     const values = Object.values(saves)
@@ -342,10 +344,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
             {/* Desktop: vertical category rail. No ScrollArea — lets the rail
                 extend naturally; `sticky` keeps it in place and the page
                 scrolls underneath if it's taller than the viewport. */}
-            <nav
-              aria-label={t('categoriesHeading')}
-              className="mt-6 hidden space-y-1 lg:block"
-            >
+            <nav aria-label={t('categoriesHeading')} className="mt-6 hidden space-y-1 lg:block">
               <RailButton
                 active={selectedCategory === ALL}
                 Icon={LayoutGrid}
@@ -417,7 +416,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={t('searchPlaceholder')}
-                className="border-cream-line bg-card focus:border-foreground/40 focus:bg-background h-11 w-full rounded-full border pl-10 pr-10 text-sm outline-none transition-colors"
+                className="border-cream-line bg-card focus:border-foreground/40 focus:bg-background h-11 w-full rounded-full border pr-10 pl-10 text-sm transition-colors outline-none"
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
@@ -463,9 +462,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
                         type="button"
                         size="sm"
                         variant={isAdding ? 'ghost' : 'outline'}
-                        onClick={() =>
-                          setAddingToCategory(isAdding ? null : cat)
-                        }
+                        onClick={() => setAddingToCategory(isAdding ? null : cat)}
                       >
                         {isAdding ? (
                           <>
@@ -548,7 +545,7 @@ function MenuSettingsCard({
           onChange={(e) => onNameChange(e.target.value)}
           onBlur={onNameBlur}
           data-initial={initialName}
-          className="border-transparent focus:border-foreground/30 focus:bg-background w-full rounded-md border bg-transparent px-2 py-1.5 text-lg font-semibold tracking-[-0.01em] outline-none"
+          className="focus:border-foreground/30 focus:bg-background w-full rounded-md border border-transparent bg-transparent px-2 py-1.5 text-lg font-semibold tracking-[-0.01em] outline-none"
         />
       </label>
     </div>
@@ -578,7 +575,7 @@ function RailButton({
       className={`flex w-full items-center gap-3 rounded-[14px] border px-3 py-3 text-left transition-colors ${
         active
           ? 'bg-foreground border-foreground text-background'
-          : 'border-transparent text-foreground hover:bg-card'
+          : 'text-foreground hover:bg-card border-transparent'
       }`}
     >
       <span
@@ -589,9 +586,7 @@ function RailButton({
         <Icon className="h-4 w-4" aria-hidden={true} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold tracking-[-0.01em]">
-          {label}
-        </span>
+        <span className="block truncate text-sm font-semibold tracking-[-0.01em]">{label}</span>
         <span
           className={`block truncate text-[11px] ${
             active ? 'text-background/70' : 'text-muted-foreground'
@@ -630,9 +625,7 @@ function CategoryChip({
     >
       <Icon className="h-3.5 w-3.5" aria-hidden={true} />
       <span className="whitespace-nowrap">{label}</span>
-      <span className={`text-xs ${active ? 'opacity-70' : 'text-muted-foreground'}`}>
-        {count}
-      </span>
+      <span className={`text-xs ${active ? 'opacity-70' : 'text-muted-foreground'}`}>{count}</span>
     </button>
   )
 }
@@ -682,7 +675,7 @@ function DraftItemForm({
   }
 
   return (
-    <li className="bg-card border-accent/50 border-l-4 space-y-3 px-4 py-4" onKeyDown={handleKey}>
+    <li className="bg-card border-accent/50 space-y-3 border-l-4 px-4 py-4" onKeyDown={handleKey}>
       <div className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
         {t('newDishTitle', { category })}
       </div>
@@ -697,7 +690,7 @@ function DraftItemForm({
           disabled={submitting}
           className="flex-1 text-[17px] font-semibold tracking-[-0.01em]"
         />
-        <div className="bg-pop text-pop-foreground flex shrink-0 items-center rounded-full pl-3 pr-1 text-[13px] font-semibold">
+        <div className="bg-pop text-pop-foreground flex shrink-0 items-center rounded-full pr-1 pl-3 text-[13px] font-semibold">
           <span>{symbol}</span>
           <input
             type="text"
@@ -707,7 +700,7 @@ function DraftItemForm({
             value={priceInput}
             onChange={(e) => setPriceInput(e.target.value)}
             disabled={submitting}
-            className="placeholder:text-pop-foreground/70 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none focus:bg-background/15"
+            className="placeholder:text-pop-foreground/70 focus:bg-background/15 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none"
           />
         </div>
       </div>
@@ -831,140 +824,139 @@ const ItemRow = memo(function ItemRow({
         )}
       </div>
       <div className="flex items-start gap-3 px-4 pt-1 pb-4">
-      <div className="flex shrink-0 flex-col items-stretch gap-1.5">
-        <DishPhotoUploader
-          itemId={item.id}
-          value={item.imageUrl}
-          onChange={(url) => onChange(item.id, { imageUrl: url })}
-        />
-        {item.imageUrl ? (
-          <div className="flex flex-col gap-1">
+        <div className="flex shrink-0 flex-col items-stretch gap-1.5">
+          <DishPhotoUploader
+            itemId={item.id}
+            value={item.imageUrl}
+            onChange={(url) => onChange(item.id, { imageUrl: url })}
+          />
+          {item.imageUrl ? (
+            <div className="flex flex-col gap-1">
+              <PhotoActionButton
+                icon={Wand2}
+                label="Enhance"
+                onClick={() => setAIMode('enhance')}
+              />
+              <PhotoActionButton
+                icon={RefreshCw}
+                label="Regen"
+                onClick={() => setAIMode('generate')}
+              />
+            </div>
+          ) : (
             <PhotoActionButton
-              icon={Wand2}
-              label="Enhance"
-              onClick={() => setAIMode('enhance')}
-            />
-            <PhotoActionButton
-              icon={RefreshCw}
-              label="Regen"
+              icon={Sparkles}
+              label="Generate"
               onClick={() => setAIMode('generate')}
             />
-          </div>
-        ) : (
-          <PhotoActionButton
-            icon={Sparkles}
-            label="Generate"
-            onClick={() => setAIMode('generate')}
-          />
-        )}
-      </div>
-      <div className="min-w-0 flex-1 space-y-1.5">
-        <div className="flex items-start gap-2">
-          <input
-            type="text"
-            aria-label={t('itemName')}
-            value={localName}
-            onChange={(e) => setLocalName(e.target.value)}
-            onBlur={() => {
-              const trimmed = localName.trim()
-              if (!trimmed) {
-                setLocalName(item.name)
-                return
-              }
-              if (trimmed !== item.name) onChange(item.id, { name: trimmed })
-            }}
-            className="border-transparent focus:border-foreground/30 focus:bg-card flex-1 rounded-md border bg-transparent px-2 py-1 text-[17px] font-semibold tracking-[-0.01em] outline-none"
-          />
-          <div className="bg-pop text-pop-foreground flex shrink-0 items-center rounded-full pl-3 pr-1 text-[13px] font-semibold">
-            <span>{symbol}</span>
+          )}
+        </div>
+        <div className="min-w-0 flex-1 space-y-1.5">
+          <div className="flex items-start gap-2">
             <input
               type="text"
-              inputMode="decimal"
-              aria-label={t('itemPrice')}
-              value={localPrice}
-              onChange={(e) => setLocalPrice(e.target.value)}
+              aria-label={t('itemName')}
+              value={localName}
+              onChange={(e) => setLocalName(e.target.value)}
               onBlur={() => {
-                const parsed = parsePriceInput(localPrice)
-                if (parsed === null) {
-                  setLocalPrice(formatPriceInput(item.price))
+                const trimmed = localName.trim()
+                if (!trimmed) {
+                  setLocalName(item.name)
                   return
                 }
-                if (parsed !== item.price) {
-                  onChange(item.id, { price: parsed })
-                  setLocalPrice(formatPriceInput(parsed))
-                }
+                if (trimmed !== item.name) onChange(item.id, { name: trimmed })
               }}
-              className="placeholder:text-pop-foreground/70 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none focus:bg-background/15"
+              className="focus:border-foreground/30 focus:bg-card flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-[17px] font-semibold tracking-[-0.01em] outline-none"
             />
+            <div className="bg-pop text-pop-foreground flex shrink-0 items-center rounded-full pr-1 pl-3 text-[13px] font-semibold">
+              <span>{symbol}</span>
+              <input
+                type="text"
+                inputMode="decimal"
+                aria-label={t('itemPrice')}
+                value={localPrice}
+                onChange={(e) => setLocalPrice(e.target.value)}
+                onBlur={() => {
+                  const parsed = parsePriceInput(localPrice)
+                  if (parsed === null) {
+                    setLocalPrice(formatPriceInput(item.price))
+                    return
+                  }
+                  if (parsed !== item.price) {
+                    onChange(item.id, { price: parsed })
+                    setLocalPrice(formatPriceInput(parsed))
+                  }
+                }}
+                className="placeholder:text-pop-foreground/70 focus:bg-background/15 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none"
+              />
+            </div>
           </div>
-        </div>
-        <Textarea
-          aria-label={t('itemDescription')}
-          value={localDesc}
-          onChange={(e) => setLocalDesc(e.target.value)}
-          onBlur={() => {
-            if (localDesc !== item.description) onChange(item.id, { description: localDesc })
-          }}
-          placeholder={t('itemDescription')}
-          // Override shadcn defaults to look inline (transparent, no border
-          // at rest) while keeping field-sizing-content auto-growth.
-          className="text-muted-foreground focus-visible:bg-card focus-visible:text-foreground placeholder:text-muted-foreground/50 min-h-0 resize-none rounded-md border-transparent bg-transparent px-2 py-1 text-[14px] leading-[1.55] shadow-none md:text-[14px]"
-        />
-        {item.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 px-2">
-            {item.tags.map((tag) => (
-              <span
-                key={tag}
-                className="bg-accent/30 text-foreground rounded-[6px] px-2 py-0.5 text-[10px] font-semibold tracking-[0.1em] uppercase"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-        {(enabledBadges.length > 0 || item.specialUntil !== undefined) && (
-          <div className="flex flex-wrap gap-1.5 px-2 pt-0.5">
-            <SpecialToggle
-              specialUntil={item.specialUntil}
-              onChange={(next) => onChange(item.id, { specialUntil: next })}
-            />
-            {enabledBadges.map((key) => {
-              const def = BADGES[key]
-              const Icon = def.icon
-              const selected = item.badges.includes(key)
-              return (
-                <button
-                  key={key}
-                  type="button"
-                  role="switch"
-                  aria-checked={selected}
-                  onClick={() => {
-                    const next = selected
-                      ? item.badges.filter((b) => b !== key)
-                      : [...item.badges, key]
-                    onChange(item.id, { badges: next })
-                  }}
-                  className={cn(
-                    'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors',
-                    selected
-                      ? def.selectedChipClassName
-                      : 'border-cream-line bg-card text-muted-foreground hover:border-foreground/30',
-                  )}
+          <Textarea
+            aria-label={t('itemDescription')}
+            value={localDesc}
+            onChange={(e) => setLocalDesc(e.target.value)}
+            onBlur={() => {
+              if (localDesc !== item.description) onChange(item.id, { description: localDesc })
+            }}
+            placeholder={t('itemDescription')}
+            // Override shadcn defaults to look inline (transparent, no border
+            // at rest) while keeping field-sizing-content auto-growth.
+            className="text-muted-foreground focus-visible:bg-card focus-visible:text-foreground placeholder:text-muted-foreground/50 min-h-0 resize-none rounded-md border-transparent bg-transparent px-2 py-1 text-[14px] leading-[1.55] shadow-none md:text-[14px]"
+          />
+          {item.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1 px-2">
+              {item.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="bg-accent/30 text-foreground rounded-[6px] px-2 py-0.5 text-[10px] font-semibold tracking-[0.1em] uppercase"
                 >
-                  <Icon className="size-3" aria-hidden="true" />
-                  {def.label}
-                </button>
-              )
-            })}
-          </div>
-        )}
-        {/* Reserved slot so showing/hiding the pill doesn't push the row's
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+          {(enabledBadges.length > 0 || item.specialUntil !== undefined) && (
+            <div className="flex flex-wrap gap-1.5 px-2 pt-0.5">
+              <SpecialToggle
+                specialUntil={item.specialUntil}
+                onChange={(next) => onChange(item.id, { specialUntil: next })}
+              />
+              {enabledBadges.map((key) => {
+                const def = BADGES[key]
+                const Icon = def.icon
+                const selected = item.badges.includes(key)
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    role="switch"
+                    aria-checked={selected}
+                    onClick={() => {
+                      const next = selected
+                        ? item.badges.filter((b) => b !== key)
+                        : [...item.badges, key]
+                      onChange(item.id, { badges: next })
+                    }}
+                    className={cn(
+                      'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors',
+                      selected
+                        ? def.selectedChipClassName
+                        : 'border-cream-line bg-card text-muted-foreground hover:border-foreground/30',
+                    )}
+                  >
+                    <Icon className="size-3" aria-hidden="true" />
+                    {def.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+          {/* Reserved slot so showing/hiding the pill doesn't push the row's
             height around. Height matches the pill (px-2.5 py-1 + 1px border). */}
-        <div className="flex min-h-[28px] items-center justify-end px-2 pt-0.5">
-          <SaveIndicator save={save} />
+          <div className="flex min-h-[28px] items-center justify-end px-2 pt-0.5">
+            <SaveIndicator save={save} />
+          </div>
         </div>
-      </div>
-
       </div>
 
       {aiMode ? (
@@ -1097,7 +1089,7 @@ function SaveIndicator({ save }: { save: SaveStatus | undefined }) {
         {/* Light sweep — runs once over the pill as it holds, then fades. */}
         <span
           aria-hidden="true"
-          className="animate-save-pill-wave pointer-events-none absolute inset-y-0 -inset-x-2 bg-[linear-gradient(100deg,transparent_0%,rgba(255,255,255,0.7)_50%,transparent_100%)]"
+          className="animate-save-pill-wave pointer-events-none absolute -inset-x-2 inset-y-0 bg-[linear-gradient(100deg,transparent_0%,rgba(255,255,255,0.7)_50%,transparent_100%)]"
         />
         <Check className="relative h-3 w-3" aria-hidden="true" />
         <span className="relative">{t('saved')}</span>

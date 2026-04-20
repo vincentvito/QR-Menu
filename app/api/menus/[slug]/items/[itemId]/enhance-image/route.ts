@@ -21,10 +21,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
   }
   if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-    return NextResponse.json(
-      { error: 'AI image enhancement is not configured' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'AI image enhancement is not configured' }, { status: 500 })
   }
 
   const { slug, itemId } = await params
@@ -63,10 +60,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Dish not found' }, { status: 404 })
   }
   if (!item.imageUrl) {
-    return NextResponse.json(
-      { error: 'This dish has no photo to enhance yet' },
-      { status: 400 },
-    )
+    return NextResponse.json({ error: 'This dish has no photo to enhance yet' }, { status: 400 })
   }
 
   try {

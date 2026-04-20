@@ -46,10 +46,7 @@ export default async function AdminPage() {
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <Link
-              href="/dashboard"
-              className="text-muted-foreground hover:text-foreground text-sm"
-            >
+            <Link href="/dashboard" className="text-muted-foreground hover:text-foreground text-sm">
               Your dashboard
             </Link>
             <SignOutButton />
@@ -60,9 +57,7 @@ export default async function AdminPage() {
       <main className="mx-auto max-w-[1240px] space-y-10 px-[clamp(20px,5vw,80px)] py-6">
         <section>
           <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Platform-wide stats at a glance.
-          </p>
+          <p className="text-muted-foreground mt-1 text-sm">Platform-wide stats at a glance.</p>
           <StatsGrid stats={stats} className="mt-5" />
           <div className="mt-5">
             <SignupsChart data={signups} />
@@ -72,8 +67,7 @@ export default async function AdminPage() {
         <section>
           <h2 className="text-2xl font-semibold tracking-tight">Users</h2>
           <p className="text-muted-foreground mt-1 mb-5 text-sm">
-            {users.length} total · impersonate to see what a user sees, ban to
-            block sign-in.
+            {users.length} total · impersonate to see what a user sees, ban to block sign-in.
           </p>
 
           <AdminTable

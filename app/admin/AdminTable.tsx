@@ -92,9 +92,7 @@ export function AdminTable({ viewerId, users }: AdminTableProps) {
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2 text-sm font-medium">
                 <span className="truncate">{user.name || user.email}</span>
-                {isViewer && (
-                  <span className="text-muted-foreground text-xs">(you)</span>
-                )}
+                {isViewer && <span className="text-muted-foreground text-xs">(you)</span>}
                 {isAdmin && (
                   <span className="border-cream-line bg-background text-muted-foreground rounded-full border px-2 py-0.5 text-[10px] tracking-[0.14em] uppercase">
                     Admin
@@ -110,9 +108,7 @@ export function AdminTable({ viewerId, users }: AdminTableProps) {
                 {user.email} · {user.orgCount} restaurant{user.orgCount === 1 ? '' : 's'}
               </div>
               {user.banned && user.banReason && (
-                <div className="text-destructive mt-1 truncate text-xs">
-                  {user.banReason}
-                </div>
+                <div className="text-destructive mt-1 truncate text-xs">{user.banReason}</div>
               )}
             </div>
             <div className="flex shrink-0 gap-2">

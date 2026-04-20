@@ -20,8 +20,7 @@ export function QRCode({ size = 180, color, bg = 'transparent', className }: QRC
   const cells: Array<[number, number]> = []
   for (let y = 0; y < n; y++) {
     for (let x = 0; x < n; x++) {
-      const inCorner =
-        (x < 8 && y < 8) || (x > n - 9 && y < 8) || (x < 8 && y > n - 9)
+      const inCorner = (x < 8 && y < 8) || (x > n - 9 && y < 8) || (x < 8 && y > n - 9)
       if (!inCorner && rand() < 0.48) cells.push([x, y])
     }
   }

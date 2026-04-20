@@ -16,7 +16,7 @@ export function Kicker({ children, tone = 'default', className }: KickerProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-2 text-[12px] font-medium tracking-[0.14em] uppercase leading-none',
+        'inline-flex items-center gap-2 text-[12px] leading-none font-medium tracking-[0.14em] uppercase',
         color,
         className,
       )}

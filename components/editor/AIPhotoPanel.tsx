@@ -5,10 +5,7 @@ import { Loader2, Sparkles, Wand2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  buildEnhancePrompt,
-  buildGeneratePrompt,
-} from '@/lib/ai/dish-image-prompts'
+import { buildEnhancePrompt, buildGeneratePrompt } from '@/lib/ai/dish-image-prompts'
 import { cn } from '@/lib/utils'
 
 export type AIPhotoMode = 'enhance' | 'generate'
@@ -156,7 +153,7 @@ export function AIPhotoPanel({
           onClick={onClose}
           aria-label="Close"
           disabled={status === 'processing'}
-          className="text-muted-foreground hover:text-foreground disabled:opacity-30 rounded-full p-1 transition-colors"
+          className="text-muted-foreground hover:text-foreground rounded-full p-1 transition-colors disabled:opacity-30"
         >
           <X className="size-4" aria-hidden="true" />
         </button>
@@ -215,7 +212,7 @@ export function AIPhotoPanel({
       {status === 'processing' && (
         <div className="mt-3 space-y-3">
           <div className="border-cream-line bg-background flex flex-col items-center gap-3 rounded-[12px] border border-dashed px-4 py-8">
-            <Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden="true" />
+            <Loader2 className="text-muted-foreground size-6 animate-spin" aria-hidden="true" />
             <p className="text-muted-foreground text-center text-xs">
               Working on it — usually 15 to 30 seconds.
               <br />

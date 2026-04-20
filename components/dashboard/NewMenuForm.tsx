@@ -3,15 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
-import {
-  FileText,
-  Image as ImageIcon,
-  LinkIcon,
-  Loader2,
-  Sparkles,
-  Upload,
-  X,
-} from 'lucide-react'
+import { FileText, Image as ImageIcon, LinkIcon, Loader2, Sparkles, Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PillButton } from '@/components/ui/pill-button'
 import { Input } from '@/components/ui/input'
@@ -162,9 +154,7 @@ export function NewMenuForm() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium">{t('fileDrop')}</div>
-                <div className="text-muted-foreground truncate text-[11px]">
-                  {t('fileHint')}
-                </div>
+                <div className="text-muted-foreground truncate text-[11px]">{t('fileHint')}</div>
               </div>
             </label>
           )}
@@ -236,13 +226,7 @@ export function NewMenuForm() {
           </p>
         )}
 
-        <PillButton
-          type="submit"
-          variant="primary"
-          size="lg"
-          disabled={busy}
-          className="w-full"
-        >
+        <PillButton type="submit" variant="primary" size="lg" disabled={busy} className="w-full">
           {busy ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />

@@ -105,9 +105,7 @@ export function MenuQRPanel({ menuName, publicUrl, qr }: MenuQRPanelProps) {
                 <Copy className="size-3.5" aria-hidden="true" />
               </Button>
             </div>
-            {copied && (
-              <p className="text-muted-foreground text-xs">Copied to clipboard</p>
-            )}
+            {copied && <p className="text-muted-foreground text-xs">Copied to clipboard</p>}
           </div>
 
           <div className="space-y-2">
@@ -119,18 +117,14 @@ export function MenuQRPanel({ menuName, publicUrl, qr }: MenuQRPanelProps) {
                 <Download className="size-4" aria-hidden="true" />
                 SVG
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleDownload('png')}
-              >
+              <Button type="button" variant="outline" onClick={() => handleDownload('png')}>
                 <Download className="size-4" aria-hidden="true" />
                 PNG
               </Button>
             </div>
             <p className="text-muted-foreground text-xs">
-              SVG scales to any size without loss — best for printing. PNG is
-              handy for sending in chat or email.
+              SVG scales to any size without loss — best for printing. PNG is handy for sending in
+              chat or email.
             </p>
           </div>
         </div>

@@ -22,10 +22,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
   }
   if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-    return NextResponse.json(
-      { error: 'AI image generation is not configured' },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: 'AI image generation is not configured' }, { status: 500 })
   }
 
   const { slug, itemId } = await params

@@ -13,10 +13,7 @@ export function SectionHeading({
   const Tag = as ?? 'h2'
   return (
     <Tag
-      className={cn(
-        'text-foreground text-[17px] font-semibold tracking-[-0.01em]',
-        className,
-      )}
+      className={cn('text-foreground text-[17px] font-semibold tracking-[-0.01em]', className)}
       {...props}
     />
   )

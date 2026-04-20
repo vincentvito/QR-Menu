@@ -28,7 +28,7 @@ migration/introspect CLI that needs a direct connection.
 Two separate connection strings:
 
 - `DATABASE_URL` → pooler, port **6543** (used by the app at runtime)
-- `DIRECT_URL`   → direct connection, port **5432** (used by the Prisma CLI)
+- `DIRECT_URL` → direct connection, port **5432** (used by the Prisma CLI)
 
 ### `.env`
 
