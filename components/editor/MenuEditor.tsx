@@ -795,7 +795,43 @@ const ItemRow = memo(function ItemRow({
         confirming && 'bg-destructive/5',
       )}
     >
-      <div className="flex items-start gap-3 px-4 py-4">
+      {/* Delete lives on its own top row — keeps the price chip from
+          competing visually with a button at the right edge of the name row. */}
+      <div className="flex justify-end px-4 pt-2">
+        {confirming ? (
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              aria-label={t('cancelDelete')}
+              onClick={() => setConfirming(false)}
+              className="text-muted-foreground hover:text-foreground grid size-7 place-items-center rounded-full transition-colors"
+            >
+              <X className="size-3.5" aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setConfirming(false)
+                onDelete(item.id)
+              }}
+              className="bg-destructive hover:bg-destructive/90 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white transition-colors"
+            >
+              <Trash2 className="size-3" aria-hidden="true" />
+              {t('confirmDeleteShort')}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            aria-label={t('deleteDish')}
+            onClick={() => setConfirming(true)}
+            className="text-muted-foreground hover:text-destructive grid size-7 place-items-center rounded-full transition-colors"
+          >
+            <Trash2 className="size-3.5" aria-hidden="true" />
+          </button>
+        )}
+      </div>
+      <div className="flex items-start gap-3 px-4 pt-1 pb-4">
       <div className="flex shrink-0 flex-col items-stretch gap-1.5">
         <DishPhotoUploader
           itemId={item.id}
@@ -930,45 +966,6 @@ const ItemRow = memo(function ItemRow({
         </div>
       </div>
 
-      {/* Inline delete confirmation — first click arms, second confirms. */}
-      {confirming ? (
-        <div className="flex shrink-0 items-center gap-1">
-          <Button
-            type="button"
-            size="icon-sm"
-            variant="ghost"
-            aria-label={t('cancelDelete')}
-            onClick={() => setConfirming(false)}
-            className="text-muted-foreground"
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="destructive"
-            onClick={() => {
-              setConfirming(false)
-              onDelete(item.id)
-            }}
-            className="rounded-full"
-          >
-            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-            {t('confirmDeleteShort')}
-          </Button>
-        </div>
-      ) : (
-        <Button
-          type="button"
-          size="icon-sm"
-          variant="ghost"
-          aria-label={t('deleteDish')}
-          onClick={() => setConfirming(true)}
-          className="text-muted-foreground hover:text-destructive"
-        >
-          <Trash2 className="h-4 w-4" aria-hidden="true" />
-        </Button>
-      )}
       </div>
 
       {aiMode ? (
