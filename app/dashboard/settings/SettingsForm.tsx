@@ -305,7 +305,7 @@ export function SettingsForm({
         </p>
       )}
 
-      <section className="space-y-4">
+      <section id="settings-restaurant" className="scroll-mt-24 space-y-4">
         <SectionHeading>Restaurant</SectionHeading>
 
         <div className="space-y-2">
@@ -377,7 +377,10 @@ export function SettingsForm({
         </SectionFooter>
       </section>
 
-      <section className="border-cream-line/60 space-y-4 border-t pt-6">
+      <section
+        id="settings-links"
+        className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
+      >
         <SectionHeading>Links</SectionHeading>
         <p className="text-muted-foreground text-xs">
           Shown in your menu&apos;s footer so guests can review you or follow along. Leave any field
@@ -437,7 +440,10 @@ export function SettingsForm({
         </SectionFooter>
       </section>
 
-      <section className="border-cream-line/60 space-y-4 border-t pt-6">
+      <section
+        id="settings-menu-design"
+        className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
+      >
         <SectionHeading>Menu design</SectionHeading>
         <p className="text-muted-foreground text-xs">
           Pick how your public menu is laid out. The preview shows{' '}
@@ -651,7 +657,10 @@ export function SettingsForm({
         </SectionFooter>
       </section>
 
-      <section className="border-cream-line/60 space-y-4 border-t pt-6">
+      <section
+        id="settings-brand"
+        className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
+      >
         <SectionHeading>Brand</SectionHeading>
 
         <div className="space-y-2">
@@ -703,7 +712,10 @@ export function SettingsForm({
         </SectionFooter>
       </section>
 
-      <section className="border-cream-line/60 space-y-4 border-t pt-6">
+      <section
+        id="settings-qr"
+        className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
+      >
         <SectionHeading>QR code style</SectionHeading>
         <p className="text-muted-foreground text-xs">
           Applies to every menu QR you generate. Preview uses your most recent menu.
@@ -877,7 +889,10 @@ export function SettingsForm({
         </SectionFooter>
       </section>
 
-      <section className="border-cream-line/60 space-y-4 border-t pt-6">
+      <section
+        id="settings-wifi"
+        className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
+      >
         <SectionHeading>WiFi</SectionHeading>
         <p className="text-muted-foreground text-xs">
           Guests see a &quot;Show WiFi&quot; button on your menu to reveal and copy the password.

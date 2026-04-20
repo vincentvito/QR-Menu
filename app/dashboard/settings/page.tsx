@@ -4,6 +4,7 @@ import { templatePreviewMockupUrl } from '@/lib/menus/template-assets'
 import { currencySymbol } from '@/lib/menus/currency'
 import type { TemplateItem } from '@/components/menu/templates/types'
 import { SettingsForm } from './SettingsForm'
+import { SettingsSideNav } from './SettingsSideNav'
 
 export default async function SettingsPage() {
   const { org, role } = await getDashboardContext()
@@ -47,7 +48,7 @@ export default async function SettingsPage() {
     : null
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+    <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
         <p className="text-muted-foreground mt-1 text-sm">
@@ -55,7 +56,16 @@ export default async function SettingsPage() {
         </p>
       </div>
 
-      <SettingsForm
+      {/* Left quick-nav sticks beside the form on md+; on mobile it
+          collapses so the viewport stays focused on editing. */}
+      <div className="md:grid md:grid-cols-[180px_minmax(0,1fr)] md:gap-8">
+        <aside className="hidden md:block">
+          <div className="sticky top-20">
+            <SettingsSideNav />
+          </div>
+        </aside>
+
+        <SettingsForm
         canEdit={canEdit}
         previewMenu={previewMenu}
         templatePreviewMockupUrl={templatePreviewMockupUrl()}
@@ -90,6 +100,7 @@ export default async function SettingsPage() {
           seasonalOverlay: org.seasonalOverlay,
         }}
       />
+      </div>
     </main>
   )
 }

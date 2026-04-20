@@ -34,6 +34,7 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ restaurant, viewer }: DashboardSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const collapsedButtonClass = 'group-data-[collapsible=icon]:mx-auto'
 
   const displayName = formatDisplayName(viewer.name, viewer.email)
   const initials =
@@ -52,7 +53,7 @@ export function DashboardSidebar({ restaurant, viewer }: DashboardSidebarProps) 
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1">
+        <div className="flex items-center gap-2 px-2 py-1 group-data-[collapsible=icon]:hidden">
           <Link href="/" aria-label="QRmenucrafter home" className="shrink-0">
             <BrandMark size="sm" />
           </Link>
@@ -60,13 +61,7 @@ export function DashboardSidebar({ restaurant, viewer }: DashboardSidebarProps) 
         <div className="border-cream-line flex items-center gap-2 rounded-lg border px-2 py-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:p-0">
           {restaurant.logo ? (
             <div className="border-cream-line bg-background relative size-7 shrink-0 overflow-hidden rounded-md border">
-              <Image
-                src={restaurant.logo}
-                alt=""
-                fill
-                unoptimized
-                className="object-cover"
-              />
+              <Image src={restaurant.logo} alt="" fill unoptimized className="object-cover" />
             </div>
           ) : (
             <div className="bg-foreground text-background flex size-7 shrink-0 items-center justify-center rounded-md">
@@ -87,7 +82,12 @@ export function DashboardSidebar({ restaurant, viewer }: DashboardSidebarProps) 
                 const isActive = pathname.startsWith(item.href)
                 return (
                   <SidebarMenuItem key={item.href}>
-                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.label}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.label}
+                      className={collapsedButtonClass}
+                    >
                       <Link href={item.href}>
                         <item.icon />
                         <span>{item.label}</span>
@@ -104,7 +104,12 @@ export function DashboardSidebar({ restaurant, viewer }: DashboardSidebarProps) 
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild size="lg" tooltip={viewer.email}>
+            <SidebarMenuButton
+              asChild
+              size="lg"
+              tooltip={viewer.email}
+              className={collapsedButtonClass}
+            >
               <Link href="/dashboard/profile">
                 <Avatar className="size-7">
                   <AvatarImage src={viewer.image ?? undefined} alt="" />
@@ -114,15 +119,17 @@ export function DashboardSidebar({ restaurant, viewer }: DashboardSidebarProps) 
                 </Avatar>
                 <div className="min-w-0 flex-1 text-left">
                   <div className="truncate text-xs font-medium">{displayName}</div>
-                  <div className="text-muted-foreground truncate text-[11px]">
-                    {viewer.email}
-                  </div>
+                  <div className="text-muted-foreground truncate text-[11px]">{viewer.email}</div>
                 </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Sign out" onClick={handleSignOut}>
+            <SidebarMenuButton
+              tooltip="Sign out"
+              onClick={handleSignOut}
+              className={collapsedButtonClass}
+            >
               <LogOut />
               <span>Sign out</span>
             </SidebarMenuButton>
