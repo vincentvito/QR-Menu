@@ -1,15 +1,19 @@
 'use client'
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { useTranslations } from 'next-intl'
 import {
   Check,
   LayoutGrid,
   Loader2,
   Plus,
+  RefreshCw,
   Search,
+  Sparkles,
   Sun,
   Trash2,
+  Wand2,
   X,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -21,6 +25,15 @@ import { currencySymbol } from '@/lib/menus/currency'
 import { categoryIcon } from '@/lib/menus/category-icon'
 import { BADGES, BADGE_KEYS, type BadgeKey } from '@/lib/menus/badges'
 import { DishPhotoUploader } from '@/components/editor/DishPhotoUploader'
+// AI panel is lazy: most editor sessions never open it, and it pulls in the
+// ~3 KB system prompt plus extra UI that only matters once. Loads on first
+// click with a ~100–300ms delay — negligible vs the 15–30s AI call that
+// follows anyway.
+const AIPhotoPanel = dynamic(
+  () => import('@/components/editor/AIPhotoPanel').then((m) => m.AIPhotoPanel),
+  { ssr: false },
+)
+import type { AIPhotoMode } from '@/components/editor/AIPhotoPanel'
 import { cn } from '@/lib/utils'
 
 interface EditorItem {
@@ -485,6 +498,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
                       {rows.map((item, i) => (
                         <ItemRow
                           key={item.id}
+                          slug={slug}
                           item={item}
                           isFirst={i === 0 && !isAdding}
                           symbol={symbol}
@@ -735,6 +749,7 @@ function DraftItemForm({
 }
 
 const ItemRow = memo(function ItemRow({
+  slug,
   item,
   isFirst,
   symbol,
@@ -743,6 +758,7 @@ const ItemRow = memo(function ItemRow({
   onChange,
   onDelete,
 }: {
+  slug: string
   item: EditorItem
   isFirst: boolean
   symbol: string
@@ -766,18 +782,47 @@ const ItemRow = memo(function ItemRow({
   const [localDesc, setLocalDesc] = useState(item.description)
   const [localPrice, setLocalPrice] = useState(formatPriceInput(item.price))
   const [confirming, setConfirming] = useState(false)
+  // Local per-row panel state — each row manages its own AI flow, so the
+  // parent never re-renders when panels open/close.
+  const [aiMode, setAIMode] = useState<AIPhotoMode | null>(null)
 
   return (
     <li
-      className={`bg-background flex items-start gap-3 px-4 py-4 transition-colors ${
-        isFirst ? '' : 'border-cream-line border-t'
-      } ${confirming ? 'bg-destructive/5' : ''}`}
+      id={`dish-row-${item.id}`}
+      className={cn(
+        'bg-background scroll-mt-24 transition-colors',
+        isFirst ? '' : 'border-cream-line border-t',
+        confirming && 'bg-destructive/5',
+      )}
     >
-      <DishPhotoUploader
-        itemId={item.id}
-        value={item.imageUrl}
-        onChange={(url) => onChange(item.id, { imageUrl: url })}
-      />
+      <div className="flex items-start gap-3 px-4 py-4">
+      <div className="flex shrink-0 flex-col items-stretch gap-1.5">
+        <DishPhotoUploader
+          itemId={item.id}
+          value={item.imageUrl}
+          onChange={(url) => onChange(item.id, { imageUrl: url })}
+        />
+        {item.imageUrl ? (
+          <div className="flex flex-col gap-1">
+            <PhotoActionButton
+              icon={Wand2}
+              label="Enhance"
+              onClick={() => setAIMode('enhance')}
+            />
+            <PhotoActionButton
+              icon={RefreshCw}
+              label="Regen"
+              onClick={() => setAIMode('generate')}
+            />
+          </div>
+        ) : (
+          <PhotoActionButton
+            icon={Sparkles}
+            label="Generate"
+            onClick={() => setAIMode('generate')}
+          />
+        )}
+      </div>
       <div className="min-w-0 flex-1 space-y-1.5">
         <div className="flex items-start gap-2">
           <input
@@ -924,9 +969,49 @@ const ItemRow = memo(function ItemRow({
           <Trash2 className="h-4 w-4" aria-hidden="true" />
         </Button>
       )}
+      </div>
+
+      {aiMode ? (
+        <div className="px-4 pb-4">
+          <AIPhotoPanel
+            slug={slug}
+            itemId={item.id}
+            mode={aiMode}
+            dish={{
+              name: item.name,
+              category: item.category,
+              description: item.description,
+            }}
+            currentImageUrl={item.imageUrl}
+            onApply={(url) => onChange(item.id, { imageUrl: url })}
+            onClose={() => setAIMode(null)}
+          />
+        </div>
+      ) : null}
     </li>
   )
 })
+
+function PhotoActionButton({
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>
+  label: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="border-cream-line bg-card text-muted-foreground hover:border-foreground/30 hover:text-foreground inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1 text-[10px] font-semibold transition-colors"
+    >
+      <Icon className="size-3" aria-hidden={true} />
+      {label}
+    </button>
+  )
+}
 
 // Computes "end of today" in the browser's local timezone. Staff clicking
 // the toggle from the restaurant floor means their device timezone IS the

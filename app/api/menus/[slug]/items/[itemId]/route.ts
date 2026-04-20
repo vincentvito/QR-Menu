@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { requireMenuAccess } from '@/lib/menus/get'
 import { isBadgeKey } from '@/lib/menus/badges'
+import { deleteByUrl } from '@/lib/storage/r2'
 
 export const runtime = 'nodejs'
 
@@ -118,10 +119,32 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
   try {
     await ensureOwnership(slug, itemId, session.user.id)
+
+    // If imageUrl is changing, look up the previous value so we can clean
+    // up its R2 object after the DB update succeeds.
+    let previousImageUrl: string | null = null
+    if ('imageUrl' in updates) {
+      const prev = await prisma.menuItem.findUnique({
+        where: { id: itemId },
+        select: { imageUrl: true },
+      })
+      previousImageUrl = prev?.imageUrl ?? null
+    }
+
     const item = await prisma.menuItem.update({
       where: { id: itemId },
       data: updates,
     })
+
+    if (
+      previousImageUrl &&
+      previousImageUrl !== item.imageUrl &&
+      item.imageUrl !== previousImageUrl
+    ) {
+      // Fire-and-forget — don't block the response on R2.
+      void deleteByUrl(previousImageUrl)
+    }
+
     return NextResponse.json(item)
   } catch (err) {
     const status = (err as { status?: number })?.status ?? 500
@@ -140,7 +163,15 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
 
   try {
     await ensureOwnership(slug, itemId, session.user.id)
+    // Look up the image before deleting so we can clean up R2 afterwards.
+    const existing = await prisma.menuItem.findUnique({
+      where: { id: itemId },
+      select: { imageUrl: true },
+    })
     await prisma.menuItem.delete({ where: { id: itemId } })
+    if (existing?.imageUrl) {
+      void deleteByUrl(existing.imageUrl)
+    }
     return new NextResponse(null, { status: 204 })
   } catch (err) {
     const status = (err as { status?: number })?.status ?? 500

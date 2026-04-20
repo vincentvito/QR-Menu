@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 
 /**
  * Cloudflare R2 client. Env var names mirror the sibling projects
@@ -90,6 +90,29 @@ export async function uploadBuffer({
     }),
   )
   return { key, url: publicUrl(key) }
+}
+
+// Best-effort delete: turns a public URL back into its bucket key (only
+// when the URL is under our CLOUDFLARE_PUBLIC_URL base, i.e. we own it) and
+// removes the object. Safe to call with URLs we don't own — it no-ops.
+// Never throws — callers should `.catch` anyway if they want to log failures.
+export async function deleteByUrl(url: string): Promise<void> {
+  try {
+    const base = requireEnv('CLOUDFLARE_PUBLIC_URL').replace(/\/+$/, '')
+    const prefix = `${base}/`
+    if (!url.startsWith(prefix)) return
+    const key = url.slice(prefix.length)
+    if (!key) return
+    await client().send(
+      new DeleteObjectCommand({
+        Bucket: requireEnv('CLOUDFLARE_BUCKET_NAME'),
+        Key: key,
+      }),
+    )
+  } catch (err) {
+    // Swallow — orphaned files aren't worth failing a user action for.
+    console.warn('[r2.deleteByUrl] failed:', err)
+  }
 }
 
 export function extFromMimeType(mime: string): string {

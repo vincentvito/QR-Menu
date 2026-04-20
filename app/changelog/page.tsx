@@ -6,6 +6,23 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.16.0',
+    date: '2026-04-19',
+    title: 'AI-assisted dish photos',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          '&ldquo;Generate&rdquo; a dish photo with AI — uses the dish&apos;s name and description as the brief; add optional extra direction (&ldquo;overhead on slate, more steam&rdquo;) and let it cook',
+          '&ldquo;Enhance&rdquo; an existing photo — improves lighting, background, and framing while preserving the exact dish and plating',
+          'Review panel shows before/after so you never lose your original by accident — keep the new one, keep the old one, or try again',
+          'Preview the exact prompt being sent to the AI in a collapsible section before you generate — updates live as you tweak the extra direction',
+          'Generated images default to bright, overhead, Instagram-food-blog styling tuned for restaurant menus',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.15.0',
     date: '2026-04-19',
     title: 'Dish photos',
