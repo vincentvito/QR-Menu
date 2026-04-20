@@ -8,6 +8,7 @@ import { isSupportedCurrency } from '@/lib/menus/currency'
 import { isWifiEncryption } from '@/lib/wifi'
 import { normalizeSocialHandle } from '@/lib/socials'
 import { isBadgeKey } from '@/lib/menus/badges'
+import { isTemplateId } from '@/components/menu/templates'
 
 export const runtime = 'nodejs'
 
@@ -275,6 +276,13 @@ export async function PATCH(request: Request) {
     const filtered = body.disabledBadges.filter(isBadgeKey)
     // Dedup + keep order stable via Set.
     updates.disabledBadges = Array.from(new Set(filtered))
+  }
+
+  if ('templateId' in body) {
+    if (!isTemplateId(body.templateId)) {
+      return NextResponse.json({ error: 'Invalid template' }, { status: 400 })
+    }
+    updates.templateId = body.templateId
   }
 
   if (Object.keys(updates).length === 0) {

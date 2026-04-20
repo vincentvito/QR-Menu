@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
@@ -60,6 +60,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Invalid url' }, { status: 400 })
   }
 
-  void deleteByUrl(url)
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  after(() => deleteByUrl(url!))
   return NextResponse.json({ ok: true })
 }

@@ -1,38 +1,38 @@
 'use client'
 
-import { memo, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Search, X } from 'lucide-react'
-import { BadgeRow } from '@/components/menu/BadgeRow'
 import { ImageLightbox } from '@/components/menu/ImageLightbox'
-
-interface PublicItem {
-  id: string
-  category: string
-  name: string
-  description: string
-  price: number
-  tags: string[]
-  badges: string[]
-  imageUrl: string | null
-}
+import { getTemplate } from '@/components/menu/templates'
+import type {
+  TemplateCategoryGroup,
+  TemplateItem,
+} from '@/components/menu/templates/types'
 
 interface PublicMenuBodyProps {
-  items: PublicItem[]
+  items: TemplateItem[]
   // IDs of items that are currently on special. Resolved against `items`
   // client-side so we don't serialize the same dish twice.
   specialIds: string[]
   symbol: string
   disabledBadges: string[]
+  // Which template to render. Falls back to default if unknown.
+  templateId: string
 }
 
 const SPECIALS_ANCHOR_ID = 'todays-specials'
 
+// PublicMenuBody owns the chrome: sticky search, category nav, lightbox,
+// empty states. Item rendering is delegated to the selected template so
+// each layout (Editorial, Photo Grid, etc.) can diverge without
+// reimplementing search/scroll logic.
 export function PublicMenuBody({
   items,
   specialIds,
   symbol,
   disabledBadges,
+  templateId,
 }: PublicMenuBodyProps) {
   const t = useTranslations('MenuView')
   const [query, setQuery] = useState('')
@@ -40,7 +40,7 @@ export function PublicMenuBody({
 
   const { visibleGroups, visibleSpecials, totalMatches, hasQuery } = useMemo(() => {
     const q = query.trim().toLowerCase()
-    const matches = (it: PublicItem) => {
+    const matches = (it: TemplateItem) => {
       if (!q) return true
       const hay =
         it.name.toLowerCase() +
@@ -54,33 +54,35 @@ export function PublicMenuBody({
     const specialsSet = new Set(specialIds)
     const filteredSpecials = filtered.filter((it) => specialsSet.has(it.id))
 
-    // Group filtered items by category, preserving first-seen order.
     const order: string[] = []
-    const groups = new Map<string, PublicItem[]>()
+    const groupsMap = new Map<string, TemplateItem[]>()
     for (const item of filtered) {
       const key = item.category || 'Other'
-      if (!groups.has(key)) {
-        groups.set(key, [])
+      if (!groupsMap.has(key)) {
+        groupsMap.set(key, [])
         order.push(key)
       }
-      groups.get(key)!.push(item)
+      groupsMap.get(key)!.push(item)
     }
 
+    const groups: TemplateCategoryGroup[] = order.map((category, i) => ({
+      id: `cat-${i}-${slugId(category)}`,
+      category,
+      items: groupsMap.get(category)!,
+    }))
+
     return {
-      visibleGroups: order.map((category) => ({ category, items: groups.get(category)! })),
+      visibleGroups: groups,
       visibleSpecials: filteredSpecials,
       totalMatches: filtered.length,
       hasQuery: q.length > 0,
     }
   }, [items, specialIds, query])
 
-  const categoryIds = visibleGroups.map((g, i) => `cat-${i}-${slugId(g.category)}`)
-  // Show the nav any time there's something worth jumping to — specials OR
-  // more than one category. During search we hide it because section
-  // composition has become ad-hoc.
+  const template = getTemplate(templateId)
   const showCategoryNav =
     !hasQuery && (visibleSpecials.length > 0 || visibleGroups.length > 1)
-
+  const nothingToShow = visibleGroups.length === 0 && visibleSpecials.length === 0
 
   return (
     <>
@@ -132,10 +134,10 @@ export function PublicMenuBody({
                 Today&apos;s Specials
               </a>
             )}
-            {visibleGroups.map((g, i) => (
+            {visibleGroups.map((g) => (
               <a
-                key={categoryIds[i]}
-                href={`#${categoryIds[i]}`}
+                key={g.id}
+                href={`#${g.id}`}
                 className="bg-card text-foreground hover:bg-foreground hover:text-background shrink-0 rounded-full px-4 py-2 text-[13px] font-medium whitespace-nowrap transition-colors"
               >
                 {g.category}
@@ -146,35 +148,9 @@ export function PublicMenuBody({
         {!showCategoryNav && <div className="h-3" aria-hidden="true" />}
       </div>
 
-      {/* Items */}
+      {/* Items — delegated to the chosen template */}
       <main className="mx-auto max-w-[720px] px-5 sm:px-8">
-        {visibleSpecials.length > 0 && (
-          <section
-            id={SPECIALS_ANCHOR_ID}
-            className="border-pop/30 bg-pop/5 scroll-mt-40 mt-6 rounded-[20px] border p-6 sm:p-8"
-          >
-            <div className="flex items-baseline justify-between gap-3">
-              <h2 className="text-pop text-[11px] font-semibold tracking-[0.18em] uppercase">
-                Today&apos;s Specials
-              </h2>
-              <span className="text-muted-foreground text-xs">
-                {visibleSpecials.length}
-              </span>
-            </div>
-            <ul className="mt-5 space-y-6">
-              {visibleSpecials.map((item) => (
-                <DishCard
-                  key={item.id}
-                  item={item}
-                  symbol={symbol}
-                  disabledBadges={disabledBadges}
-                  onOpenImage={setLightboxSrc}
-                />
-              ))}
-            </ul>
-          </section>
-        )}
-        {visibleGroups.length === 0 && visibleSpecials.length === 0 ? (
+        {nothingToShow ? (
           <div className="py-16 text-center">
             <p className="text-foreground text-lg font-semibold tracking-[-0.01em]">
               {t('noResults', { query: query.trim() })}
@@ -182,30 +158,16 @@ export function PublicMenuBody({
             <p className="text-muted-foreground mt-2 text-sm">{t('noResultsHint')}</p>
           </div>
         ) : (
-          visibleGroups.map((g, i) => (
-            <section
-              key={categoryIds[i]}
-              id={categoryIds[i]}
-              className="border-cream-line scroll-mt-40 border-b py-8 last:border-b-0 sm:py-10"
-            >
-              <h2 className="text-muted-foreground text-[11px] font-semibold tracking-[0.18em] uppercase">
-                {g.category}
-              </h2>
-              <ul className="mt-5 space-y-6">
-                {g.items.map((item) => (
-                  <DishCard
-                    key={item.id}
-                    item={item}
-                    symbol={symbol}
-                    disabledBadges={disabledBadges}
-                    onOpenImage={setLightboxSrc}
-                  />
-                ))}
-              </ul>
-            </section>
-          ))
+          <template.Body
+            groups={visibleGroups}
+            specials={visibleSpecials}
+            specialsAnchorId={SPECIALS_ANCHOR_ID}
+            symbol={symbol}
+            disabledBadges={disabledBadges}
+            onOpenImage={setLightboxSrc}
+          />
         )}
-        {hasQuery && (visibleGroups.length > 0 || visibleSpecials.length > 0) && (
+        {hasQuery && !nothingToShow && (
           <p className="text-muted-foreground py-6 text-center text-xs">
             {totalMatches === 1 ? '1 match' : `${totalMatches} matches`}
           </p>
@@ -215,83 +177,6 @@ export function PublicMenuBody({
       <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
     </>
   )
-}
-
-interface DishCardProps {
-  item: PublicItem
-  symbol: string
-  disabledBadges: string[]
-  onOpenImage: (src: string) => void
-}
-
-// Memoized so typing in the search field or opening the lightbox doesn't
-// re-render every dish. Every prop is a stable reference at this point:
-// `item` refs come from the useMemo'd visibleGroups/visibleSpecials, `symbol`
-// and `disabledBadges` are stable props, and `onOpenImage` is React's
-// state-setter (stable by design).
-const DishCard = memo(function DishCard({
-  item,
-  symbol,
-  disabledBadges,
-  onOpenImage,
-}: DishCardProps) {
-  const imageUrl = item.imageUrl
-  return (
-    <li className="flex gap-4">
-      {imageUrl ? (
-        <button
-          type="button"
-          aria-label={`Open photo of ${item.name}`}
-          onClick={() => onOpenImage(imageUrl)}
-          className="border-cream-line bg-card size-[84px] shrink-0 overflow-hidden rounded-[14px] border transition-transform hover:scale-[1.03] focus-visible:ring-2 focus-visible:ring-foreground focus-visible:outline-none"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={imageUrl}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            className="h-full w-full object-cover"
-          />
-        </button>
-      ) : null}
-      <div className="min-w-0 flex-1">
-        <BadgeRow badges={item.badges} disabled={disabledBadges} />
-        <div className="flex items-baseline gap-3">
-          <h3 className="flex-1 text-[17px] font-semibold leading-tight tracking-[-0.01em]">
-            {item.name}
-          </h3>
-          {item.price > 0 && (
-            <span className="bg-pop text-pop-foreground shrink-0 rounded-full px-2.5 py-1 text-[13px] font-semibold tabular-nums">
-              {symbol}
-              {formatPrice(item.price)}
-            </span>
-          )}
-        </div>
-        {item.description && (
-          <p className="text-muted-foreground mt-1.5 text-[14px] leading-[1.55]">
-            {item.description}
-          </p>
-        )}
-        {item.tags.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {item.tags.map((tag) => (
-              <span
-                key={tag}
-                className="bg-accent/30 text-foreground rounded-[6px] px-2 py-0.5 text-[10px] font-semibold tracking-[0.1em] uppercase"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-    </li>
-  )
-})
-
-function formatPrice(n: number): string {
-  return Number.isInteger(n) ? String(n) : n.toFixed(2)
 }
 
 function slugId(s: string): string {

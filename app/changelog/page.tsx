@@ -6,6 +6,33 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.17.0',
+    date: '2026-04-19',
+    title: 'Menu templates',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'New Menu design section in Settings — choose how your public menu is laid out',
+          'Two templates to start: Editorial (text-first with thumbnails) and Photo grid (photo-forward 2-column tiles for restaurants that lean on dish photos)',
+          'Each template previews inside an iPhone mockup using your actual brand colors, so picking one is truly WYSIWYG',
+          'Switching templates is instant — no reload, no data migration — and the change shows up on your next /m/... visit',
+        ],
+      },
+      {
+        type: 'fixed' as const,
+        items: [
+          'Template previews in Settings now keep the iPhone mockup proportions intact instead of stretching the frame',
+          'Template previews in Settings now sit higher inside the phone mockup so the menu aligns better with the screen',
+          'Editorial template prices now stay aligned in the settings preview when dish names wrap across multiple lines',
+          'Template previews in Settings no longer add extra top padding inside the phone viewport',
+          'Template previews now remove the first section’s top spacing so categories start closer to the top of the phone screen',
+          'Template previews now use a tighter phone-screen viewport inset so the mockup framing matches the visible content more closely',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.16.0',
     date: '2026-04-19',
     title: 'AI-assisted dish photos',

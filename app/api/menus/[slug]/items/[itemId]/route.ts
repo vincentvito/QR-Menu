@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
@@ -141,8 +141,9 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       previousImageUrl !== item.imageUrl &&
       item.imageUrl !== previousImageUrl
     ) {
-      // Fire-and-forget — don't block the response on R2.
-      void deleteByUrl(previousImageUrl)
+      // Run after the response so the deletion doesn't delay the user's
+      // save, but survives serverless handler suspension (vs plain `void`).
+      after(() => deleteByUrl(previousImageUrl))
     }
 
     return NextResponse.json(item)
@@ -170,7 +171,7 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     })
     await prisma.menuItem.delete({ where: { id: itemId } })
     if (existing?.imageUrl) {
-      void deleteByUrl(existing.imageUrl)
+      after(() => deleteByUrl(existing.imageUrl!))
     }
     return new NextResponse(null, { status: 204 })
   } catch (err) {

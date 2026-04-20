@@ -128,6 +128,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
         symbol={symbol}
         disabledBadges={org.disabledBadges}
         specialIds={activeSpecialIds}
+        templateId={org.templateId}
         items={menu.items.map((i) => ({
           id: i.id,
           category: i.category,

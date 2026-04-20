@@ -70,6 +70,7 @@ export const auth = betterAuth({
             tiktokUrl: { type: 'string', required: false },
             facebookUrl: { type: 'string', required: false },
             disabledBadges: { type: 'string[]', required: false },
+            templateId: { type: 'string', required: false, defaultValue: 'default' },
           },
         },
       },

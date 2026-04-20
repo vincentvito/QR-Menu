@@ -28,6 +28,12 @@ import {
 } from '@/components/qr/QRCodeRenderer'
 import { buildWifiUri, WIFI_ENCRYPTIONS, type WifiEncryption } from '@/lib/wifi'
 import { BADGES, BADGE_KEYS, type BadgeKey } from '@/lib/menus/badges'
+import { TEMPLATES, DEFAULT_TEMPLATE_ID } from '@/components/menu/templates'
+import {
+  TemplatePreview,
+  type TemplatePreviewRealData,
+} from '@/components/menu/templates/TemplatePreview'
+import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const QR_DOT_STYLES: { value: QRDotStyle; label: string }[] = [
@@ -76,6 +82,7 @@ interface SettingsDraft {
   tiktokUrl: string
   facebookUrl: string
   disabledBadges: BadgeKey[]
+  templateId: string
 }
 
 interface SettingsFormProps {
@@ -104,7 +111,15 @@ interface SettingsFormProps {
     tiktokUrl: string
     facebookUrl: string
     disabledBadges: string[]
+    templateId: string
   }
+  /** R2 URL of the iPhone mockup used by the template picker previews. */
+  templatePreviewMockupUrl: string
+  /**
+   * Real menu data for the template preview. Null when the restaurant
+   * hasn't created a menu yet — the preview falls back to demo data.
+   */
+  templatePreviewData: TemplatePreviewRealData | null
   /** Used only for the live QR preview. `name` is null when there's no
    * real menu yet, in which case the download buttons are hidden. */
   previewMenu: { url: string; name: string | null }
@@ -122,7 +137,13 @@ function toFileStem(name: string): string {
   )
 }
 
-export function SettingsForm({ canEdit, initial, previewMenu }: SettingsFormProps) {
+export function SettingsForm({
+  canEdit,
+  initial,
+  previewMenu,
+  templatePreviewMockupUrl,
+  templatePreviewData,
+}: SettingsFormProps) {
   const router = useRouter()
   const qrRef = useRef<QRCodeStylingType | null>(null)
   const wifiQrRef = useRef<QRCodeStylingType | null>(null)
@@ -154,6 +175,9 @@ export function SettingsForm({ canEdit, initial, previewMenu }: SettingsFormProp
     disabledBadges: initial.disabledBadges.filter((k): k is BadgeKey =>
       (BADGE_KEYS as readonly string[]).includes(k),
     ),
+    templateId: TEMPLATES.some((t) => t.id === initial.templateId)
+      ? initial.templateId
+      : DEFAULT_TEMPLATE_ID,
   })
   const [submitting, setSubmitting] = useState(false)
 
@@ -358,6 +382,82 @@ export function SettingsForm({ canEdit, initial, previewMenu }: SettingsFormProp
               </button>
             )
           })}
+        </div>
+      </section>
+
+      <section className="space-y-4">
+        <SectionHeading>Menu design</SectionHeading>
+        <p className="text-muted-foreground text-xs">
+          Pick how your public menu is laid out. The preview shows{' '}
+          {templatePreviewData
+            ? 'your actual menu'
+            : 'a sample menu (create a real one to preview it here)'}
+          , and updates live as you switch templates or change brand colors.
+        </p>
+
+        <div className="grid gap-6 md:grid-cols-[1fr_320px]">
+          {/* Template selector list */}
+          <div
+            role="radiogroup"
+            aria-label="Menu template"
+            className="order-2 space-y-3 md:order-1"
+          >
+            {TEMPLATES.map((tpl) => {
+              const selected = draft.templateId === tpl.id
+              return (
+                <button
+                  key={tpl.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  disabled={disabled}
+                  onClick={() =>
+                    setDraft((prev) => ({ ...prev, templateId: tpl.id }))
+                  }
+                  className={cn(
+                    'flex w-full items-center gap-4 rounded-[16px] border p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                    selected
+                      ? 'border-pop bg-pop/5 ring-2 ring-pop/20'
+                      : 'border-cream-line hover:border-foreground/30 hover:bg-card/60',
+                  )}
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="text-foreground text-sm font-semibold tracking-tight">
+                      {tpl.label}
+                    </div>
+                    <p className="text-muted-foreground mt-1 text-xs leading-snug">
+                      {tpl.description}
+                    </p>
+                  </div>
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      'grid size-6 shrink-0 place-items-center rounded-full border transition-colors',
+                      selected
+                        ? 'border-pop bg-pop text-pop-foreground'
+                        : 'border-cream-line bg-background',
+                    )}
+                  >
+                    {selected && <Check className="size-3.5" />}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Big live preview, sticky on desktop so it stays in view while
+              the owner scrolls or tweaks brand colors elsewhere. */}
+          <div className="order-1 md:order-2">
+            <div className="mx-auto w-full max-w-[300px] md:sticky md:top-6">
+              <TemplatePreview
+                templateId={draft.templateId}
+                mockupUrl={templatePreviewMockupUrl}
+                primaryColor={draft.primaryColor || null}
+                secondaryColor={draft.secondaryColor || null}
+                realData={templatePreviewData}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
