@@ -78,73 +78,78 @@ export function PublicMenuBody({
   }, [items, specialIds, query])
 
   const template = getTemplate(templateId)
+  const bottomChrome = template.chrome === 'bottom'
   const showCategoryNav =
     !hasQuery && (visibleSpecials.length > 0 || visibleGroups.length > 1)
   const nothingToShow = visibleGroups.length === 0 && visibleSpecials.length === 0
 
   return (
     <>
-      {/* Search + optional category nav, both sticky under the cover */}
-      <div className="bg-background/80 border-cream-line sticky top-0 z-40 border-b backdrop-blur-md">
-        <div className="mx-auto max-w-[720px] px-5 pt-3 sm:px-8">
-          <label htmlFor="menu-search" className="sr-only">
-            {t('searchLabel')}
-          </label>
-          <div className="relative">
-            <Search
-              className="text-muted-foreground absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2"
-              aria-hidden="true"
-            />
-            <input
-              id="menu-search"
-              type="search"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t('searchPlaceholder')}
-              className="border-cream-line bg-card focus:border-foreground/40 focus:bg-background h-11 w-full rounded-full border pl-10 pr-10 text-[14px] outline-none transition-colors"
-              autoComplete="off"
-              autoCorrect="off"
-              spellCheck={false}
-            />
-            {query && (
-              <button
-                type="button"
-                aria-label={t('searchClear')}
-                onClick={() => setQuery('')}
-                className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full"
-              >
-                <X className="h-4 w-4" aria-hidden="true" />
-              </button>
-            )}
+      {/* Search + optional category nav, both sticky under the cover.
+          Templates with chrome='bottom' opt out and render their own
+          chrome below — we don't want two search bars on the page. */}
+      {!bottomChrome && (
+        <div className="bg-background/80 border-cream-line sticky top-0 z-40 border-b backdrop-blur-md">
+          <div className="mx-auto max-w-[720px] px-5 pt-3 sm:px-8">
+            <label htmlFor="menu-search" className="sr-only">
+              {t('searchLabel')}
+            </label>
+            <div className="relative">
+              <Search
+                className="text-muted-foreground absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2"
+                aria-hidden="true"
+              />
+              <input
+                id="menu-search"
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder={t('searchPlaceholder')}
+                className="border-cream-line bg-card focus:border-foreground/40 focus:bg-background h-11 w-full rounded-full border pl-10 pr-10 text-[14px] outline-none transition-colors"
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+              />
+              {query && (
+                <button
+                  type="button"
+                  aria-label={t('searchClear')}
+                  onClick={() => setQuery('')}
+                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              )}
+            </div>
           </div>
-        </div>
 
-        {showCategoryNav && (
-          <nav
-            aria-label="Menu categories"
-            className="no-scrollbar scroll-fade-x mx-auto flex max-w-[720px] gap-2 overflow-x-auto px-5 py-3 sm:px-8"
-          >
-            {visibleSpecials.length > 0 && (
-              <a
-                href={`#${SPECIALS_ANCHOR_ID}`}
-                className="bg-pop text-pop-foreground hover:bg-pop-deep shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap transition-colors"
-              >
-                Today&apos;s Specials
-              </a>
-            )}
-            {visibleGroups.map((g) => (
-              <a
-                key={g.id}
-                href={`#${g.id}`}
-                className="bg-card text-foreground hover:bg-foreground hover:text-background shrink-0 rounded-full px-4 py-2 text-[13px] font-medium whitespace-nowrap transition-colors"
-              >
-                {g.category}
-              </a>
-            ))}
-          </nav>
-        )}
-        {!showCategoryNav && <div className="h-3" aria-hidden="true" />}
-      </div>
+          {showCategoryNav && (
+            <nav
+              aria-label="Menu categories"
+              className="no-scrollbar scroll-fade-x mx-auto flex max-w-[720px] gap-2 overflow-x-auto px-5 py-3 sm:px-8"
+            >
+              {visibleSpecials.length > 0 && (
+                <a
+                  href={`#${SPECIALS_ANCHOR_ID}`}
+                  className="bg-pop text-pop-foreground hover:bg-pop-deep shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap transition-colors"
+                >
+                  Today&apos;s Specials
+                </a>
+              )}
+              {visibleGroups.map((g) => (
+                <a
+                  key={g.id}
+                  href={`#${g.id}`}
+                  className="bg-card text-foreground hover:bg-foreground hover:text-background shrink-0 rounded-full px-4 py-2 text-[13px] font-medium whitespace-nowrap transition-colors"
+                >
+                  {g.category}
+                </a>
+              ))}
+            </nav>
+          )}
+          {!showCategoryNav && <div className="h-3" aria-hidden="true" />}
+        </div>
+      )}
 
       {/* Items — delegated to the chosen template */}
       <main className="mx-auto max-w-[720px] px-5 sm:px-8">
@@ -162,6 +167,9 @@ export function PublicMenuBody({
             specialsAnchorId={SPECIALS_ANCHOR_ID}
             symbol={symbol}
             onOpenImage={setLightboxSrc}
+            query={bottomChrome ? query : undefined}
+            onQueryChange={bottomChrome ? setQuery : undefined}
+            hasQuery={bottomChrome ? hasQuery : undefined}
           />
         )}
         {hasQuery && !nothingToShow && (

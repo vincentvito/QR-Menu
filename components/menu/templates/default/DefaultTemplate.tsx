@@ -24,10 +24,7 @@ function DefaultBody({
       {specials.length > 0 && (
         <section
           id={specialsAnchorId}
-          className={cn(
-            'border-pop/50 bg-pop/10 scroll-mt-40 mt-6 rounded-[20px] border p-6 sm:p-8',
-            preview && 'mt-0',
-          )}
+          className="border-pop/50 bg-pop/10 scroll-mt-40 mt-6 rounded-[20px] border p-6 sm:p-8"
           style={{
             // Theme-aware glow: the halo picks up whichever --pop the
             // active theme sets, so the specials section pops in its own

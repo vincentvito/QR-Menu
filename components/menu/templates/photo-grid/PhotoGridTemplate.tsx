@@ -21,14 +21,17 @@ function PhotoGridBody({
   onOpenImage,
   preview,
 }: TemplateBodyProps) {
+  const singleSpecial = specials.length === 1
+
   return (
     <>
       {specials.length > 0 && (
         <section
           id={specialsAnchorId}
           className={cn(
-            'border-pop/50 bg-pop/10 scroll-mt-40 mt-6 rounded-[20px] border p-5 sm:p-7',
+            'border-pop/50 bg-pop/10 mt-6 scroll-mt-40 rounded-[20px] border p-5 sm:p-7',
             preview && 'mt-0',
+            singleSpecial && 'sm:mx-auto sm:max-w-[430px]',
           )}
           style={{
             boxShadow:
@@ -38,7 +41,7 @@ function PhotoGridBody({
           <h2 className="bg-pop text-pop-foreground mb-4 inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold tracking-[0.18em] uppercase">
             Today&apos;s Specials
           </h2>
-          <ul className="grid grid-cols-2 gap-3 sm:gap-4">
+          <ul className={cn('grid gap-3 sm:gap-4', singleSpecial ? 'grid-cols-1' : 'grid-cols-2')}>
             {specials.map((item) => (
               <PhotoGridTile
                 key={item.id}
@@ -46,6 +49,7 @@ function PhotoGridBody({
                 symbol={symbol}
                 onOpenImage={onOpenImage}
                 preview={preview}
+                featured={singleSpecial}
               />
             ))}
           </ul>
@@ -85,6 +89,7 @@ interface TileProps {
   symbol: string
   onOpenImage: (src: string) => void
   preview?: boolean
+  featured?: boolean
 }
 
 const PhotoGridTile = memo(function PhotoGridTile({
@@ -92,10 +97,13 @@ const PhotoGridTile = memo(function PhotoGridTile({
   symbol,
   onOpenImage,
   preview,
+  featured,
 }: TileProps) {
   const imageUrl = item.imageUrl
-  const photoTileClass =
-    'border-cream-line bg-card relative aspect-square w-full overflow-hidden rounded-[16px] border'
+  const photoTileClass = cn(
+    'border-cream-line bg-card relative w-full overflow-hidden border',
+    featured ? 'aspect-[5/4] rounded-[18px]' : 'aspect-square rounded-[16px]',
+  )
   return (
     <li className="flex flex-col">
       {imageUrl ? (
@@ -120,7 +128,7 @@ const PhotoGridTile = memo(function PhotoGridTile({
             type="button"
             aria-label={`Open photo of ${item.name}`}
             onClick={() => onOpenImage(imageUrl)}
-            className={`${photoTileClass} transition-transform hover:scale-[1.02] focus-visible:ring-2 focus-visible:ring-foreground focus-visible:outline-none`}
+            className={`${photoTileClass} focus-visible:ring-foreground transition-transform hover:scale-[1.02] focus-visible:ring-2 focus-visible:outline-none`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -138,7 +146,12 @@ const PhotoGridTile = memo(function PhotoGridTile({
           </button>
         )
       ) : (
-        <div className="border-cream-line bg-card/60 relative flex aspect-square w-full items-center justify-center rounded-[16px] border">
+        <div
+          className={cn(
+            'border-cream-line bg-card/60 relative flex w-full items-center justify-center border',
+            featured ? 'aspect-[5/4] rounded-[18px]' : 'aspect-square rounded-[16px]',
+          )}
+        >
           <span className="text-muted-foreground/60 text-[10px] font-semibold tracking-[0.18em] uppercase">
             No photo
           </span>
@@ -151,11 +164,14 @@ const PhotoGridTile = memo(function PhotoGridTile({
       )}
       <div className="mt-2.5 space-y-1">
         <BadgeRow badges={item.badges} />
-        <h3 className="text-[15px] font-semibold leading-tight tracking-[-0.01em]">
-          {item.name}
-        </h3>
+        <h3 className="text-[15px] leading-tight font-semibold tracking-[-0.01em]">{item.name}</h3>
         {item.description && (
-          <p className="text-muted-foreground line-clamp-2 text-[12.5px] leading-[1.5]">
+          <p
+            className={cn(
+              'text-muted-foreground text-[12.5px] leading-[1.5]',
+              featured ? 'line-clamp-3' : 'line-clamp-2',
+            )}
+          >
             {item.description}
           </p>
         )}
@@ -179,7 +195,6 @@ const PhotoGridTile = memo(function PhotoGridTile({
 export const PhotoGridTemplate: TemplateDef = {
   id: 'photo-grid',
   label: 'Photo grid',
-  description:
-    'Photo-forward 2-column grid. Best when most dishes have photos uploaded.',
+  description: 'Photo-forward 2-column grid. Best when most dishes have photos uploaded.',
   Body: PhotoGridBody,
 }

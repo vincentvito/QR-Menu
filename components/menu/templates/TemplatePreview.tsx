@@ -3,6 +3,7 @@
 import { Search, Wifi } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { getTemplate } from '@/components/menu/templates'
+import { CategoryTilesPreviewChrome } from '@/components/menu/templates/category-tiles/CategoryTilesBody'
 import { DEMO_GROUPS, DEMO_SPECIALS, DEMO_SYMBOL } from '@/components/menu/templates/demo-data'
 import type { TemplateCategoryGroup, TemplateItem } from '@/components/menu/templates/types'
 import {
@@ -171,17 +172,32 @@ export function TemplatePreview({
   // accent/pop so the preview honors both layers live.
   const themedStyle = buildInlineStyle(theme, primaryColor, secondaryColor)
 
-  const containerClass = 'relative block w-full'
+  // When liveUrl is set, render as an anchor so the mockup picks up the
+  // native pointer cursor on hover and clicking opens the real menu in
+  // a new tab — keeps the "this preview is interactive" affordance
+  // honest instead of looking purely decorative.
+  const containerClass = `relative block w-full${liveUrl ? ' cursor-pointer' : ''}`
+  const Container = liveUrl ? 'a' : 'div'
+  const anchorProps = liveUrl
+    ? {
+        href: liveUrl,
+        target: '_blank' as const,
+        rel: 'noopener noreferrer',
+        'aria-label': 'Open the live menu in a new tab',
+      }
+    : {}
   const showCategoryNav = bodyData.specials.length > 0 || bodyData.groups.length > 1
+  const showBottomChromePreview = template.id === 'category-tiles'
 
   return (
-    <div
+    <Container
       data-theme={theme.id}
       className={containerClass}
       style={{
         aspectRatio: `${TEMPLATE_PREVIEW_MOCKUP_SIZE.width} / ${TEMPLATE_PREVIEW_MOCKUP_SIZE.height}`,
         ...(themedStyle as React.CSSProperties),
       }}
+      {...anchorProps}
     >
       <div
         ref={screenRef}
@@ -201,11 +217,16 @@ export function TemplatePreview({
               className="relative origin-top-left"
               style={{
                 width: `${PREVIEW_VIEWPORT_WIDTH}px`,
-                minHeight: `${contentHeight}px`,
                 transform: `scale(${previewScale})`,
               }}
             >
-              <div className="bg-background text-foreground min-h-screen pb-24">
+              {/* Mockup content wrapper. No `min-h-screen` here: the
+                  mockup is a scaled-down mobile snapshot, so the content
+                  should size to its natural height. `min-h-screen` would
+                  pad the preview with 100vh of empty space whenever the
+                  chosen template's content is shorter than the browser
+                  viewport (notably the category-tiles layout). */}
+              <div className="bg-background text-foreground pb-8">
                 <section className="bg-foreground text-background relative overflow-hidden">
                   {hasHeaderImage ? (
                     <>
@@ -243,7 +264,7 @@ export function TemplatePreview({
                   <div className="relative mx-auto flex max-w-[720px] flex-col px-5 pt-6 pb-8">
                     {hasWifi ? (
                       <div className="mb-6 flex justify-end">
-                        <span className="bg-background/10 text-background inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium backdrop-blur-sm">
+                        <span className="bg-background text-foreground ring-foreground/10 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-[0_4px_14px_-4px_rgba(0,0,0,0.35)] ring-1">
                           <Wifi className="size-3.5" aria-hidden="true" />
                           WiFi
                         </span>
@@ -282,42 +303,44 @@ export function TemplatePreview({
                   </div>
                 </section>
 
-                <div className="bg-background/80 border-cream-line sticky top-0 z-40 border-b backdrop-blur-md">
-                  <div className="mx-auto max-w-[720px] px-5 pt-3">
-                    <div className="relative">
-                      <Search
-                        className="text-muted-foreground absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2"
-                        aria-hidden="true"
-                      />
-                      <div className="border-cream-line bg-card text-muted-foreground flex h-11 items-center rounded-full border pr-4 pl-10 text-[14px]">
-                        Search dishes, ingredients, tags...
+                {template.chrome !== 'bottom' && (
+                  <div className="bg-background/80 border-cream-line sticky top-0 z-40 border-b backdrop-blur-md">
+                    <div className="mx-auto max-w-[720px] px-5 pt-3">
+                      <div className="relative">
+                        <Search
+                          className="text-muted-foreground absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2"
+                          aria-hidden="true"
+                        />
+                        <div className="border-cream-line bg-card text-muted-foreground flex h-11 items-center rounded-full border pr-4 pl-10 text-[14px]">
+                          Search dishes, ingredients, tags...
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {showCategoryNav ? (
-                    <nav
-                      aria-label="Menu categories"
-                      className="no-scrollbar scroll-fade-x mx-auto flex max-w-[720px] gap-2 overflow-x-auto px-5 py-3"
-                    >
-                      {bodyData.specials.length > 0 && (
-                        <span className="bg-pop text-pop-foreground shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap">
-                          Today&apos;s Specials
-                        </span>
-                      )}
-                      {bodyData.groups.map((group) => (
-                        <span
-                          key={group.id}
-                          className="bg-card text-foreground shrink-0 rounded-full px-4 py-2 text-[13px] font-medium whitespace-nowrap"
-                        >
-                          {group.category}
-                        </span>
-                      ))}
-                    </nav>
-                  ) : (
-                    <div className="h-3" aria-hidden="true" />
-                  )}
-                </div>
+                    {showCategoryNav ? (
+                      <nav
+                        aria-label="Menu categories"
+                        className="no-scrollbar scroll-fade-x mx-auto flex max-w-[720px] gap-2 overflow-x-auto px-5 py-3"
+                      >
+                        {bodyData.specials.length > 0 && (
+                          <span className="bg-pop text-pop-foreground shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap">
+                            Today&apos;s Specials
+                          </span>
+                        )}
+                        {bodyData.groups.map((group) => (
+                          <span
+                            key={group.id}
+                            className="bg-card text-foreground shrink-0 rounded-full px-4 py-2 text-[13px] font-medium whitespace-nowrap"
+                          >
+                            {group.category}
+                          </span>
+                        ))}
+                      </nav>
+                    ) : (
+                      <div className="h-3" aria-hidden="true" />
+                    )}
+                  </div>
+                )}
 
                 <main className="mx-auto max-w-[720px] px-5">
                   <template.Body
@@ -334,8 +357,15 @@ export function TemplatePreview({
               </div>
             </div>
           </div>
-
         </div>
+
+        {showBottomChromePreview && (
+          <CategoryTilesPreviewChrome
+            groups={bodyData.groups}
+            specials={bodyData.specials}
+            selected={null}
+          />
+        )}
 
         {/* Seasonal overlay stays pinned to the visible phone screen, so it
             keeps falling while the mockup content scrolls underneath. */}
@@ -351,6 +381,6 @@ export function TemplatePreview({
         loading="lazy"
         decoding="async"
       />
-    </div>
+    </Container>
   )
 }

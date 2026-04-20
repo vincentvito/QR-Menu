@@ -8,6 +8,7 @@ import { PublicMenuBody } from '@/components/menu/PublicMenuBody'
 import { WifiReveal } from '@/components/menu/WifiReveal'
 import { SeasonalOverlay } from '@/components/menu/SeasonalOverlay'
 import { buildInlineStyle } from '@/components/menu/ThemeStyles'
+import { getTemplate } from '@/components/menu/templates'
 import { getTheme } from '@/lib/menus/themes'
 import {
   FacebookIcon,
@@ -84,6 +85,11 @@ export default async function PublicMenuPage({ params }: PageProps) {
   // theme code lives in the templates themselves.
   const theme = getTheme(org.theme)
   const brandStyle = buildInlineStyle(theme, org.primaryColor, org.secondaryColor)
+  // Templates that own a fixed bottom chrome (e.g. category-tiles) need
+  // extra room at the end of the page so the footer doesn't hide under
+  // it. pb-40 ≈ the chrome's height + breathing room.
+  const template = getTemplate(org.templateId)
+  const pageBottomPadding = template.chrome === 'bottom' ? 'pb-40' : 'pb-24'
 
   const now = Date.now()
   const activeSpecialIds = menu.items
@@ -141,7 +147,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
   return (
     <div
       data-theme={theme.id}
-      className="bg-background text-foreground min-h-screen pb-24"
+      className={`bg-background text-foreground min-h-screen ${pageBottomPadding}`}
       style={brandStyle as React.CSSProperties}
     >
       {/* Structured data for search engines — Restaurant + Menu + MenuItem */}
@@ -239,11 +245,15 @@ export default async function PublicMenuPage({ params }: PageProps) {
         }))}
       />
 
-      {/* Floating "call server" */}
+      {/* Floating "call server". Lifted above the sticky bottom chrome
+          on templates that own one (category-tiles) so the bell is
+          never trapped under the search/pills bar. */}
       <button
         type="button"
         aria-label="Call server"
-        className="bg-pop text-background fixed right-5 bottom-5 flex h-14 w-14 items-center justify-center rounded-full shadow-[0_12px_24px_-8px_rgba(232,85,43,0.6)] transition-transform hover:scale-105 active:scale-95"
+        className={`bg-pop text-background fixed right-5 flex h-14 w-14 items-center justify-center rounded-full shadow-[0_12px_24px_-8px_rgba(232,85,43,0.6)] transition-transform hover:scale-105 active:scale-95 ${
+          template.chrome === 'bottom' ? 'bottom-36' : 'bottom-5'
+        }`}
       >
         <Bell className="h-5 w-5" aria-hidden="true" />
       </button>

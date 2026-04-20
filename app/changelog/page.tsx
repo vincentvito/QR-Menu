@@ -15,6 +15,7 @@ const changelog = [
         items: [
           'Upload a header image in Settings — it sits behind your restaurant name on the public menu with a soft dark gradient so the name stays readable on any photo. When no image is set, the brand-color gradient still shows as before',
           'New Restaurant name color setting in Menu design — pick any hex to override the default when a header image makes the name hard to read, with the change reflected live in the Settings preview',
+          'New Category tiles template — lands guests on a grid of big square category buttons with a specials tile on top. Tap a tile to browse that category; a sticky bottom bar holds search and quick-jump buttons for every category',
           'Today&apos;s Specials section now glows in your brand&apos;s accent color — the block lifts off the page so specials feel like the first thing guests notice',
         ],
       },
@@ -24,6 +25,7 @@ const changelog = [
           'Tightened the public menu header — restaurant name, logo, and menu label shrunk so guests see dishes sooner without scrolling',
           'Removed the QRmenucrafter wordmark from the public menu header — it already appears in the footer, so the top of the page is fully your restaurant',
           'Settings now offers save buttons at the bottom of each section, with subtle dividers between sections — Restaurant, Links, Menu design, Brand, QR code style, and WiFi are easier to scan and save without jumping to the end of the page',
+          'WiFi badge on the public menu now uses a solid card instead of a frosted pill — stays legible on any header image or theme',
         ],
       },
       {
@@ -33,6 +35,9 @@ const changelog = [
           'Removing or replacing a header image now cleans up the previous file from storage, so unused images don&apos;t linger',
           'The Settings phone mockup now includes the same menu header, search bar, and category chips as your live menu, so the preview matches what guests actually see on mobile',
           'Template previews in Settings now scale the menu viewport down more accurately inside the phone frame, so dish photos and spacing no longer look oversized compared with the real mobile page',
+          'Photo grid menus with a single Today&apos;s Special now show it in a focused featured card instead of leaving an awkward half-empty specials block',
+          'Category tiles now renders correctly inside the Settings phone mockup, and its bottom search/pill bar stays pinned to the phone bottom like the live public menu',
+          'Switching templates or saving settings no longer leaves a giant blank scroll area inside the phone mockup preview — its height now shrinks back to the real content like it does after a refresh',
         ],
       },
     ],

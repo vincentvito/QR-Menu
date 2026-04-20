@@ -21,8 +21,11 @@ interface WifiRevealProps {
 
 // Class reused by both the SSR placeholder and the real trigger — keeps
 // the pill identical through hydration so the swap is invisible.
+// Solid theme-background + theme-foreground so it stays legible on ANY
+// header image or gradient, with a subtle ring + drop shadow to lift it
+// off busy photos.
 const TRIGGER_CLASS =
-  'bg-background/10 text-background hover:bg-background/20 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium backdrop-blur-sm transition-colors'
+  'bg-background text-foreground hover:bg-card ring-foreground/10 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-[0_4px_14px_-4px_rgba(0,0,0,0.35)] ring-1 transition-colors'
 
 export function WifiReveal({ ssid, password, hasPassword }: WifiRevealProps) {
   const [open, setOpen] = useState(false)
