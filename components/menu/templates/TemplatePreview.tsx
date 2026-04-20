@@ -54,6 +54,9 @@ interface TemplatePreviewProps {
   menuName?: string | null
   logoUrl?: string | null
   headerImageUrl?: string | null
+  // Override for the restaurant name color in the mockup header.
+  // Empty/null falls through to the theme's `--background` color.
+  headerTextColor?: string | null
   wifiSsid?: string | null
   // When set, clicking the mockup opens this URL (the live public menu)
   // in a new tab. Also flips the cursor to pointer on hover so the
@@ -77,6 +80,7 @@ export function TemplatePreview({
   menuName,
   logoUrl,
   headerImageUrl,
+  headerTextColor,
   wifiSsid,
   liveUrl,
 }: TemplatePreviewProps) {
@@ -264,7 +268,10 @@ export function TemplatePreview({
                         <p className="text-accent text-[11px] font-medium tracking-[0.18em] uppercase">
                           {displayMenuName}
                         </p>
-                        <h1 className="mt-1.5 text-[28px] leading-[1.08] font-semibold tracking-[-0.03em]">
+                        <h1
+                          className="mt-1.5 text-[28px] leading-[1.08] font-semibold tracking-[-0.03em]"
+                          style={headerTextColor ? { color: headerTextColor } : undefined}
+                        >
                           {displayRestaurantName}
                         </h1>
                         <p className="text-background/70 mt-2 text-xs">

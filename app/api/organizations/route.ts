@@ -149,6 +149,14 @@ export async function PATCH(request: Request) {
     updates.secondaryColor = cleaned
   }
 
+  if ('headerTextColor' in body) {
+    const cleaned = cleanHex(body.headerTextColor)
+    if (cleaned === undefined) {
+      return NextResponse.json({ error: 'Invalid header text color' }, { status: 400 })
+    }
+    updates.headerTextColor = cleaned
+  }
+
   if ('currency' in body) {
     if (typeof body.currency !== 'string' || !isSupportedCurrency(body.currency)) {
       return NextResponse.json({ error: 'Unsupported currency' }, { status: 400 })

@@ -65,6 +65,7 @@ export default async function SettingsPage() {
           description: org.description ?? '',
           logo: org.logo ?? '',
           headerImage: org.headerImage ?? '',
+          headerTextColor: org.headerTextColor ?? '',
           sourceUrl: org.sourceUrl ?? '',
           primaryColor: org.primaryColor ?? '',
           secondaryColor: org.secondaryColor ?? '',

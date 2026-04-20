@@ -77,6 +77,7 @@ export const auth = betterAuth({
             theme: { type: 'string', required: false, defaultValue: 'editorial' },
             seasonalOverlay: { type: 'string', required: false, defaultValue: 'none' },
             headerImage: { type: 'string', required: false },
+            headerTextColor: { type: 'string', required: false },
           },
         },
       },

@@ -14,6 +14,7 @@ const changelog = [
         type: 'added' as const,
         items: [
           'Upload a header image in Settings — it sits behind your restaurant name on the public menu with a soft dark gradient so the name stays readable on any photo. When no image is set, the brand-color gradient still shows as before',
+          'New Restaurant name color setting in Menu design — pick any hex to override the default when a header image makes the name hard to read, with the change reflected live in the Settings preview',
           'Today&apos;s Specials section now glows in your brand&apos;s accent color — the block lifts off the page so specials feel like the first thing guests notice',
         ],
       },

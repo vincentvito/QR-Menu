@@ -131,6 +131,7 @@ model Organization {
   theme             String       @default("editorial")
   seasonalOverlay   String       @default("none")
   headerImage       String?
+  headerTextColor   String?
   members           Member[]
   invitations       Invitation[]
   menus             Menu[]

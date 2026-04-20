@@ -60,7 +60,7 @@ function normalizeCenterType(value: string): QRCenterType {
 
 const RESTAURANT_FIELDS = ['name', 'description', 'sourceUrl', 'currency'] as const
 const LINKS_FIELDS = ['googleReviewUrl', 'instagramUrl', 'tiktokUrl', 'facebookUrl'] as const
-const MENU_DESIGN_FIELDS = ['templateId', 'theme', 'seasonalOverlay'] as const
+const MENU_DESIGN_FIELDS = ['templateId', 'theme', 'seasonalOverlay', 'headerTextColor'] as const
 const BRAND_FIELDS = ['logo', 'headerImage', 'primaryColor', 'secondaryColor'] as const
 const QR_FIELDS = [
   'qrDotStyle',
@@ -83,6 +83,7 @@ interface SettingsDraft {
   description: string
   logo: string
   headerImage: string
+  headerTextColor: string
   sourceUrl: string
   primaryColor: string
   secondaryColor: string
@@ -114,6 +115,7 @@ interface SettingsFormProps {
     description: string
     logo: string
     headerImage: string
+    headerTextColor: string
     sourceUrl: string
     primaryColor: string
     secondaryColor: string
@@ -167,6 +169,7 @@ function createDraftFromInitial(initial: SettingsFormProps['initial']): Settings
     description: initial.description,
     logo: initial.logo,
     headerImage: initial.headerImage,
+    headerTextColor: initial.headerTextColor,
     sourceUrl: initial.sourceUrl,
     primaryColor: initial.primaryColor,
     secondaryColor: initial.secondaryColor,
@@ -598,6 +601,20 @@ export function SettingsForm({
                 })}
               </div>
             </div>
+
+            <div className="space-y-2">
+              <ColorField
+                id="header-text-color"
+                label="Restaurant name color"
+                value={draft.headerTextColor}
+                disabled={disabled}
+                onChange={(v) => setDraft((prev) => ({ ...prev, headerTextColor: v }))}
+              />
+              <p className="text-muted-foreground text-[11px] leading-snug">
+                Overrides the restaurant name color on the public menu — useful when a header
+                image makes the default hard to read. Leave empty to use the theme default.
+              </p>
+            </div>
           </div>
 
           {/* Big live preview, sticky on desktop so it stays in view while
@@ -616,6 +633,7 @@ export function SettingsForm({
                 menuName={previewMenu.name}
                 logoUrl={draft.logo || null}
                 headerImageUrl={draft.headerImage || null}
+                headerTextColor={draft.headerTextColor || null}
                 wifiSsid={draft.wifiSsid || null}
                 liveUrl={previewMenu.name ? previewMenu.url : null}
               />

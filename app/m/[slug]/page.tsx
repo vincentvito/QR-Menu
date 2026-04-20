@@ -209,7 +209,10 @@ export default async function PublicMenuPage({ params }: PageProps) {
               <p className="text-accent text-[11px] font-medium tracking-[0.18em] uppercase">
                 {menu.name}
               </p>
-              <h1 className="mt-1.5 text-[28px] leading-[1.08] font-semibold tracking-[-0.03em] sm:text-[40px]">
+              <h1
+                className="mt-1.5 text-[28px] leading-[1.08] font-semibold tracking-[-0.03em] sm:text-[40px]"
+                style={org.headerTextColor ? { color: org.headerTextColor } : undefined}
+              >
                 {org.name}
               </h1>
               <p className="text-background/70 mt-2 text-xs sm:text-sm">
