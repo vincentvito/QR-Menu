@@ -129,6 +129,8 @@ model Organization {
   facebookUrl       String?
   disabledBadges    String[]     @default([])
   templateId        String       @default("default")
+  theme             String       @default("editorial")
+  seasonalOverlay   String       @default("none")
   members           Member[]
   invitations       Invitation[]
   menus             Menu[]

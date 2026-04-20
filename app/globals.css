@@ -20,6 +20,41 @@
   100% { top: 78%; }
 }
 
+/* Seasonal overlays: animate top + transform. Top is animated so particles
+   naturally scale with the overlay's container (viewport or preview), not a
+   fixed vh distance that looks wrong at small sizes. */
+@keyframes seasonal-snow {
+  0%   { top: -6%;  transform: translateX(0); opacity: 0; }
+  10%  { opacity: 0.85; }
+  50%  { transform: translateX(14px); }
+  90%  { opacity: 0.85; }
+  100% { top: 106%; transform: translateX(-8px); opacity: 0; }
+}
+
+@keyframes seasonal-autumn {
+  0%   { top: -8%;  transform: translate(0, 0) rotate(0deg); opacity: 0; }
+  10%  { opacity: 0.9; }
+  50%  { transform: translate(18px, 0) rotate(540deg); }
+  90%  { opacity: 0.9; }
+  100% { top: 108%; transform: translate(-12px, 0) rotate(1080deg); opacity: 0; }
+}
+
+@keyframes seasonal-confetti {
+  0%   { top: -6%;  transform: rotate(0deg); opacity: 0; }
+  8%   { opacity: 0.95; }
+  92%  { opacity: 0.95; }
+  100% { top: 106%; transform: rotate(720deg); opacity: 0; }
+}
+
+/* Heading font — applied by any template rendered inside a [data-theme]
+   wrapper. Cascade handles the rest; templates don't need to opt in. */
+[data-theme] h1,
+[data-theme] h2,
+[data-theme] h3,
+[data-theme] h4 {
+  font-family: var(--theme-heading-font, var(--font-sans));
+}
+
 /* Save pill: mount + gentle exit (used for saving/error states). */
 @keyframes save-pill-in {
   0%   { opacity: 0; transform: translateY(4px) scale(0.96); }

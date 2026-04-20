@@ -86,6 +86,8 @@ export default async function SettingsPage() {
           facebookUrl: org.facebookUrl ?? '',
           disabledBadges: org.disabledBadges,
           templateId: org.templateId,
+          theme: org.theme,
+          seasonalOverlay: org.seasonalOverlay,
         }}
       />
     </main>

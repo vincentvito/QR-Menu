@@ -33,6 +33,11 @@ import {
   TemplatePreview,
   type TemplatePreviewRealData,
 } from '@/components/menu/templates/TemplatePreview'
+import { THEMES, DEFAULT_THEME_ID } from '@/lib/menus/themes'
+import {
+  SEASONAL_OVERLAYS,
+  DEFAULT_SEASONAL_OVERLAY_ID,
+} from '@/lib/menus/seasonal-overlays'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -83,6 +88,8 @@ interface SettingsDraft {
   facebookUrl: string
   disabledBadges: BadgeKey[]
   templateId: string
+  theme: string
+  seasonalOverlay: string
 }
 
 interface SettingsFormProps {
@@ -112,6 +119,8 @@ interface SettingsFormProps {
     facebookUrl: string
     disabledBadges: string[]
     templateId: string
+    theme: string
+    seasonalOverlay: string
   }
   /** R2 URL of the iPhone mockup used by the template picker previews. */
   templatePreviewMockupUrl: string
@@ -178,6 +187,12 @@ export function SettingsForm({
     templateId: TEMPLATES.some((t) => t.id === initial.templateId)
       ? initial.templateId
       : DEFAULT_TEMPLATE_ID,
+    theme: THEMES.some((t) => t.id === initial.theme)
+      ? initial.theme
+      : DEFAULT_THEME_ID,
+    seasonalOverlay: SEASONAL_OVERLAYS.some((o) => o.id === initial.seasonalOverlay)
+      ? initial.seasonalOverlay
+      : DEFAULT_SEASONAL_OVERLAY_ID,
   })
   const [submitting, setSubmitting] = useState(false)
 
@@ -396,53 +411,153 @@ export function SettingsForm({
         </p>
 
         <div className="grid gap-6 md:grid-cols-[1fr_320px]">
-          {/* Template selector list */}
-          <div
-            role="radiogroup"
-            aria-label="Menu template"
-            className="order-2 space-y-3 md:order-1"
-          >
-            {TEMPLATES.map((tpl) => {
-              const selected = draft.templateId === tpl.id
-              return (
-                <button
-                  key={tpl.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  disabled={disabled}
-                  onClick={() =>
-                    setDraft((prev) => ({ ...prev, templateId: tpl.id }))
-                  }
-                  className={cn(
-                    'flex w-full items-center gap-4 rounded-[16px] border p-4 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50',
-                    selected
-                      ? 'border-pop bg-pop/5 ring-2 ring-pop/20'
-                      : 'border-cream-line hover:border-foreground/30 hover:bg-card/60',
-                  )}
-                >
-                  <div className="min-w-0 flex-1">
-                    <div className="text-foreground text-sm font-semibold tracking-tight">
-                      {tpl.label}
-                    </div>
-                    <p className="text-muted-foreground mt-1 text-xs leading-snug">
-                      {tpl.description}
-                    </p>
-                  </div>
-                  <span
-                    aria-hidden="true"
-                    className={cn(
-                      'grid size-6 shrink-0 place-items-center rounded-full border transition-colors',
-                      selected
-                        ? 'border-pop bg-pop text-pop-foreground'
-                        : 'border-cream-line bg-background',
-                    )}
-                  >
-                    {selected && <Check className="size-3.5" />}
-                  </span>
-                </button>
-              )
-            })}
+          {/* Template selector list + Theme + Seasonal overlay pickers */}
+          <div className="order-2 space-y-6 md:order-1">
+            <div>
+              <div className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-[0.14em] uppercase">
+                Layout
+              </div>
+              <div role="radiogroup" aria-label="Menu template" className="space-y-2.5">
+                {TEMPLATES.map((tpl) => {
+                  const selected = draft.templateId === tpl.id
+                  return (
+                    <button
+                      key={tpl.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      disabled={disabled}
+                      onClick={() =>
+                        setDraft((prev) => ({ ...prev, templateId: tpl.id }))
+                      }
+                      className={cn(
+                        'flex w-full items-center gap-4 rounded-[14px] border p-3.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                        selected
+                          ? 'border-pop bg-pop/5 ring-2 ring-pop/20'
+                          : 'border-cream-line hover:border-foreground/30 hover:bg-card/60',
+                      )}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="text-foreground text-sm font-semibold tracking-tight">
+                          {tpl.label}
+                        </div>
+                        <p className="text-muted-foreground mt-0.5 text-xs leading-snug">
+                          {tpl.description}
+                        </p>
+                      </div>
+                      <span
+                        aria-hidden="true"
+                        className={cn(
+                          'grid size-6 shrink-0 place-items-center rounded-full border transition-colors',
+                          selected
+                            ? 'border-pop bg-pop text-pop-foreground'
+                            : 'border-cream-line bg-background',
+                        )}
+                      >
+                        {selected && <Check className="size-3.5" />}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-[0.14em] uppercase">
+                Theme
+              </div>
+              <div role="radiogroup" aria-label="Menu theme" className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                {THEMES.map((th) => {
+                  const selected = draft.theme === th.id
+                  const c = th.colors
+                  return (
+                    <button
+                      key={th.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      disabled={disabled}
+                      onClick={() => setDraft((prev) => ({ ...prev, theme: th.id }))}
+                      className={cn(
+                        'flex items-center gap-3 rounded-[14px] border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                        selected
+                          ? 'border-pop bg-pop/5 ring-2 ring-pop/20'
+                          : 'border-cream-line hover:border-foreground/30 hover:bg-card/60',
+                      )}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className="border-cream-line flex size-9 shrink-0 overflow-hidden rounded-full border"
+                        style={{ backgroundColor: c.background }}
+                      >
+                        <span className="block h-full w-1/3" style={{ backgroundColor: c.foreground }} />
+                        <span className="block h-full w-1/3" style={{ backgroundColor: c.accent }} />
+                        <span className="block h-full w-1/3" style={{ backgroundColor: c.pop }} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className="text-foreground text-sm font-semibold tracking-tight"
+                          style={{ fontFamily: th.headingFontFamily }}
+                        >
+                          {th.label}
+                        </div>
+                        <p className="text-muted-foreground mt-0.5 truncate text-[11px] leading-snug">
+                          {th.description}
+                        </p>
+                      </div>
+                      {selected && (
+                        <span
+                          aria-hidden="true"
+                          className="bg-pop text-pop-foreground grid size-5 shrink-0 place-items-center rounded-full"
+                        >
+                          <Check className="size-3" />
+                        </span>
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div>
+              <div className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-[0.14em] uppercase">
+                Seasonal touch
+              </div>
+              <div
+                role="radiogroup"
+                aria-label="Seasonal overlay"
+                className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+              >
+                {SEASONAL_OVERLAYS.map((ov) => {
+                  const selected = draft.seasonalOverlay === ov.id
+                  return (
+                    <button
+                      key={ov.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      disabled={disabled}
+                      onClick={() =>
+                        setDraft((prev) => ({ ...prev, seasonalOverlay: ov.id }))
+                      }
+                      className={cn(
+                        'flex flex-col items-start gap-1 rounded-[12px] border p-2.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+                        selected
+                          ? 'border-pop bg-pop/5 ring-2 ring-pop/20'
+                          : 'border-cream-line hover:border-foreground/30 hover:bg-card/60',
+                      )}
+                    >
+                      <span className="text-foreground text-xs font-semibold tracking-tight">
+                        {ov.label}
+                      </span>
+                      <span className="text-muted-foreground text-[10px] leading-snug">
+                        {ov.description}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
           </div>
 
           {/* Big live preview, sticky on desktop so it stays in view while
@@ -455,6 +570,8 @@ export function SettingsForm({
                 primaryColor={draft.primaryColor || null}
                 secondaryColor={draft.secondaryColor || null}
                 realData={templatePreviewData}
+                themeId={draft.theme}
+                seasonalOverlayId={draft.seasonalOverlay}
               />
             </div>
           </div>

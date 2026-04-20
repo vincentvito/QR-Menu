@@ -7,6 +7,9 @@ import { currencySymbol } from '@/lib/menus/currency'
 import { BrandMark } from '@/components/brand/BrandMark'
 import { PublicMenuBody } from '@/components/menu/PublicMenuBody'
 import { WifiReveal } from '@/components/menu/WifiReveal'
+import { SeasonalOverlay } from '@/components/menu/SeasonalOverlay'
+import { buildInlineStyle } from '@/components/menu/ThemeStyles'
+import { getTheme } from '@/lib/menus/themes'
 import {
   FacebookIcon,
   GoogleIcon,
@@ -60,12 +63,12 @@ export default async function PublicMenuPage({ params }: PageProps) {
   const org = menu.organization
   const symbol = currencySymbol(org.currency)
 
-  // Inject org colors as CSS variables on the page, overriding the global
-  // accent/pop when the restaurant has picked brand colors. Defaults fall
-  // through to the cream/ink palette.
-  const brandStyle: Record<string, string> = {}
-  if (org.primaryColor) brandStyle['--accent'] = org.primaryColor
-  if (org.secondaryColor) brandStyle['--pop'] = org.secondaryColor
+  // Compose the page style: theme palette + heading font + the org's brand
+  // color overrides (primaryColor/secondaryColor, if set, win over the
+  // theme's accent/pop). Templates read all of these via CSS vars so no
+  // theme code lives in the templates themselves.
+  const theme = getTheme(org.theme)
+  const brandStyle = buildInlineStyle(theme, org.primaryColor, org.secondaryColor)
 
   const now = Date.now()
   const activeSpecialIds = menu.items
@@ -79,9 +82,11 @@ export default async function PublicMenuPage({ params }: PageProps) {
 
   return (
     <div
+      data-theme={theme.id}
       className="bg-background text-foreground min-h-screen pb-24"
       style={brandStyle as React.CSSProperties}
     >
+      <SeasonalOverlay id={org.seasonalOverlay} scope="viewport" />
       {/* Cover / header block */}
       <section className="bg-foreground text-background relative overflow-hidden">
         <div

@@ -6,6 +6,22 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.18.0',
+    date: '2026-04-19',
+    title: 'Themes and seasonal touches',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Five color + typography themes in Settings — Editorial (current look), Pastel, Luxury, Midnight, and Sunset. Each swaps the full palette and, where it fits, switches headings to the Instrument Serif display face',
+          'Midnight theme is effectively dark mode — deep ink with amber and burgundy accents, tuned for cocktail bars, wine bars, and lounges',
+          'Seasonal touch picker — add a gentle overlay of falling snow, amber autumn leaves, or celebration confetti in your brand colors. Pure CSS, no performance hit, and it respects &ldquo;reduce motion&rdquo;',
+          'The phone mockup preview in Settings reflects theme + seasonal choices live, alongside template and brand colors — pick any combination and see exactly how it&apos;ll look',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.17.0',
     date: '2026-04-19',
     title: 'Menu templates',

@@ -9,6 +9,8 @@ import { isWifiEncryption } from '@/lib/wifi'
 import { normalizeSocialHandle } from '@/lib/socials'
 import { isBadgeKey } from '@/lib/menus/badges'
 import { isTemplateId } from '@/components/menu/templates'
+import { isThemeId } from '@/lib/menus/themes'
+import { isSeasonalOverlayId } from '@/lib/menus/seasonal-overlays'
 
 export const runtime = 'nodejs'
 
@@ -283,6 +285,20 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Invalid template' }, { status: 400 })
     }
     updates.templateId = body.templateId
+  }
+
+  if ('theme' in body) {
+    if (!isThemeId(body.theme)) {
+      return NextResponse.json({ error: 'Invalid theme' }, { status: 400 })
+    }
+    updates.theme = body.theme
+  }
+
+  if ('seasonalOverlay' in body) {
+    if (!isSeasonalOverlayId(body.seasonalOverlay)) {
+      return NextResponse.json({ error: 'Invalid seasonal overlay' }, { status: 400 })
+    }
+    updates.seasonalOverlay = body.seasonalOverlay
   }
 
   if (Object.keys(updates).length === 0) {

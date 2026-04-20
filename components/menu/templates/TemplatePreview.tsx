@@ -13,6 +13,9 @@ import {
   TEMPLATE_PREVIEW_MOCKUP_SIZE,
   TEMPLATE_PREVIEW_SCREEN_INSETS,
 } from '@/lib/menus/template-assets'
+import { buildInlineStyle } from '@/components/menu/ThemeStyles'
+import { getTheme } from '@/lib/menus/themes'
+import { SeasonalOverlay } from '@/components/menu/SeasonalOverlay'
 
 export interface TemplatePreviewRealData {
   items: TemplateItem[]
@@ -32,6 +35,10 @@ interface TemplatePreviewProps {
   // null (no menu exists yet), falls back to demo data so the picker still
   // shows something meaningful.
   realData?: TemplatePreviewRealData | null
+  // Theme + overlay layered inside the phone mockup. Live-update as the
+  // owner picks new options in Settings.
+  themeId?: string
+  seasonalOverlayId?: string
 }
 
 // Renders the phone mockup with the chosen template inside its screen area.
@@ -43,8 +50,11 @@ export function TemplatePreview({
   primaryColor,
   secondaryColor,
   realData,
+  themeId,
+  seasonalOverlayId = 'none',
 }: TemplatePreviewProps) {
   const template = getTemplate(templateId)
+  const theme = getTheme(themeId)
 
   const bodyData = useMemo(() => {
     if (!realData) {
@@ -84,20 +94,22 @@ export function TemplatePreview({
     }
   }, [realData])
 
-  const brandStyle: Record<string, string> = {}
-  if (primaryColor) brandStyle['--accent'] = primaryColor
-  if (secondaryColor) brandStyle['--pop'] = secondaryColor
+  // Theme provides the full palette + heading font. Brand color overrides
+  // (if the restaurant has set primary/secondary) replace the theme's
+  // accent/pop so the preview honors both layers live.
+  const themedStyle = buildInlineStyle(theme, primaryColor, secondaryColor)
 
   return (
     <div
+      data-theme={theme.id}
       className="relative w-full"
       style={{
         aspectRatio: `${TEMPLATE_PREVIEW_MOCKUP_SIZE.width} / ${TEMPLATE_PREVIEW_MOCKUP_SIZE.height}`,
-        ...(brandStyle as React.CSSProperties),
+        ...(themedStyle as React.CSSProperties),
       }}
     >
       <div
-        className="bg-background absolute overflow-hidden"
+        className="bg-background text-foreground absolute overflow-hidden"
         style={{
           top: `${TEMPLATE_PREVIEW_SCREEN_INSETS.top * 100}%`,
           right: `${TEMPLATE_PREVIEW_SCREEN_INSETS.right * 100}%`,
@@ -106,7 +118,7 @@ export function TemplatePreview({
           borderRadius: '12%',
         }}
       >
-        <div className="h-full overflow-x-hidden overflow-y-auto">
+        <div className="relative h-full overflow-x-hidden overflow-y-auto">
           <div className="w-full px-5 pt-0">
             <template.Body
               groups={bodyData.groups}
@@ -120,6 +132,8 @@ export function TemplatePreview({
               }}
             />
           </div>
+          {/* Seasonal overlay clipped inside the phone screen */}
+          <SeasonalOverlay id={seasonalOverlayId} scope="contained" />
         </div>
       </div>
 
