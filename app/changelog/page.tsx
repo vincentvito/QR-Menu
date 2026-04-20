@@ -22,6 +22,7 @@ const changelog = [
         items: [
           'Tightened the public menu header — restaurant name, logo, and menu label shrunk so guests see dishes sooner without scrolling',
           'Removed the QRmenucrafter wordmark from the public menu header — it already appears in the footer, so the top of the page is fully your restaurant',
+          'Settings now offers save buttons at the bottom of each section, with subtle dividers between sections — Restaurant, Links, Menu design, Brand, QR code style, and WiFi are easier to scan and save without jumping to the end of the page',
         ],
       },
       {
@@ -29,6 +30,8 @@ const changelog = [
         items: [
           'WiFi reveal button no longer causes a hydration warning on first render — the sheet opens cleanly on the first tap',
           'Removing or replacing a header image now cleans up the previous file from storage, so unused images don&apos;t linger',
+          'The Settings phone mockup now includes the same menu header, search bar, and category chips as your live menu, so the preview matches what guests actually see on mobile',
+          'Template previews in Settings now scale the menu viewport down more accurately inside the phone frame, so dish photos and spacing no longer look oversized compared with the real mobile page',
         ],
       },
     ],

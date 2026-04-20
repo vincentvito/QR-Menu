@@ -34,10 +34,7 @@ import {
   type TemplatePreviewRealData,
 } from '@/components/menu/templates/TemplatePreview'
 import { THEMES, DEFAULT_THEME_ID } from '@/lib/menus/themes'
-import {
-  SEASONAL_OVERLAYS,
-  DEFAULT_SEASONAL_OVERLAY_ID,
-} from '@/lib/menus/seasonal-overlays'
+import { SEASONAL_OVERLAYS, DEFAULT_SEASONAL_OVERLAY_ID } from '@/lib/menus/seasonal-overlays'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -58,10 +55,28 @@ const QR_CORNER_STYLES: { value: QRCornerStyle; label: string }[] = [
 
 const VALID_CENTER_TYPES: QRCenterType[] = ['none', 'logo', 'text']
 function normalizeCenterType(value: string): QRCenterType {
-  return VALID_CENTER_TYPES.includes(value as QRCenterType)
-    ? (value as QRCenterType)
-    : 'none'
+  return VALID_CENTER_TYPES.includes(value as QRCenterType) ? (value as QRCenterType) : 'none'
 }
+
+const RESTAURANT_FIELDS = ['name', 'description', 'sourceUrl', 'currency'] as const
+const LINKS_FIELDS = ['googleReviewUrl', 'instagramUrl', 'tiktokUrl', 'facebookUrl'] as const
+const MENU_DESIGN_FIELDS = ['templateId', 'theme', 'seasonalOverlay'] as const
+const BRAND_FIELDS = ['logo', 'headerImage', 'primaryColor', 'secondaryColor'] as const
+const QR_FIELDS = [
+  'qrDotStyle',
+  'qrCornerStyle',
+  'qrForegroundColor',
+  'qrBackgroundColor',
+  'qrCenterType',
+  'qrCenterText',
+] as const
+const WIFI_FIELDS = [
+  'wifiSsid',
+  'wifiPassword',
+  'wifiEncryption',
+  'wifiCenterType',
+  'wifiCenterText',
+] as const
 
 interface SettingsDraft {
   name: string
@@ -146,17 +161,8 @@ function toFileStem(name: string): string {
   )
 }
 
-export function SettingsForm({
-  canEdit,
-  initial,
-  previewMenu,
-  templatePreviewMockupUrl,
-  templatePreviewData,
-}: SettingsFormProps) {
-  const router = useRouter()
-  const qrRef = useRef<QRCodeStylingType | null>(null)
-  const wifiQrRef = useRef<QRCodeStylingType | null>(null)
-  const [draft, setDraft] = useState<SettingsDraft>({
+function createDraftFromInitial(initial: SettingsFormProps['initial']): SettingsDraft {
+  return {
     name: initial.name,
     description: initial.description,
     logo: initial.logo,
@@ -185,14 +191,27 @@ export function SettingsForm({
     templateId: TEMPLATES.some((t) => t.id === initial.templateId)
       ? initial.templateId
       : DEFAULT_TEMPLATE_ID,
-    theme: THEMES.some((t) => t.id === initial.theme)
-      ? initial.theme
-      : DEFAULT_THEME_ID,
+    theme: THEMES.some((t) => t.id === initial.theme) ? initial.theme : DEFAULT_THEME_ID,
     seasonalOverlay: SEASONAL_OVERLAYS.some((o) => o.id === initial.seasonalOverlay)
       ? initial.seasonalOverlay
       : DEFAULT_SEASONAL_OVERLAY_ID,
-  })
+  }
+}
+
+export function SettingsForm({
+  canEdit,
+  initial,
+  previewMenu,
+  templatePreviewMockupUrl,
+  templatePreviewData,
+}: SettingsFormProps) {
+  const router = useRouter()
+  const qrRef = useRef<QRCodeStylingType | null>(null)
+  const wifiQrRef = useRef<QRCodeStylingType | null>(null)
+  const [draft, setDraft] = useState<SettingsDraft>(() => createDraftFromInitial(initial))
+  const [savedDraft, setSavedDraft] = useState<SettingsDraft>(() => createDraftFromInitial(initial))
   const [submitting, setSubmitting] = useState(false)
+  const [savingSection, setSavingSection] = useState<string | null>(null)
 
   const wifiUri = draft.wifiSsid.trim()
     ? buildWifiUri({
@@ -202,7 +221,50 @@ export function SettingsForm({
       })
     : null
 
-  const disabled = !canEdit || submitting
+  const disabled = !canEdit || submitting || Boolean(savingSection)
+
+  function isDirty(fields: readonly (keyof SettingsDraft)[]) {
+    return fields.some((field) => draft[field] !== savedDraft[field])
+  }
+
+  async function saveFields(fields: readonly (keyof SettingsDraft)[], label: string) {
+    if (!draft.name.trim()) {
+      toast.error('Restaurant name is required')
+      return
+    }
+
+    const payload = Object.fromEntries(fields.map((field) => [field, draft[field]]))
+
+    setSavingSection(label)
+    try {
+      const res = await fetch('/api/organizations', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data.error ?? 'Could not save')
+        return
+      }
+      setSavedDraft((current) => ({ ...current, ...payload }))
+      toast.success(`${label} saved`)
+      router.refresh()
+    } catch {
+      toast.error('Network error â€” please try again')
+    } finally {
+      setSavingSection(null)
+    }
+  }
+
+  const restaurantDirty = isDirty(RESTAURANT_FIELDS)
+  const linksDirty = isDirty(LINKS_FIELDS)
+  const menuDesignDirty = isDirty(MENU_DESIGN_FIELDS)
+  const brandDirty = isDirty(BRAND_FIELDS)
+  const qrDirty = isDirty(QR_FIELDS)
+  const wifiDirty = isDirty(WIFI_FIELDS)
+  const anyDirty =
+    restaurantDirty || linksDirty || menuDesignDirty || brandDirty || qrDirty || wifiDirty
 
   async function save(e: React.FormEvent) {
     e.preventDefault()
@@ -222,6 +284,7 @@ export function SettingsForm({
         toast.error(data.error ?? 'Could not save')
         return
       }
+      setSavedDraft(draft)
       toast.success('Saved')
       router.refresh()
     } catch {
@@ -232,10 +295,7 @@ export function SettingsForm({
   }
 
   return (
-    <form
-      onSubmit={save}
-      className="border-cream-line bg-card space-y-6 rounded-2xl border p-8"
-    >
+    <form onSubmit={save} className="border-cream-line bg-card space-y-6 rounded-2xl border p-8">
       {!canEdit && (
         <p className="bg-background/50 border-cream-line text-muted-foreground rounded-lg border p-3 text-xs">
           Only owners and admins can edit these settings.
@@ -303,13 +363,22 @@ export function SettingsForm({
             Applies to every menu on this restaurant, including existing ones.
           </p>
         </div>
+
+        <SectionFooter>
+          <SectionSaveButton
+            dirty={restaurantDirty}
+            disabled={disabled}
+            saving={savingSection === 'Restaurant'}
+            onClick={() => saveFields(RESTAURANT_FIELDS, 'Restaurant')}
+          />
+        </SectionFooter>
       </section>
 
-      <section className="space-y-4">
+      <section className="border-cream-line/60 space-y-4 border-t pt-6">
         <SectionHeading>Links</SectionHeading>
         <p className="text-muted-foreground text-xs">
-          Shown in your menu&apos;s footer so guests can review you or follow along.
-          Leave any field blank to hide it.
+          Shown in your menu&apos;s footer so guests can review you or follow along. Leave any field
+          blank to hide it.
         </p>
 
         <div className="space-y-2">
@@ -354,9 +423,18 @@ export function SettingsForm({
             placeholder="yourpage"
           />
         </div>
+
+        <SectionFooter>
+          <SectionSaveButton
+            dirty={linksDirty}
+            disabled={disabled}
+            saving={savingSection === 'Links'}
+            onClick={() => saveFields(LINKS_FIELDS, 'Links')}
+          />
+        </SectionFooter>
       </section>
 
-      <section className="space-y-4">
+      <section className="border-cream-line/60 space-y-4 border-t pt-6">
         <SectionHeading>Menu design</SectionHeading>
         <p className="text-muted-foreground text-xs">
           Pick how your public menu is laid out. The preview shows{' '}
@@ -383,13 +461,11 @@ export function SettingsForm({
                       role="radio"
                       aria-checked={selected}
                       disabled={disabled}
-                      onClick={() =>
-                        setDraft((prev) => ({ ...prev, templateId: tpl.id }))
-                      }
+                      onClick={() => setDraft((prev) => ({ ...prev, templateId: tpl.id }))}
                       className={cn(
                         'flex w-full items-center gap-4 rounded-[14px] border p-3.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50',
                         selected
-                          ? 'border-pop bg-pop/5 ring-2 ring-pop/20'
+                          ? 'border-pop bg-pop/5 ring-pop/20 ring-2'
                           : 'border-cream-line hover:border-foreground/30 hover:bg-card/60',
                       )}
                     >
@@ -422,7 +498,11 @@ export function SettingsForm({
               <div className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-[0.14em] uppercase">
                 Theme
               </div>
-              <div role="radiogroup" aria-label="Menu theme" className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <div
+                role="radiogroup"
+                aria-label="Menu theme"
+                className="grid grid-cols-1 gap-2 sm:grid-cols-2"
+              >
                 {THEMES.map((th) => {
                   const selected = draft.theme === th.id
                   const c = th.colors
@@ -437,7 +517,7 @@ export function SettingsForm({
                       className={cn(
                         'flex items-center gap-3 rounded-[14px] border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50',
                         selected
-                          ? 'border-pop bg-pop/5 ring-2 ring-pop/20'
+                          ? 'border-pop bg-pop/5 ring-pop/20 ring-2'
                           : 'border-cream-line hover:border-foreground/30 hover:bg-card/60',
                       )}
                     >
@@ -446,8 +526,14 @@ export function SettingsForm({
                         className="border-cream-line flex size-9 shrink-0 overflow-hidden rounded-full border"
                         style={{ backgroundColor: c.background }}
                       >
-                        <span className="block h-full w-1/3" style={{ backgroundColor: c.foreground }} />
-                        <span className="block h-full w-1/3" style={{ backgroundColor: c.accent }} />
+                        <span
+                          className="block h-full w-1/3"
+                          style={{ backgroundColor: c.foreground }}
+                        />
+                        <span
+                          className="block h-full w-1/3"
+                          style={{ backgroundColor: c.accent }}
+                        />
                         <span className="block h-full w-1/3" style={{ backgroundColor: c.pop }} />
                       </span>
                       <div className="min-w-0 flex-1">
@@ -493,13 +579,11 @@ export function SettingsForm({
                       role="radio"
                       aria-checked={selected}
                       disabled={disabled}
-                      onClick={() =>
-                        setDraft((prev) => ({ ...prev, seasonalOverlay: ov.id }))
-                      }
+                      onClick={() => setDraft((prev) => ({ ...prev, seasonalOverlay: ov.id }))}
                       className={cn(
                         'flex flex-col items-start gap-1 rounded-[12px] border p-2.5 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50',
                         selected
-                          ? 'border-pop bg-pop/5 ring-2 ring-pop/20'
+                          ? 'border-pop bg-pop/5 ring-pop/20 ring-2'
                           : 'border-cream-line hover:border-foreground/30 hover:bg-card/60',
                       )}
                     >
@@ -528,14 +612,28 @@ export function SettingsForm({
                 realData={templatePreviewData}
                 themeId={draft.theme}
                 seasonalOverlayId={draft.seasonalOverlay}
+                restaurantName={draft.name}
+                menuName={previewMenu.name}
+                logoUrl={draft.logo || null}
+                headerImageUrl={draft.headerImage || null}
+                wifiSsid={draft.wifiSsid || null}
                 liveUrl={previewMenu.name ? previewMenu.url : null}
               />
             </div>
           </div>
         </div>
+
+        <SectionFooter>
+          <SectionSaveButton
+            dirty={menuDesignDirty}
+            disabled={disabled}
+            saving={savingSection === 'Menu design'}
+            onClick={() => saveFields(MENU_DESIGN_FIELDS, 'Menu design')}
+          />
+        </SectionFooter>
       </section>
 
-      <section className="space-y-4">
+      <section className="border-cream-line/60 space-y-4 border-t pt-6">
         <SectionHeading>Brand</SectionHeading>
 
         <div className="space-y-2">
@@ -555,9 +653,8 @@ export function SettingsForm({
             disabled={disabled}
           />
           <p className="text-muted-foreground text-xs">
-            Shown behind your restaurant name at the top of the menu. Wide
-            landscape photos read best (roughly 1600×900). Leave empty to keep
-            the brand-color gradient.
+            Shown behind your restaurant name at the top of the menu. Wide landscape photos read
+            best (roughly 1600×900). Leave empty to keep the brand-color gradient.
           </p>
         </div>
 
@@ -577,9 +674,18 @@ export function SettingsForm({
             onChange={(v) => setDraft((prev) => ({ ...prev, secondaryColor: v }))}
           />
         </div>
+
+        <SectionFooter>
+          <SectionSaveButton
+            dirty={brandDirty}
+            disabled={disabled}
+            saving={savingSection === 'Brand'}
+            onClick={() => saveFields(BRAND_FIELDS, 'Brand')}
+          />
+        </SectionFooter>
       </section>
 
-      <section className="space-y-4">
+      <section className="border-cream-line/60 space-y-4 border-t pt-6">
         <SectionHeading>QR code style</SectionHeading>
         <p className="text-muted-foreground text-xs">
           Applies to every menu QR you generate. Preview uses your most recent menu.
@@ -592,9 +698,7 @@ export function SettingsForm({
                 <Label htmlFor="qr-dot-style">Dot style</Label>
                 <Select
                   value={draft.qrDotStyle}
-                  onValueChange={(v) =>
-                    setDraft({ ...draft, qrDotStyle: v as QRDotStyle })
-                  }
+                  onValueChange={(v) => setDraft({ ...draft, qrDotStyle: v as QRDotStyle })}
                   disabled={disabled}
                 >
                   <SelectTrigger id="qr-dot-style" className="w-full">
@@ -614,9 +718,7 @@ export function SettingsForm({
                 <Label htmlFor="qr-corner-style">Corner style</Label>
                 <Select
                   value={draft.qrCornerStyle}
-                  onValueChange={(v) =>
-                    setDraft({ ...draft, qrCornerStyle: v as QRCornerStyle })
-                  }
+                  onValueChange={(v) => setDraft({ ...draft, qrCornerStyle: v as QRCornerStyle })}
                   disabled={disabled}
                 >
                   <SelectTrigger id="qr-corner-style" className="w-full">
@@ -661,7 +763,7 @@ export function SettingsForm({
                     qrBackgroundColor: draft.secondaryColor || draft.qrBackgroundColor,
                   })
                 }
-                className="text-muted-foreground hover:text-foreground disabled:opacity-50 inline-flex items-center gap-2 text-xs underline-offset-2 hover:underline"
+                className="text-muted-foreground hover:text-foreground inline-flex items-center gap-2 text-xs underline-offset-2 hover:underline disabled:opacity-50"
               >
                 <span
                   aria-hidden="true"
@@ -679,7 +781,6 @@ export function SettingsForm({
                 Use my brand colors
               </button>
             )}
-
 
             <CenterPicker
               idPrefix="qr"
@@ -712,9 +813,7 @@ export function SettingsForm({
             </div>
             {previewMenu.name ? (
               <>
-                <p className="text-muted-foreground truncate text-[11px]">
-                  {previewMenu.name}
-                </p>
+                <p className="text-muted-foreground truncate text-[11px]">{previewMenu.name}</p>
                 <div className="flex w-full gap-2">
                   <Button
                     type="button"
@@ -745,20 +844,27 @@ export function SettingsForm({
                 </div>
               </>
             ) : (
-              <p className="text-muted-foreground text-[11px]">
-                Create a menu to download a QR.
-              </p>
+              <p className="text-muted-foreground text-[11px]">Create a menu to download a QR.</p>
             )}
           </div>
         </div>
+
+        <SectionFooter>
+          <SectionSaveButton
+            dirty={qrDirty}
+            disabled={disabled}
+            saving={savingSection === 'QR code style'}
+            onClick={() => saveFields(QR_FIELDS, 'QR code style')}
+          />
+        </SectionFooter>
       </section>
 
-      <section className="space-y-4">
+      <section className="border-cream-line/60 space-y-4 border-t pt-6">
         <SectionHeading>WiFi</SectionHeading>
         <p className="text-muted-foreground text-xs">
-          Guests see a &quot;Show WiFi&quot; button on your menu to reveal and copy the
-          password. Download the WiFi QR below for table cards — modern phones auto-join
-          when their camera scans it.
+          Guests see a &quot;Show WiFi&quot; button on your menu to reveal and copy the password.
+          Download the WiFi QR below for table cards — modern phones auto-join when their camera
+          scans it.
         </p>
 
         <div className="grid gap-4 sm:grid-cols-[1fr_220px] sm:items-start">
@@ -780,9 +886,7 @@ export function SettingsForm({
               <Label htmlFor="wifi-encryption">Security</Label>
               <Select
                 value={draft.wifiEncryption}
-                onValueChange={(v) =>
-                  setDraft({ ...draft, wifiEncryption: v as WifiEncryption })
-                }
+                onValueChange={(v) => setDraft({ ...draft, wifiEncryption: v as WifiEncryption })}
                 disabled={disabled}
               >
                 <SelectTrigger id="wifi-encryption">
@@ -811,8 +915,7 @@ export function SettingsForm({
                   className="font-mono"
                 />
                 <p className="text-muted-foreground text-xs">
-                  Stored so you can update it; shown on your menu only when a guest taps
-                  to reveal.
+                  Stored so you can update it; shown on your menu only when a guest taps to reveal.
                 </p>
               </div>
             )}
@@ -895,22 +998,69 @@ export function SettingsForm({
             )}
           </div>
         </div>
+
+        <SectionFooter>
+          <SectionSaveButton
+            dirty={wifiDirty}
+            disabled={disabled}
+            saving={savingSection === 'WiFi'}
+            onClick={() => saveFields(WIFI_FIELDS, 'WiFi')}
+          />
+        </SectionFooter>
       </section>
 
       {canEdit && (
-        <Button type="submit" size="lg" disabled={submitting} className="w-full">
+        <Button type="submit" size="lg" disabled={submitting || !anyDirty} className="w-full">
           {submitting ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
               <span>Saving…</span>
             </>
           ) : (
-            <span>Save changes</span>
+            <span>{anyDirty ? 'Save all unsaved changes' : 'All changes saved'}</span>
           )}
         </Button>
       )}
     </form>
   )
+}
+
+function SectionSaveButton({
+  dirty,
+  disabled,
+  saving,
+  onClick,
+}: {
+  dirty: boolean
+  disabled: boolean
+  saving: boolean
+  onClick: () => void
+}) {
+  return (
+    <Button
+      type="button"
+      variant={dirty ? 'default' : 'outline'}
+      size="sm"
+      disabled={disabled || !dirty}
+      onClick={onClick}
+      className="shrink-0"
+    >
+      {saving ? (
+        <>
+          <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+          <span>Saving…</span>
+        </>
+      ) : dirty ? (
+        <span>Save section</span>
+      ) : (
+        <span>Saved</span>
+      )}
+    </Button>
+  )
+}
+
+function SectionFooter({ children }: { children: React.ReactNode }) {
+  return <div className="flex justify-end pt-2">{children}</div>
 }
 
 function HandleField({
@@ -1026,7 +1176,7 @@ function ColorField({
           value={pickerValue}
           onChange={(e) => handlePickerChange(e.target.value)}
           disabled={disabled}
-          className="border-cream-line size-10 shrink-0 cursor-pointer overflow-hidden rounded-full border bg-transparent p-0 disabled:cursor-not-allowed disabled:opacity-50 [&::-moz-color-swatch]:rounded-full [&::-moz-color-swatch]:border-none [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-full [&::-webkit-color-swatch]:border-none"
+          className="border-cream-line size-10 shrink-0 cursor-pointer overflow-hidden rounded-full border bg-transparent p-0 disabled:cursor-not-allowed disabled:opacity-50 [&::-moz-color-swatch]:rounded-full [&::-moz-color-swatch]:border-none [&::-webkit-color-swatch]:rounded-full [&::-webkit-color-swatch]:border-none [&::-webkit-color-swatch-wrapper]:p-0"
           aria-label={`${label} picker`}
         />
         <Input
@@ -1064,11 +1214,7 @@ function CenterPicker({
   return (
     <div className="space-y-2">
       <Label>Center content</Label>
-      <div
-        role="radiogroup"
-        aria-label="Center content"
-        className="grid grid-cols-3 gap-2"
-      >
+      <div role="radiogroup" aria-label="Center content" className="grid grid-cols-3 gap-2">
         {(
           [
             { value: 'none', label: 'None' },
