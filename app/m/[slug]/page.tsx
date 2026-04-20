@@ -25,11 +25,27 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const menu = await getMenuBySlug(slug)
-  if (!menu) return { title: 'Menu not found' }
+  if (!menu) return { title: 'Menu not found', robots: { index: false, follow: false } }
   const restaurant = menu.organization.name
+  const description =
+    menu.organization.description?.trim() ||
+    `${menu.name} at ${restaurant}. Browse every dish — photos, prices, specials, and dietary info.`
+  const canonical = `/m/${slug}`
   return {
     title: `${restaurant} — ${menu.name}`,
-    description: `${restaurant}'s ${menu.name}, powered by QRmenucrafter.`,
+    description,
+    alternates: { canonical },
+    openGraph: {
+      type: 'website',
+      title: `${restaurant} — ${menu.name}`,
+      description,
+      url: canonical,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${restaurant} — ${menu.name}`,
+      description,
+    },
   }
 }
 
@@ -80,12 +96,60 @@ export default async function PublicMenuPage({ params }: PageProps) {
   const facebookHref = org.facebookUrl ? socialUrl('facebook', org.facebookUrl) : null
   const hasSocials = Boolean(instaHref || tiktokHref || facebookHref)
 
+  // Group items by category for the schema.org hasMenuSection nesting.
+  const sectionMap = new Map<string, typeof menu.items>()
+  for (const item of menu.items) {
+    const key = item.category || 'Other'
+    const bucket = sectionMap.get(key) ?? []
+    bucket.push(item)
+    sectionMap.set(key, bucket)
+  }
+
+  // Restaurant + Menu structured data. Google uses this to understand the
+  // page is a restaurant menu — enables richer search results and helps
+  // discoverability for dish-level queries.
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Restaurant',
+    name: org.name,
+    description: org.description ?? undefined,
+    image: org.logo ?? undefined,
+    url: org.sourceUrl ?? undefined,
+    hasMenu: {
+      '@type': 'Menu',
+      name: menu.name,
+      hasMenuSection: Array.from(sectionMap.entries()).map(([sectionName, items]) => ({
+        '@type': 'MenuSection',
+        name: sectionName,
+        hasMenuItem: items.map((i) => ({
+          '@type': 'MenuItem',
+          name: i.name,
+          description: i.description || undefined,
+          image: i.imageUrl ?? undefined,
+          offers:
+            i.price > 0
+              ? {
+                  '@type': 'Offer',
+                  price: i.price,
+                  priceCurrency: org.currency,
+                }
+              : undefined,
+        })),
+      })),
+    },
+  }
+
   return (
     <div
       data-theme={theme.id}
       className="bg-background text-foreground min-h-screen pb-24"
       style={brandStyle as React.CSSProperties}
     >
+      {/* Structured data for search engines — Restaurant + Menu + MenuItem */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <SeasonalOverlay id={org.seasonalOverlay} scope="viewport" />
       {/* Cover / header block */}
       <section className="bg-foreground text-background relative overflow-hidden">

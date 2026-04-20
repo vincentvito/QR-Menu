@@ -6,6 +6,28 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.19.0',
+    date: '2026-04-20',
+    title: 'Share-ready menus — search + social polish',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Every restaurant menu now has a custom social-share card — the restaurant&apos;s name, your brand colors, and dish count render in the link preview on iMessage, WhatsApp, Slack, Twitter, and Facebook',
+          'Google and other search engines now understand your menu as structured data — individual dishes, prices, and categories — so your menu can show up in richer search results',
+          'New branded app icon replaces the default — the QRmenucrafter Q appears in browser tabs, bookmarks, and iOS home-screen installs',
+          'A default social card for the landing page when someone shares a link to qrmenucrafter',
+        ],
+      },
+      {
+        type: 'changed' as const,
+        items: [
+          'Private dashboard routes (settings, menus, team, admin) now tell search engines not to index them — only your public menu pages, the landing, and the changelog are discoverable',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.18.0',
     date: '2026-04-19',
     title: 'Themes and seasonal touches',
