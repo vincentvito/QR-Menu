@@ -6,7 +6,7 @@ import Stripe from 'stripe'
 import prisma from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
 import { otpEmailTemplate, inviteEmailTemplate } from '@/lib/email-templates'
-import { PLANS } from '@/lib/plans'
+import { CREDIT_PACK, PLANS } from '@/lib/plans'
 import { grantBonusCredits, resetMonthlyCredits } from '@/lib/plans/credits'
 import { reconcileRestaurantActivation } from '@/lib/plans/reconcile'
 
@@ -210,6 +210,43 @@ export const auth = betterAuth({
               },
             },
             organization: { enabled: true },
+            // Catch one-time `mode: 'payment'` Checkout completions for credit
+            // packs. The plugin itself only knows how to process subscription
+            // checkouts; this hook runs after its default handler for every
+            // event.
+            onEvent: async (event) => {
+              if (event.type !== 'checkout.session.completed') return
+              const session = event.data.object as Stripe.Checkout.Session
+              if (session.mode !== 'payment') return
+              if (session.metadata?.kind !== 'credit-pack-100') return
+              if (session.payment_status !== 'paid') return
+
+              const organizationId = session.metadata?.organizationId
+              if (!organizationId) return
+
+              // Idempotency: Stripe retries webhooks. Skip if we've already
+              // credited this session.
+              const already = await prisma.creditTransaction.findFirst({
+                where: {
+                  organizationId,
+                  type: 'purchase',
+                  reason: 'credit-pack-100',
+                  metadata: { path: ['sessionId'], equals: session.id },
+                },
+                select: { id: true },
+              })
+              if (already) return
+
+              await grantBonusCredits(organizationId, CREDIT_PACK.credits, {
+                type: 'purchase',
+                reason: 'credit-pack-100',
+                metadata: {
+                  sessionId: session.id,
+                  amountTotal: session.amount_total ?? null,
+                  currency: session.currency ?? null,
+                },
+              })
+            },
           }),
         ]
       : []),

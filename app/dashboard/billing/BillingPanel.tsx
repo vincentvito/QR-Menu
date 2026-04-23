@@ -1,7 +1,7 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useRef, useState, useTransition } from 'react'
 import { Check, CreditCard, Lock, Loader2, Sparkles, Zap } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -18,6 +18,8 @@ interface BillingPanelProps {
 
 const SUBSCRIBABLE_PLANS: Array<PlanDefinition['id']> = ['basic', 'pro', 'business', 'enterprise']
 
+const CREDIT_PACK_LABEL = '100 credits · $15'
+
 function formatPrice(cents: number | null): string {
   if (cents === null) return '—'
   const dollars = cents / 100
@@ -31,15 +33,35 @@ function formatDate(date: Date | null): string {
 
 export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPanelProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [interval, setInterval] = useState<'month' | 'year'>(
     state.subscription?.billingInterval === 'year' ? 'year' : 'month',
   )
   const [pendingPlan, setPendingPlan] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [isBuyingCredits, setIsBuyingCredits] = useState(false)
   const [isSavingActivation, setIsSavingActivation] = useState(false)
   const [activePicks, setActivePicks] = useState<Set<string>>(
     () => new Set(state.restaurants.filter((r) => !r.readOnly).map((r) => r.id)),
   )
+
+  // Surface the Stripe redirect outcome once, then clean the URL. Ref guard
+  // prevents the toast from re-firing on router.refresh() within the same nav.
+  const toastHandled = useRef(false)
+  useEffect(() => {
+    if (toastHandled.current) return
+    const creditPack = searchParams.get('creditPack')
+    if (creditPack === 'success') {
+      toast.success(`${CREDIT_PACK_LABEL} purchased — credits will appear in a few seconds.`)
+      toastHandled.current = true
+      router.replace('/dashboard/billing')
+      router.refresh()
+    } else if (creditPack === 'cancel') {
+      toast.info('Credit pack purchase canceled.')
+      toastHandled.current = true
+      router.replace('/dashboard/billing')
+    }
+  }, [searchParams, router])
 
   const currentPlanId = state.plan.id
   const isTrialing = state.subscription?.status === 'trialing'
@@ -62,6 +84,23 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
       toast.error(err instanceof Error ? err.message : 'Checkout failed')
     } finally {
       setPendingPlan(null)
+    }
+  }
+
+  async function buyCreditPack() {
+    setIsBuyingCredits(true)
+    try {
+      const res = await fetch('/api/billing/credit-pack/checkout', { method: 'POST' })
+      const body = (await res.json().catch(() => ({}))) as { url?: string; error?: string }
+      if (!res.ok || !body.url) {
+        toast.error(body.error ?? 'Could not start checkout')
+        return
+      }
+      window.location.href = body.url
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Checkout failed')
+    } finally {
+      setIsBuyingCredits(false)
     }
   }
 
@@ -265,8 +304,17 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
             ) : null}
           </div>
           {canManage ? (
-            <Button variant="outline" size="sm" className="mt-4 w-full" disabled>
-              Buy 100 credits · $15 (coming soon)
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-4 w-full"
+              onClick={buyCreditPack}
+              disabled={isBuyingCredits}
+            >
+              {isBuyingCredits ? (
+                <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+              ) : null}
+              Buy {CREDIT_PACK_LABEL}
             </Button>
           ) : null}
         </section>

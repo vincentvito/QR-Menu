@@ -22,6 +22,7 @@ const changelog = [
           'Read-only mode — if a plan change leaves you with more restaurants than your tier supports, the extras turn read-only: public menus keep serving guests, but dashboard editing is locked until you upgrade or pick which ones stay active',
           'Activation picker on the Billing page — swap which restaurants stay active under your current plan without upgrading',
           'Restaurant switcher in the dashboard sidebar — the foundation for managing multiple venues from one account (adding more restaurants ships next)',
+          'Buy-credits button on the Billing page — top up with a one-time 100-credit pack for $15 when you run out mid-month. Credits land in your bonus bucket and never expire',
         ],
       },
       {
