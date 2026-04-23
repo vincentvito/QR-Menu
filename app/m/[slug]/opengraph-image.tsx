@@ -44,12 +44,33 @@ export default async function MenuOpenGraphImage({ params }: Props) {
     )
   }
 
-  const org = menu.organization
-  const theme = getTheme(org.theme)
+  if (!menu.restaurant) {
+    return new ImageResponse(
+      <div
+        style={{
+          width: '100%',
+          height: '100%',
+          background: '#F6F2E7',
+          color: '#1A1E17',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 64,
+          fontFamily: 'sans-serif',
+          fontWeight: 700,
+        }}
+      >
+        Menu not found
+      </div>,
+      { ...size },
+    )
+  }
+  const restaurant = menu.restaurant
+  const theme = getTheme(restaurant.theme)
   const background = theme.colors.background
   const foreground = theme.colors.foreground
-  const accent = org.primaryColor || theme.colors.accent
-  const pop = org.secondaryColor || theme.colors.pop
+  const accent = restaurant.primaryColor || theme.colors.accent
+  const pop = restaurant.secondaryColor || theme.colors.pop
   const muted = theme.colors.mutedForeground
   const itemCount = menu.items.length
 
@@ -68,7 +89,7 @@ export default async function MenuOpenGraphImage({ params }: Props) {
         position: 'relative',
       }}
     >
-      {/* Accent blobs colored by the org's brand */}
+      {/* Accent blobs colored by the restaurant's brand */}
       <div
         style={{
           position: 'absolute',
@@ -119,9 +140,9 @@ export default async function MenuOpenGraphImage({ params }: Props) {
             maxWidth: 980,
           }}
         >
-          {org.name}
+          {restaurant.name}
         </div>
-        {org.description ? (
+        {restaurant.description ? (
           <div
             style={{
               fontSize: 32,
@@ -130,7 +151,7 @@ export default async function MenuOpenGraphImage({ params }: Props) {
               lineHeight: 1.3,
             }}
           >
-            {org.description.slice(0, 140)}
+            {restaurant.description.slice(0, 140)}
           </div>
         ) : null}
       </div>

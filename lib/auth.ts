@@ -1,9 +1,14 @@
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { admin, emailOTP, organization } from 'better-auth/plugins'
+import { stripe as stripePlugin } from '@better-auth/stripe'
+import Stripe from 'stripe'
 import prisma from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
 import { otpEmailTemplate, inviteEmailTemplate } from '@/lib/email-templates'
+import { PLANS } from '@/lib/plans'
+import { grantBonusCredits, resetMonthlyCredits } from '@/lib/plans/credits'
+import { reconcileRestaurantActivation } from '@/lib/plans/reconcile'
 
 // Emails that should be promoted to the platform admin role on signup.
 // Promotion happens via the user-create hook below.
@@ -11,6 +16,99 @@ const PLATFORM_ADMIN_EMAILS = (process.env.PLATFORM_ADMIN_EMAILS ?? '')
   .split(',')
   .map((e) => e.trim().toLowerCase())
   .filter(Boolean)
+
+// Stripe plugin is only registered when STRIPE_SECRET_KEY is set — keeps
+// local dev working for contributors who haven't done Stripe setup yet.
+// Price IDs below are env-driven so the same code ships to prod without
+// hardcoded references; populate STRIPE_PRICE_* vars once you create the
+// prices in your Stripe dashboard.
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY
+const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+const stripeClient = stripeSecretKey
+  ? new Stripe(stripeSecretKey, { apiVersion: '2026-03-25.dahlia' })
+  : null
+
+const STRIPE_PLANS = [
+  {
+    name: 'basic',
+    priceId: process.env.STRIPE_PRICE_BASIC_MONTHLY ?? '',
+    annualDiscountPriceId: process.env.STRIPE_PRICE_BASIC_YEARLY ?? '',
+    limits: {
+      restaurants: PLANS.basic.maxRestaurants,
+      menusPerRestaurant: PLANS.basic.maxMenusPerRestaurant,
+      monthlyCredits: PLANS.basic.monthlyCredits,
+    },
+    freeTrial: {
+      days: 14,
+      onTrialStart: async (subscription: { referenceId: string }) => {
+        await grantBonusCredits(subscription.referenceId, PLANS.trial.trialCredits ?? 5, {
+          type: 'grant',
+          reason: 'trial-start',
+        })
+      },
+    },
+  },
+  {
+    name: 'pro',
+    priceId: process.env.STRIPE_PRICE_PRO_MONTHLY ?? '',
+    annualDiscountPriceId: process.env.STRIPE_PRICE_PRO_YEARLY ?? '',
+    limits: {
+      restaurants: PLANS.pro.maxRestaurants,
+      menusPerRestaurant: PLANS.pro.maxMenusPerRestaurant,
+      monthlyCredits: PLANS.pro.monthlyCredits,
+    },
+    freeTrial: {
+      days: 14,
+      onTrialStart: async (subscription: { referenceId: string }) => {
+        await grantBonusCredits(subscription.referenceId, PLANS.trial.trialCredits ?? 5, {
+          type: 'grant',
+          reason: 'trial-start',
+        })
+      },
+    },
+  },
+  {
+    name: 'business',
+    priceId: process.env.STRIPE_PRICE_BUSINESS_MONTHLY ?? '',
+    annualDiscountPriceId: process.env.STRIPE_PRICE_BUSINESS_YEARLY ?? '',
+    limits: {
+      restaurants: PLANS.business.maxRestaurants,
+      menusPerRestaurant: PLANS.business.maxMenusPerRestaurant,
+      monthlyCredits: PLANS.business.monthlyCredits,
+    },
+    freeTrial: {
+      days: 14,
+      onTrialStart: async (subscription: { referenceId: string }) => {
+        await grantBonusCredits(subscription.referenceId, PLANS.trial.trialCredits ?? 5, {
+          type: 'grant',
+          reason: 'trial-start',
+        })
+      },
+    },
+  },
+  {
+    name: 'enterprise',
+    priceId: process.env.STRIPE_PRICE_ENTERPRISE_MONTHLY ?? '',
+    limits: {
+      restaurants: PLANS.enterprise.maxRestaurants,
+      menusPerRestaurant: PLANS.enterprise.maxMenusPerRestaurant,
+      monthlyCredits: PLANS.enterprise.monthlyCredits,
+    },
+  },
+]
+
+// Decide whether a subscription lifecycle event is a renewal (the billing
+// period rolled over) by comparing the new periodStart with what we last
+// cached on the denormalized Organization columns.
+async function isRenewalEvent(organizationId: string, newPeriodStart: Date | null | undefined) {
+  if (!newPeriodStart) return false
+  const org = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: { monthlyCreditsResetAt: true },
+  })
+  if (!org?.monthlyCreditsResetAt) return true
+  return newPeriodStart.getTime() > org.monthlyCreditsResetAt.getTime()
+}
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
@@ -50,37 +148,9 @@ export const auth = betterAuth({
     }),
     organization({
       creatorRole: 'owner',
-      schema: {
-        organization: {
-          additionalFields: {
-            description: { type: 'string', required: false },
-            primaryColor: { type: 'string', required: false },
-            secondaryColor: { type: 'string', required: false },
-            currency: { type: 'string', required: false, defaultValue: 'USD' },
-            sourceUrl: { type: 'string', required: false },
-            qrDotStyle: { type: 'string', required: false, defaultValue: 'square' },
-            qrCornerStyle: { type: 'string', required: false, defaultValue: 'square' },
-            qrForegroundColor: { type: 'string', required: false, defaultValue: '#1C1917' },
-            qrBackgroundColor: { type: 'string', required: false, defaultValue: '#FDFCFB' },
-            qrCenterType: { type: 'string', required: false, defaultValue: 'none' },
-            qrCenterText: { type: 'string', required: false },
-            wifiSsid: { type: 'string', required: false },
-            wifiPassword: { type: 'string', required: false },
-            wifiEncryption: { type: 'string', required: false, defaultValue: 'WPA' },
-            wifiCenterType: { type: 'string', required: false, defaultValue: 'none' },
-            wifiCenterText: { type: 'string', required: false },
-            googleReviewUrl: { type: 'string', required: false },
-            instagramUrl: { type: 'string', required: false },
-            tiktokUrl: { type: 'string', required: false },
-            facebookUrl: { type: 'string', required: false },
-            templateId: { type: 'string', required: false, defaultValue: 'default' },
-            theme: { type: 'string', required: false, defaultValue: 'editorial' },
-            seasonalOverlay: { type: 'string', required: false, defaultValue: 'none' },
-            headerImage: { type: 'string', required: false },
-            headerTextColor: { type: 'string', required: false },
-          },
-        },
-      },
+      // Restaurant-specific fields (branding, QR, wifi, socials, template)
+      // used to live here as `additionalFields`. Phase 5 moved them all onto
+      // the Restaurant model, so the plugin is back to its default schema.
       sendInvitationEmail: async ({ email, invitation, organization, inviter }) => {
         const baseUrl = process.env.BETTER_AUTH_URL || 'http://localhost:3000'
         const acceptUrl = `${baseUrl}/accept-invite?invitationId=${invitation.id}`
@@ -94,6 +164,55 @@ export const auth = betterAuth({
       },
     }),
     admin(),
+    ...(stripeClient && stripeWebhookSecret
+      ? [
+          stripePlugin({
+            stripeClient,
+            stripeWebhookSecret,
+            createCustomerOnSignUp: true,
+            subscription: {
+              enabled: true,
+              plans: STRIPE_PLANS,
+              // Only owners/admins can change the org's plan. Other roles can
+              // view billing state but not modify it.
+              authorizeReference: async ({ user, referenceId, action }) => {
+                if (action === 'upgrade-subscription' || action === 'cancel-subscription') {
+                  const member = await prisma.member.findFirst({
+                    where: { userId: user.id, organizationId: referenceId },
+                    select: { role: true },
+                  })
+                  return member ? ['owner', 'admin'].includes(member.role) : false
+                }
+                return true
+              },
+              // Fires on every Stripe subscription.created/updated webhook.
+              // If the billing period rolled over, refill the monthly bucket
+              // from the plan's allowance. The bonus bucket is untouched.
+              onSubscriptionUpdate: async ({
+                subscription,
+              }: {
+                subscription: { referenceId: string; plan: string; periodStart?: Date }
+              }) => {
+                if (await isRenewalEvent(subscription.referenceId, subscription.periodStart)) {
+                  const planDef = PLANS[subscription.plan as keyof typeof PLANS]
+                  const amount = planDef?.monthlyCredits ?? 0
+                  if (amount > 0 && subscription.periodStart) {
+                    await resetMonthlyCredits(
+                      subscription.referenceId,
+                      amount,
+                      subscription.periodStart,
+                    )
+                  }
+                }
+                // Any plan change may shift the restaurant cap — reconcile
+                // readOnly flags against the current cap.
+                await reconcileRestaurantActivation(subscription.referenceId)
+              },
+            },
+            organization: { enabled: true },
+          }),
+        ]
+      : []),
   ],
   trustedOrigins: [process.env.BETTER_AUTH_URL || 'http://localhost:3000'],
 })

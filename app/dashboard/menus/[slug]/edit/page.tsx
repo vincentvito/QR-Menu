@@ -53,7 +53,7 @@ export default async function EditMenuPage({ params }: PageProps) {
         slug={slug}
         initial={{
           name: menu.name,
-          currency: menu.organization.currency,
+          currency: menu.restaurant?.currency ?? 'USD',
           items: menu.items.map((i) => ({
             id: i.id,
             category: i.category,

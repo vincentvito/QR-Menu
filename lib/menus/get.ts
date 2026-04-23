@@ -29,6 +29,7 @@ export const getMenuBySlug = cache(async (slug: string) => {
     include: {
       items: { orderBy: { order: 'asc' } },
       organization: true,
+      restaurant: true,
     },
   })
 })
@@ -36,6 +37,14 @@ export const getMenuBySlug = cache(async (slug: string) => {
 export async function getMenusForOrg(organizationId: string) {
   return prisma.menu.findMany({
     where: { organizationId },
+    orderBy: { createdAt: 'desc' },
+    include: { _count: { select: { items: true } } },
+  })
+}
+
+export async function getMenusForRestaurant(restaurantId: string) {
+  return prisma.menu.findMany({
+    where: { restaurantId },
     orderBy: { createdAt: 'desc' },
     include: { _count: { select: { items: true } } },
   })

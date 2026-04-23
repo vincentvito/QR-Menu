@@ -5,6 +5,9 @@ import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { generateDishImage } from '@/lib/ai/dish-image'
 import { keyForMenuItemImage, uploadBuffer } from '@/lib/storage/r2'
+import { hasCredits } from '@/lib/plans/gates'
+import { spendCredits, InsufficientCreditsError } from '@/lib/plans/credits'
+import { CREDIT_COSTS } from '@/lib/plans/costs'
 
 export const runtime = 'nodejs'
 // Gemini image generation runs ~15–30s; give it headroom.
@@ -61,6 +64,14 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'Dish not found' }, { status: 404 })
   }
 
+  const creditsOk = await hasCredits(item.menu.organizationId, CREDIT_COSTS.DISH_IMAGE_GENERATE)
+  if (!creditsOk) {
+    return NextResponse.json(
+      { error: 'Out of AI credits. Buy more or upgrade your plan.', gate: 'credits' },
+      { status: 402 },
+    )
+  }
+
   try {
     const image = await generateDishImage({
       name: item.name,
@@ -78,6 +89,21 @@ export async function POST(request: Request, { params }: RouteContext) {
       body: buffer,
       contentType: image.mimeType,
     })
+
+    try {
+      await spendCredits(
+        item.menu.organizationId,
+        CREDIT_COSTS.DISH_IMAGE_GENERATE,
+        'dish-image-generate',
+        { menuItemId: item.id },
+      )
+    } catch (err) {
+      if (err instanceof InsufficientCreditsError) {
+        console.warn('[generate-image] credit race — action succeeded, spend failed:', err.message)
+      } else {
+        throw err
+      }
+    }
 
     return NextResponse.json({ url })
   } catch (err) {

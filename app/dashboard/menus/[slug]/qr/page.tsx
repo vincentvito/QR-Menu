@@ -11,7 +11,7 @@ interface PageProps {
 
 export default async function MenuQRPage({ params }: PageProps) {
   const { slug } = await params
-  const { org } = await getDashboardContext()
+  const { org, restaurant } = await getDashboardContext()
 
   const menu = await prisma.menu.findUnique({
     where: { slug },
@@ -50,12 +50,12 @@ export default async function MenuQRPage({ params }: PageProps) {
         menuName={menu.name}
         publicUrl={publicUrl}
         qr={{
-          dotStyle: org.qrDotStyle,
-          cornerStyle: org.qrCornerStyle,
-          foregroundColor: org.qrForegroundColor,
-          backgroundColor: org.qrBackgroundColor,
-          centerType: org.qrCenterType,
-          centerText: org.qrCenterText,
+          dotStyle: restaurant.qrDotStyle,
+          cornerStyle: restaurant.qrCornerStyle,
+          foregroundColor: restaurant.qrForegroundColor,
+          backgroundColor: restaurant.qrBackgroundColor,
+          centerType: restaurant.qrCenterType,
+          centerText: restaurant.qrCenterText,
           logo: org.logo ?? null,
         }}
       />

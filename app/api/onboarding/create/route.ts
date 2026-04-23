@@ -76,25 +76,47 @@ export async function POST(request: Request) {
     typeof body.currency === 'string' ? body.currency.trim().toUpperCase() : DEFAULT_CURRENCY
   const currency = isSupportedCurrency(currencyRaw) ? currencyRaw : DEFAULT_CURRENCY
 
-  const payload = {
-    name,
-    slug: makeSlug(name),
-    logo: cleanUrl(body.logo),
-    description: cleanString(body.description, MAX_DESCRIPTION),
-    primaryColor: cleanHex(body.primaryColor),
-    secondaryColor: cleanHex(body.secondaryColor),
+  // Organization keeps only account-level fields (name, slug, logo).
+  // Everything restaurant-specific goes on the Restaurant row below.
+  const slug = makeSlug(name)
+  const restaurantFields = {
+    description: cleanString(body.description, MAX_DESCRIPTION) ?? null,
+    primaryColor: cleanHex(body.primaryColor) ?? null,
+    secondaryColor: cleanHex(body.secondaryColor) ?? null,
     currency,
-    sourceUrl: cleanUrl(body.sourceUrl),
+    sourceUrl: cleanUrl(body.sourceUrl) ?? null,
   }
 
   const organization = await auth.api.createOrganization({
-    body: payload,
+    body: {
+      name,
+      slug,
+      logo: cleanUrl(body.logo) ?? undefined,
+    },
     headers: requestHeaders,
   })
 
   if (!organization) {
     return NextResponse.json({ error: 'Failed to create restaurant' }, { status: 500 })
   }
+
+  // If the derived restaurant slug collides (rare), append a short suffix.
+  let restaurantSlug = slug
+  if (await prisma.restaurant.findUnique({ where: { slug: restaurantSlug } })) {
+    restaurantSlug = `${slug}-${Math.random().toString(36).slice(2, 8)}`
+  }
+
+  await prisma.restaurant.create({
+    data: {
+      organizationId: organization.id,
+      slug: restaurantSlug,
+      name,
+      ...restaurantFields,
+    },
+  })
+
+  // Subscription rows are created by the @better-auth/stripe plugin on first
+  // checkout. Until then, resolvePlan() reads the absence as "trial".
 
   await auth.api.setActiveOrganization({
     body: { organizationId: organization.id },

@@ -20,25 +20,28 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
   const menu = await getMenuBySlug(slug)
-  if (!menu) return { title: 'Menu not found', robots: { index: false, follow: false } }
-  const restaurant = menu.organization.name
+  if (!menu || !menu.restaurant) {
+    return { title: 'Menu not found', robots: { index: false, follow: false } }
+  }
+  const restaurant = menu.restaurant
+  const venueName = restaurant.name
   const description =
-    menu.organization.description?.trim() ||
-    `${menu.name} at ${restaurant}. Browse every dish — photos, prices, specials, and dietary info.`
+    restaurant.description?.trim() ||
+    `${menu.name} at ${venueName}. Browse every dish — photos, prices, specials, and dietary info.`
   const canonical = `/m/${slug}`
   return {
-    title: `${restaurant} — ${menu.name}`,
+    title: `${venueName} — ${menu.name}`,
     description,
     alternates: { canonical },
     openGraph: {
       type: 'website',
-      title: `${restaurant} — ${menu.name}`,
+      title: `${venueName} — ${menu.name}`,
       description,
       url: canonical,
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${restaurant} — ${menu.name}`,
+      title: `${venueName} — ${menu.name}`,
       description,
     },
   }
@@ -71,19 +74,25 @@ export default async function PublicMenuPage({ params }: PageProps) {
   const menu = await getMenuBySlug(slug)
   if (!menu) notFound()
 
+  // `restaurant` is the source of truth for branding/template/wifi/socials.
+  // Fallback to `organization` is defensive — every menu has a restaurant
+  // after the phase-1 backfill, but we keep the fallback so a rogue menu
+  // can still render instead of crashing.
+  if (!menu.restaurant) notFound()
+  const restaurant = menu.restaurant
   const org = menu.organization
-  const symbol = currencySymbol(org.currency)
+  const symbol = currencySymbol(restaurant.currency)
 
-  // Compose the page style: theme palette + heading font + the org's brand
-  // color overrides (primaryColor/secondaryColor, if set, win over the
+  // Compose the page style: theme palette + heading font + the restaurant's
+  // brand color overrides (primaryColor/secondaryColor, if set, win over the
   // theme's accent/pop). Templates read all of these via CSS vars so no
   // theme code lives in the templates themselves.
-  const theme = getTheme(org.theme)
-  const brandStyle = buildInlineStyle(theme, org.primaryColor, org.secondaryColor)
+  const theme = getTheme(restaurant.theme)
+  const brandStyle = buildInlineStyle(theme, restaurant.primaryColor, restaurant.secondaryColor)
   // Templates that own a fixed bottom chrome (e.g. category-tiles) need
   // extra room at the end of the page so the footer doesn't hide under
   // it. pb-40 ≈ the chrome's height + breathing room.
-  const template = getTemplate(org.templateId)
+  const template = getTemplate(restaurant.templateId)
   const pageBottomPadding = template.chrome === 'bottom' ? 'pb-40' : 'pb-24'
 
   const now = Date.now()
@@ -91,9 +100,9 @@ export default async function PublicMenuPage({ params }: PageProps) {
     .filter((i) => i.specialUntil && i.specialUntil.getTime() > now)
     .map((i) => i.id)
 
-  const instaHref = org.instagramUrl ? socialUrl('instagram', org.instagramUrl) : null
-  const tiktokHref = org.tiktokUrl ? socialUrl('tiktok', org.tiktokUrl) : null
-  const facebookHref = org.facebookUrl ? socialUrl('facebook', org.facebookUrl) : null
+  const instaHref = restaurant.instagramUrl ? socialUrl('instagram', restaurant.instagramUrl) : null
+  const tiktokHref = restaurant.tiktokUrl ? socialUrl('tiktok', restaurant.tiktokUrl) : null
+  const facebookHref = restaurant.facebookUrl ? socialUrl('facebook', restaurant.facebookUrl) : null
   const hasSocials = Boolean(instaHref || tiktokHref || facebookHref)
 
   // Group items by category for the schema.org hasMenuSection nesting.
@@ -111,10 +120,10 @@ export default async function PublicMenuPage({ params }: PageProps) {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Restaurant',
-    name: org.name,
-    description: org.description ?? undefined,
+    name: restaurant.name,
+    description: restaurant.description ?? undefined,
     image: org.logo ?? undefined,
-    url: org.sourceUrl ?? undefined,
+    url: restaurant.sourceUrl ?? undefined,
     hasMenu: {
       '@type': 'Menu',
       name: menu.name,
@@ -131,7 +140,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
               ? {
                   '@type': 'Offer',
                   price: i.price,
-                  priceCurrency: org.currency,
+                  priceCurrency: restaurant.currency,
                 }
               : undefined,
         })),
@@ -150,16 +159,16 @@ export default async function PublicMenuPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <SeasonalOverlay id={org.seasonalOverlay} scope="viewport" />
+      <SeasonalOverlay id={restaurant.seasonalOverlay} scope="viewport" />
       {/* Cover / header block — falls back to the brand-color gradient when
           no header image is set. With an image, we keep a dark gradient
           overlay so the restaurant name stays readable on any photo. */}
       <section className="bg-foreground text-background relative overflow-hidden">
-        {org.headerImage ? (
+        {restaurant.headerImage ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={org.headerImage}
+              src={restaurant.headerImage}
               alt=""
               aria-hidden="true"
               loading="eager"
@@ -191,12 +200,12 @@ export default async function PublicMenuPage({ params }: PageProps) {
           </>
         )}
         <div className="relative mx-auto flex max-w-[720px] flex-col px-5 pt-6 pb-8 sm:px-8 sm:pt-10 sm:pb-12">
-          {org.wifiSsid ? (
+          {restaurant.wifiSsid ? (
             <div className="mb-6 flex justify-end">
               <WifiReveal
-                ssid={org.wifiSsid}
-                password={org.wifiPassword}
-                hasPassword={org.wifiEncryption !== 'nopass'}
+                ssid={restaurant.wifiSsid}
+                password={restaurant.wifiPassword}
+                hasPassword={restaurant.wifiEncryption !== 'nopass'}
               />
             </div>
           ) : null}
@@ -212,9 +221,9 @@ export default async function PublicMenuPage({ params }: PageProps) {
               </p>
               <h1
                 className="mt-1.5 text-[28px] leading-[1.08] font-semibold tracking-[-0.03em] sm:text-[40px]"
-                style={org.headerTextColor ? { color: org.headerTextColor } : undefined}
+                style={restaurant.headerTextColor ? { color: restaurant.headerTextColor } : undefined}
               >
-                {org.name}
+                {restaurant.name}
               </h1>
               <p className="text-background/70 mt-2 text-xs sm:text-sm">
                 {menu.items.length} {menu.items.length === 1 ? 'dish' : 'dishes'}
@@ -227,7 +236,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
       <PublicMenuBody
         symbol={symbol}
         specialIds={activeSpecialIds}
-        templateId={org.templateId}
+        templateId={restaurant.templateId}
         items={menu.items.map((i) => ({
           id: i.id,
           category: i.category,
@@ -254,10 +263,10 @@ export default async function PublicMenuPage({ params }: PageProps) {
       </button>
 
       <footer className="mx-auto mt-8 max-w-[720px] px-5 pb-12 sm:px-8">
-        {org.googleReviewUrl ? (
+        {restaurant.googleReviewUrl ? (
           <div className="mb-6 flex justify-center">
             <a
-              href={org.googleReviewUrl}
+              href={restaurant.googleReviewUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="border-cream-line bg-card hover:bg-foreground hover:text-background inline-flex items-center gap-2 rounded-full border px-5 py-3 text-sm font-semibold transition-colors"

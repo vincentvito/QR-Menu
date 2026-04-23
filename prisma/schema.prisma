@@ -14,21 +14,24 @@ datasource db {
 }
 
 model User {
-  id            String       @id
-  name          String
-  email         String
-  emailVerified Boolean      @default(false)
-  image         String?
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  role          String       @default("user")
-  banned        Boolean      @default(false)
-  banReason     String?
-  banExpires    DateTime?
-  sessions      Session[]
-  accounts      Account[]
-  members       Member[]
-  invitations   Invitation[]
+  id                    String                 @id
+  name                  String
+  email                 String
+  emailVerified         Boolean                @default(false)
+  image                 String?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  role                  String                 @default("user")
+  banned                Boolean                @default(false)
+  banReason             String?
+  banExpires            DateTime?
+  stripeCustomerId      String?
+  sessions              Session[]
+  accounts              Account[]
+  members               Member[]
+  invitations           Invitation[]
+  restaurantMembers     RestaurantMember[]
+  restaurantInvitations RestaurantInvitation[]
 
   @@unique([email])
   @@map("user")
@@ -45,6 +48,7 @@ model Session {
   userId               String
   user                 User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   activeOrganizationId String?
+  activeRestaurantId   String?
   impersonatedBy       String?
 
   @@unique([token])
@@ -87,8 +91,13 @@ model Verification {
 model Menu {
   id             String       @id @default(cuid())
   slug           String       @unique
+  // Kept alongside restaurantId for fast org-level access checks (every
+  // menu belongs to exactly one restaurant, which belongs to one org). Not
+  // source-of-truth — that's restaurantId.
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  restaurantId   String
+  restaurant     Restaurant   @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   name           String
   sourceUrl      String?
   sourceText     String?
@@ -97,44 +106,36 @@ model Menu {
   items          MenuItem[]
 
   @@index([organizationId])
+  @@index([restaurantId])
   @@map("menu")
 }
 
 model Organization {
-  id                String       @id
-  name              String
-  slug              String?      @unique
-  logo              String?
-  metadata          String?
-  createdAt         DateTime     @default(now())
-  description       String?
-  primaryColor      String?
-  secondaryColor    String?
-  currency          String       @default("USD")
-  sourceUrl         String?
-  qrDotStyle        String       @default("square")
-  qrCornerStyle     String       @default("square")
-  qrForegroundColor String       @default("#1C1917")
-  qrBackgroundColor String       @default("#FDFCFB")
-  qrCenterType      String       @default("none")
-  qrCenterText      String?
-  wifiSsid          String?
-  wifiPassword      String?
-  wifiEncryption    String       @default("WPA")
-  wifiCenterType    String       @default("none")
-  wifiCenterText    String?
-  googleReviewUrl   String?
-  instagramUrl      String?
-  tiktokUrl         String?
-  facebookUrl       String?
-  templateId        String       @default("default")
-  theme             String       @default("editorial")
-  seasonalOverlay   String       @default("none")
-  headerImage       String?
-  headerTextColor   String?
-  members           Member[]
-  invitations       Invitation[]
-  menus             Menu[]
+  id        String   @id
+  name      String
+  slug      String?  @unique
+  logo      String?
+  metadata  String?
+  createdAt DateTime @default(now())
+
+  // Credit buckets (denormalized cache; ledger is CreditTransaction)
+  monthlyCreditsRemaining Int       @default(0)
+  monthlyCreditsResetAt   DateTime?
+  bonusCreditsRemaining   Int       @default(0)
+
+  // Billing — Stripe customer ID written by the @better-auth/stripe plugin
+  // when this org first goes through checkout.
+  stripeCustomerId String?
+
+  // Enterprise custom caps. null = use the plan's default from lib/plans.ts.
+  maxRestaurantsOverride Int?
+  monthlyCreditsOverride Int?
+
+  members            Member[]
+  invitations        Invitation[]
+  menus              Menu[]
+  restaurants        Restaurant[]
+  creditTransactions CreditTransaction[]
 
   @@map("organization")
 }
@@ -171,20 +172,165 @@ model Invitation {
 }
 
 model MenuItem {
-  id          String   @id @default(cuid())
-  menuId      String
-  menu        Menu     @relation(fields: [menuId], references: [id], onDelete: Cascade)
-  category    String
-  name        String
-  description String   @default("")
-  price       Float    @default(0)
+  id           String    @id @default(cuid())
+  menuId       String
+  menu         Menu      @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  category     String
+  name         String
+  description  String    @default("")
+  price        Float     @default(0)
   tags         String[]  @default([])
   badges       String[]  @default([])
   specialUntil DateTime?
   imageUrl     String?
   order        Int       @default(0)
-  createdAt   DateTime @default(now())
+  createdAt    DateTime  @default(now())
 
   @@index([menuId])
+  @@index([menuId, specialUntil])
   @@map("menu_item")
+}
+
+model Restaurant {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  slug           String       @unique
+  name           String
+  description    String?
+  currency       String       @default("USD")
+  sourceUrl      String?
+
+  primaryColor   String?
+  secondaryColor String?
+
+  qrDotStyle        String  @default("square")
+  qrCornerStyle     String  @default("square")
+  qrForegroundColor String  @default("#1C1917")
+  qrBackgroundColor String  @default("#FDFCFB")
+  qrCenterType      String  @default("none")
+  qrCenterText      String?
+
+  wifiSsid       String?
+  wifiPassword   String?
+  wifiEncryption String  @default("WPA")
+  wifiCenterType String  @default("none")
+  wifiCenterText String?
+
+  googleReviewUrl String?
+  instagramUrl    String?
+  tiktokUrl       String?
+  facebookUrl     String?
+
+  templateId      String  @default("default")
+  theme           String  @default("editorial")
+  seasonalOverlay String  @default("none")
+  headerImage     String?
+  headerTextColor String?
+
+  // Flipped to true when plan downgrade leaves this restaurant above the limit.
+  // Public menu pages keep working; dashboard becomes view-only until upgrade or delete.
+  readOnly Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  menus       Menu[]
+  members     RestaurantMember[]
+  invitations RestaurantInvitation[]
+
+  @@index([organizationId])
+  @@map("restaurant")
+}
+
+// Managed by the @better-auth/stripe plugin. Field shape mirrors its expected
+// schema so we use the plugin's default column names without a mapping layer.
+// We drive org-scoped billing, so every Subscription row has
+// referenceId = organization.id. No FK — the plugin's design allows
+// referenceId to point at users too, but we don't use that mode.
+model Subscription {
+  id                   String  @id @default(cuid())
+  plan                 String
+  referenceId          String
+  stripeCustomerId     String?
+  stripeSubscriptionId String? @unique
+  status               String
+
+  periodStart       DateTime?
+  periodEnd         DateTime?
+  cancelAtPeriodEnd Boolean   @default(false)
+  cancelAt          DateTime?
+  canceledAt        DateTime?
+  endedAt           DateTime?
+
+  seats            Int?
+  trialStart       DateTime?
+  trialEnd         DateTime?
+  billingInterval  String?
+  stripeScheduleId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([referenceId])
+  @@index([stripeCustomerId])
+  @@map("subscription")
+}
+
+model CreditTransaction {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // "grant" | "spend" | "refund" | "purchase" | "reset"
+  type   String
+  // "monthly" | "bonus" — which bucket moved
+  bucket String
+  // positive for grant/purchase/refund, negative for spend
+  amount Int
+
+  balanceMonthlyAfter Int
+  balanceBonusAfter   Int
+
+  reason    String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([organizationId, createdAt])
+  @@map("credit_transaction")
+}
+
+model RestaurantMember {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // "manager" | "waiter"
+  role         String     @default("waiter")
+  createdAt    DateTime   @default(now())
+
+  @@unique([restaurantId, userId])
+  @@index([userId])
+  @@map("restaurant_member")
+}
+
+model RestaurantInvitation {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  email        String
+  inviterId    String
+  inviter      User       @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  // "manager" | "waiter"
+  role         String     @default("waiter")
+  // "pending" | "accepted" | "expired" | "canceled"
+  status       String     @default("pending")
+  token        String     @unique
+  createdAt    DateTime   @default(now())
+  expiresAt    DateTime
+
+  @@index([email])
+  @@index([restaurantId])
+  @@map("restaurant_invitation")
 }

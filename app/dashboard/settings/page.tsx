@@ -7,14 +7,14 @@ import { SettingsForm } from './SettingsForm'
 import { SettingsSideNav } from './SettingsSideNav'
 
 export default async function SettingsPage() {
-  const { org, role } = await getDashboardContext()
+  const { org, restaurant, role } = await getDashboardContext()
   const canEdit = ['owner', 'admin'].includes(role)
 
-  // Grab the most recent menu — used both for the QR preview (needs a real
-  // slug) and the template preview (needs the items + specials to render a
-  // real menu inside the mockup instead of a sample).
+  // Grab the most recent menu for this restaurant — used both for the QR
+  // preview (needs a real slug) and the template preview (needs the items +
+  // specials to render a real menu inside the mockup instead of a sample).
   const latestMenu = await prisma.menu.findFirst({
-    where: { organizationId: org.id },
+    where: { restaurantId: restaurant.id },
     orderBy: { createdAt: 'desc' },
     include: {
       items: { orderBy: { order: 'asc' } },
@@ -43,7 +43,7 @@ export default async function SettingsPage() {
         specialIds: latestMenu.items
           .filter((i) => i.specialUntil && i.specialUntil.getTime() > now)
           .map((i) => i.id),
-        symbol: currencySymbol(org.currency),
+        symbol: currencySymbol(restaurant.currency),
       }
     : null
 
@@ -71,33 +71,35 @@ export default async function SettingsPage() {
           templatePreviewMockupUrl={templatePreviewMockupUrl()}
           templatePreviewData={templatePreviewData}
           initial={{
-            name: org.name,
-            description: org.description ?? '',
+            name: restaurant.name,
+            description: restaurant.description ?? '',
+            // Logo still lives on Organization until a follow-up migration
+            // moves it to Restaurant (needed for per-venue branding).
             logo: org.logo ?? '',
-            headerImage: org.headerImage ?? '',
-            headerTextColor: org.headerTextColor ?? '',
-            sourceUrl: org.sourceUrl ?? '',
-            primaryColor: org.primaryColor ?? '',
-            secondaryColor: org.secondaryColor ?? '',
-            currency: org.currency,
-            qrDotStyle: org.qrDotStyle,
-            qrCornerStyle: org.qrCornerStyle,
-            qrForegroundColor: org.qrForegroundColor,
-            qrBackgroundColor: org.qrBackgroundColor,
-            qrCenterType: org.qrCenterType,
-            qrCenterText: org.qrCenterText ?? '',
-            wifiSsid: org.wifiSsid ?? '',
-            wifiPassword: org.wifiPassword ?? '',
-            wifiEncryption: org.wifiEncryption,
-            wifiCenterType: org.wifiCenterType,
-            wifiCenterText: org.wifiCenterText ?? '',
-            googleReviewUrl: org.googleReviewUrl ?? '',
-            instagramUrl: org.instagramUrl ?? '',
-            tiktokUrl: org.tiktokUrl ?? '',
-            facebookUrl: org.facebookUrl ?? '',
-            templateId: org.templateId,
-            theme: org.theme,
-            seasonalOverlay: org.seasonalOverlay,
+            headerImage: restaurant.headerImage ?? '',
+            headerTextColor: restaurant.headerTextColor ?? '',
+            sourceUrl: restaurant.sourceUrl ?? '',
+            primaryColor: restaurant.primaryColor ?? '',
+            secondaryColor: restaurant.secondaryColor ?? '',
+            currency: restaurant.currency,
+            qrDotStyle: restaurant.qrDotStyle,
+            qrCornerStyle: restaurant.qrCornerStyle,
+            qrForegroundColor: restaurant.qrForegroundColor,
+            qrBackgroundColor: restaurant.qrBackgroundColor,
+            qrCenterType: restaurant.qrCenterType,
+            qrCenterText: restaurant.qrCenterText ?? '',
+            wifiSsid: restaurant.wifiSsid ?? '',
+            wifiPassword: restaurant.wifiPassword ?? '',
+            wifiEncryption: restaurant.wifiEncryption,
+            wifiCenterType: restaurant.wifiCenterType,
+            wifiCenterText: restaurant.wifiCenterText ?? '',
+            googleReviewUrl: restaurant.googleReviewUrl ?? '',
+            instagramUrl: restaurant.instagramUrl ?? '',
+            tiktokUrl: restaurant.tiktokUrl ?? '',
+            facebookUrl: restaurant.facebookUrl ?? '',
+            templateId: restaurant.templateId,
+            theme: restaurant.theme,
+            seasonalOverlay: restaurant.seasonalOverlay,
           }}
         />
       </div>

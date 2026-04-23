@@ -5,6 +5,9 @@ import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { enhanceDishImage } from '@/lib/ai/dish-image'
 import { keyForMenuItemImage, uploadBuffer } from '@/lib/storage/r2'
+import { hasCredits } from '@/lib/plans/gates'
+import { spendCredits, InsufficientCreditsError } from '@/lib/plans/credits'
+import { CREDIT_COSTS } from '@/lib/plans/costs'
 
 export const runtime = 'nodejs'
 export const maxDuration = 90
@@ -63,6 +66,14 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'This dish has no photo to enhance yet' }, { status: 400 })
   }
 
+  const creditsOk = await hasCredits(item.menu.organizationId, CREDIT_COSTS.DISH_IMAGE_ENHANCE)
+  if (!creditsOk) {
+    return NextResponse.json(
+      { error: 'Out of AI credits. Buy more or upgrade your plan.', gate: 'credits' },
+      { status: 402 },
+    )
+  }
+
   try {
     // Download the current photo from R2 and base64-encode for Gemini.
     const sourceRes = await fetch(item.imageUrl)
@@ -92,6 +103,21 @@ export async function POST(request: Request, { params }: RouteContext) {
       body: buffer,
       contentType: image.mimeType,
     })
+
+    try {
+      await spendCredits(
+        item.menu.organizationId,
+        CREDIT_COSTS.DISH_IMAGE_ENHANCE,
+        'dish-image-enhance',
+        { menuItemId: item.id },
+      )
+    } catch (err) {
+      if (err instanceof InsufficientCreditsError) {
+        console.warn('[enhance-image] credit race — action succeeded, spend failed:', err.message)
+      } else {
+        throw err
+      }
+    }
 
     return NextResponse.json({ url })
   } catch (err) {

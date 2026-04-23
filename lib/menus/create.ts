@@ -5,6 +5,7 @@ import { makeSlug } from './slug'
 
 interface CreateMenuInput {
   organizationId: string
+  restaurantId: string
   url?: string
   text?: string
   file?: { base64: string; mimeType: string }
@@ -23,6 +24,7 @@ interface CreateMenuResult {
 // guess (which Gemini returns under `restaurantName` — we reuse it as a label).
 export async function createMenuFromSource({
   organizationId,
+  restaurantId,
   url,
   text,
   file,
@@ -55,6 +57,7 @@ export async function createMenuFromSource({
     data: {
       slug,
       organizationId,
+      restaurantId,
       name: finalName,
       sourceUrl: source || null,
       sourceText: !source && !file ? pasted : null,

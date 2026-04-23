@@ -1,9 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { LogOut, Settings, Store, Users, Utensils } from 'lucide-react'
+import { CreditCard, LogOut, Settings, UserCheck, Users, Utensils } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Sidebar,
@@ -19,19 +18,23 @@ import {
 import { BrandMark } from '@/components/brand/BrandMark'
 import { signOut } from '@/lib/auth-client'
 import { formatDisplayName } from '@/lib/display-name'
+import { RestaurantSwitcher } from './RestaurantSwitcher'
 
 const NAV = [
   { href: '/dashboard/menus', label: 'Menus', icon: Utensils },
+  { href: '/dashboard/staff', label: 'Staff', icon: UserCheck },
   { href: '/dashboard/team', label: 'Team', icon: Users },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+  { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
 ]
 
 interface DashboardSidebarProps {
-  restaurant: { name: string; logo: string | null }
+  restaurant: { id: string; name: string; logo: string | null }
+  restaurants: Array<{ id: string; slug: string; name: string }>
   viewer: { name: string; email: string; image: string | null }
 }
 
-export function DashboardSidebar({ restaurant, viewer }: DashboardSidebarProps) {
+export function DashboardSidebar({ restaurant, restaurants, viewer }: DashboardSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const collapsedButtonClass = 'group-data-[collapsible=icon]:mx-auto'
@@ -58,20 +61,7 @@ export function DashboardSidebar({ restaurant, viewer }: DashboardSidebarProps) 
             <BrandMark size="sm" />
           </Link>
         </div>
-        <div className="border-cream-line flex items-center gap-2 rounded-lg border px-2 py-2 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:p-0">
-          {restaurant.logo ? (
-            <div className="border-cream-line bg-background relative size-7 shrink-0 overflow-hidden rounded-md border">
-              <Image src={restaurant.logo} alt="" fill unoptimized className="object-cover" />
-            </div>
-          ) : (
-            <div className="bg-foreground text-background flex size-7 shrink-0 items-center justify-center rounded-md">
-              <Store className="size-3.5" aria-hidden="true" />
-            </div>
-          )}
-          <span className="truncate text-sm font-medium group-data-[collapsible=icon]:hidden">
-            {restaurant.name}
-          </span>
-        </div>
+        <RestaurantSwitcher current={restaurant} restaurants={restaurants} />
       </SidebarHeader>
 
       <SidebarContent>
