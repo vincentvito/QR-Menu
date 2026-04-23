@@ -28,6 +28,8 @@ const changelog = [
       {
         type: 'changed' as const,
         items: [
+          'Restaurant-scoped staff (managers and waiters) now see a focused sidebar with just Menus and Staff — account-level pages like Billing, Team, and Settings are hidden from their view and redirect back to Menus if opened directly',
+          'Logos are now per-restaurant — each venue in your account can have its own logo for the public menu, the dashboard sidebar, and the QR code center. Existing logos are carried over automatically',
           'AI features now meter against your plan&apos;s monthly credits — creating a menu from a URL/photo/PDF, generating a dish photo, and enhancing a photo each cost 1 credit. The monthly bucket refills on each plan renewal; unused monthly credits don&apos;t carry over',
           'Settings now save to the specific restaurant you&apos;re viewing — so in the multi-restaurant world every venue can have its own branding, QR style, and WiFi details',
         ],

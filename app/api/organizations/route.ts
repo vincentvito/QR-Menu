@@ -125,8 +125,13 @@ export async function PATCH(request: Request) {
     if (cleaned === undefined) {
       return NextResponse.json({ error: 'Invalid logo URL' }, { status: 400 })
     }
-    // better-auth rejects null on optional strings; persist "" to clear.
+    // Dual-write during the per-restaurant logo transition: better-auth
+    // keeps `organization.logo` around as a fallback for any read site that
+    // hasn't switched to restaurant.logo yet. Restaurant is the source of
+    // truth going forward. better-auth rejects null on optional strings;
+    // persist "" to clear on the org side.
     orgUpdates.logo = cleaned ?? ''
+    restaurantUpdates.logo = cleaned
   }
 
   if ('description' in body) {

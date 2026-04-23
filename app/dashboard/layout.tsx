@@ -6,7 +6,7 @@ import { ImpersonationBanner } from '@/components/dashboard/ImpersonationBanner'
 import { ReadOnlyBanner } from '@/components/dashboard/ReadOnlyBanner'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [{ session, org, restaurant, restaurants }, cookieStore] = await Promise.all([
+  const [{ session, org, restaurant, restaurants, scope }, cookieStore] = await Promise.all([
     getDashboardContext(),
     cookies(),
   ])
@@ -21,8 +21,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {impersonating ? <ImpersonationBanner impersonatedEmail={session.user.email} /> : null}
       <SidebarProvider defaultOpen={defaultOpen}>
         <DashboardSidebar
-          restaurant={{ id: restaurant.id, name: restaurant.name, logo: org.logo }}
+          restaurant={{
+            id: restaurant.id,
+            name: restaurant.name,
+            logo: restaurant.logo ?? org.logo,
+          }}
           restaurants={restaurants}
+          scope={scope}
           viewer={{
             name: session.user.name,
             email: session.user.email,

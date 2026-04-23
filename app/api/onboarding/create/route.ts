@@ -85,6 +85,7 @@ export async function POST(request: Request) {
     secondaryColor: cleanHex(body.secondaryColor) ?? null,
     currency,
     sourceUrl: cleanUrl(body.sourceUrl) ?? null,
+    logo: cleanUrl(body.logo) ?? null,
   }
 
   const organization = await auth.api.createOrganization({

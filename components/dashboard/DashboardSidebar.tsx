@@ -20,21 +20,25 @@ import { signOut } from '@/lib/auth-client'
 import { formatDisplayName } from '@/lib/display-name'
 import { RestaurantSwitcher } from './RestaurantSwitcher'
 
+// Nav items flagged `orgOnly` are hidden from restaurant-scoped staff
+// (managers/waiters). Server writes on those pages already block staff, but
+// the nav would otherwise leak links they'll only bounce off.
 const NAV = [
-  { href: '/dashboard/menus', label: 'Menus', icon: Utensils },
-  { href: '/dashboard/staff', label: 'Staff', icon: UserCheck },
-  { href: '/dashboard/team', label: 'Team', icon: Users },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
-  { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
-]
+  { href: '/dashboard/menus', label: 'Menus', icon: Utensils, orgOnly: false },
+  { href: '/dashboard/staff', label: 'Staff', icon: UserCheck, orgOnly: false },
+  { href: '/dashboard/team', label: 'Team', icon: Users, orgOnly: true },
+  { href: '/dashboard/settings', label: 'Settings', icon: Settings, orgOnly: true },
+  { href: '/dashboard/billing', label: 'Billing', icon: CreditCard, orgOnly: true },
+] as const
 
 interface DashboardSidebarProps {
   restaurant: { id: string; name: string; logo: string | null }
   restaurants: Array<{ id: string; slug: string; name: string }>
   viewer: { name: string; email: string; image: string | null }
+  scope: 'org' | 'restaurant'
 }
 
-export function DashboardSidebar({ restaurant, restaurants, viewer }: DashboardSidebarProps) {
+export function DashboardSidebar({ restaurant, restaurants, viewer, scope }: DashboardSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const collapsedButtonClass = 'group-data-[collapsible=icon]:mx-auto'
@@ -68,7 +72,7 @@ export function DashboardSidebar({ restaurant, restaurants, viewer }: DashboardS
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {NAV.map((item) => {
+              {NAV.filter((item) => scope === 'org' || !item.orgOnly).map((item) => {
                 const isActive = pathname.startsWith(item.href)
                 return (
                   <SidebarMenuItem key={item.href}>

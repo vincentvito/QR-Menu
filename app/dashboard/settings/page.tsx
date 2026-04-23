@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import prisma from '@/lib/prisma'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import { templatePreviewMockupUrl } from '@/lib/menus/template-assets'
@@ -7,7 +8,10 @@ import { SettingsForm } from './SettingsForm'
 import { SettingsSideNav } from './SettingsSideNav'
 
 export default async function SettingsPage() {
-  const { org, restaurant, role } = await getDashboardContext()
+  const { org, restaurant, role, scope } = await getDashboardContext()
+  // Restaurant-scoped staff (manager/waiter) don't touch account-level
+  // settings — bounce them back to the menus they can actually work on.
+  if (scope === 'restaurant') redirect('/dashboard/menus')
   const canEdit = ['owner', 'admin'].includes(role)
 
   // Grab the most recent menu for this restaurant — used both for the QR
@@ -73,9 +77,9 @@ export default async function SettingsPage() {
           initial={{
             name: restaurant.name,
             description: restaurant.description ?? '',
-            // Logo still lives on Organization until a follow-up migration
-            // moves it to Restaurant (needed for per-venue branding).
-            logo: org.logo ?? '',
+            // Restaurant is the source of truth; fall back to org.logo until
+            // the settings form next saves for any pre-migration row.
+            logo: restaurant.logo ?? org.logo ?? '',
             headerImage: restaurant.headerImage ?? '',
             headerTextColor: restaurant.headerTextColor ?? '',
             sourceUrl: restaurant.sourceUrl ?? '',

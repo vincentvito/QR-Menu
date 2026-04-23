@@ -1,10 +1,12 @@
+import { redirect } from 'next/navigation'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import { getBillingState } from '@/lib/plans/billing-state'
 import { PLANS } from '@/lib/plans'
 import { BillingPanel } from './BillingPanel'
 
 export default async function BillingPage() {
-  const { org, role } = await getDashboardContext()
+  const { org, role, scope } = await getDashboardContext()
+  if (scope === 'restaurant') redirect('/dashboard/menus')
   const canManage = ['owner', 'admin'].includes(role)
   const state = await getBillingState(org.id)
 

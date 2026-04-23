@@ -56,7 +56,7 @@ export default async function MenuQRPage({ params }: PageProps) {
           backgroundColor: restaurant.qrBackgroundColor,
           centerType: restaurant.qrCenterType,
           centerText: restaurant.qrCenterText,
-          logo: org.logo ?? null,
+          logo: restaurant.logo ?? org.logo ?? null,
         }}
       />
     </main>

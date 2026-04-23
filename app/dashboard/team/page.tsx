@@ -1,9 +1,11 @@
+import { redirect } from 'next/navigation'
 import prisma from '@/lib/prisma'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import { TeamPanel } from './TeamPanel'
 
 export default async function TeamPage() {
-  const { session, org, role } = await getDashboardContext()
+  const { session, org, role, scope } = await getDashboardContext()
+  if (scope === 'restaurant') redirect('/dashboard/menus')
   const canManage = ['owner', 'admin'].includes(role)
 
   // Load members + pending invitations in parallel. Role came from the

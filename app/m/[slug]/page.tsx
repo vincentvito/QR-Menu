@@ -100,6 +100,9 @@ export default async function PublicMenuPage({ params }: PageProps) {
     .filter((i) => i.specialUntil && i.specialUntil.getTime() > now)
     .map((i) => i.id)
 
+  // Logo source-of-truth is restaurant.logo. Fallback to org.logo keeps any
+  // pre-migration restaurant rendering until the settings form next saves.
+  const logo = restaurant.logo ?? org.logo
   const instaHref = restaurant.instagramUrl ? socialUrl('instagram', restaurant.instagramUrl) : null
   const tiktokHref = restaurant.tiktokUrl ? socialUrl('tiktok', restaurant.tiktokUrl) : null
   const facebookHref = restaurant.facebookUrl ? socialUrl('facebook', restaurant.facebookUrl) : null
@@ -122,7 +125,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
     '@type': 'Restaurant',
     name: restaurant.name,
     description: restaurant.description ?? undefined,
-    image: org.logo ?? undefined,
+    image: logo ?? undefined,
     url: restaurant.sourceUrl ?? undefined,
     hasMenu: {
       '@type': 'Menu',
@@ -210,9 +213,9 @@ export default async function PublicMenuPage({ params }: PageProps) {
             </div>
           ) : null}
           <div className="flex items-start gap-3">
-            {org.logo ? (
+            {logo ? (
               <div className="bg-background/10 relative size-12 shrink-0 overflow-hidden rounded-xl backdrop-blur-sm sm:size-16">
-                <Image src={org.logo} alt="" fill unoptimized className="object-cover" />
+                <Image src={logo} alt="" fill unoptimized className="object-cover" />
               </div>
             ) : null}
             <div className="min-w-0">

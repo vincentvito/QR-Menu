@@ -200,6 +200,7 @@ model Restaurant {
   description    String?
   currency       String       @default("USD")
   sourceUrl      String?
+  logo           String?
 
   primaryColor   String?
   secondaryColor String?
