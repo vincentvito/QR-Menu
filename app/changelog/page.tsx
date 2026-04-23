@@ -6,6 +6,34 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.22.0',
+    date: '2026-04-23',
+    title: 'Plans, billing, and restaurant staff',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'New Billing page at /dashboard/billing — see your current plan, AI credits remaining, and switch plans without leaving the app',
+          '14-day free trial with 5 AI credits — capture a card through Stripe Checkout to start it',
+          'Four subscription tiers: Basic, Pro, Business, and Enterprise — each billed monthly or yearly, with a toggle in the plan picker',
+          '&ldquo;Manage billing&rdquo; opens the Stripe customer portal so you can update your payment method, download invoices, or cancel any time',
+          'New Staff page at /dashboard/staff — invite managers and waiters by email; they get access to this specific restaurant only, not your billing or other restaurants',
+          'Revoke a pending staff invitation or remove an active staff member with one click',
+          'Read-only mode — if a plan change leaves you with more restaurants than your tier supports, the extras turn read-only: public menus keep serving guests, but dashboard editing is locked until you upgrade or pick which ones stay active',
+          'Activation picker on the Billing page — swap which restaurants stay active under your current plan without upgrading',
+          'Restaurant switcher in the dashboard sidebar — the foundation for managing multiple venues from one account (adding more restaurants ships next)',
+        ],
+      },
+      {
+        type: 'changed' as const,
+        items: [
+          'AI features now meter against your plan&apos;s monthly credits — creating a menu from a URL/photo/PDF, generating a dish photo, and enhancing a photo each cost 1 credit. The monthly bucket refills on each plan renewal; unused monthly credits don&apos;t carry over',
+          'Settings now save to the specific restaurant you&apos;re viewing — so in the multi-restaurant world every venue can have its own branding, QR style, and WiFi details',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.21.0',
     date: '2026-04-20',
     title: 'Header image banner + public menu polish',

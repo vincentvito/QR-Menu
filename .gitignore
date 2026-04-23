@@ -44,3 +44,4 @@ next-env.d.ts
 .claude/statusline.sh
 .claude/settings.local.json
 .claude/settings.local.json
+.claude/settings.local.json
