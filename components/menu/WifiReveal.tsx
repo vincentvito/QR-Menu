@@ -12,11 +12,13 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
+import { trackMenuEvent } from '@/lib/analytics/track'
 
 interface WifiRevealProps {
   ssid: string
   password: string | null
   hasPassword: boolean
+  menuSlug: string
 }
 
 // Class reused by both the SSR placeholder and the real trigger — keeps
@@ -27,7 +29,7 @@ interface WifiRevealProps {
 const TRIGGER_CLASS =
   'bg-background text-foreground hover:bg-card ring-foreground/10 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-[0_4px_14px_-4px_rgba(0,0,0,0.35)] ring-1 transition-colors'
 
-export function WifiReveal({ ssid, password, hasPassword }: WifiRevealProps) {
+export function WifiReveal({ ssid, password, hasPassword, menuSlug }: WifiRevealProps) {
   const [open, setOpen] = useState(false)
   const [revealed, setRevealed] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -69,6 +71,7 @@ export function WifiReveal({ ssid, password, hasPassword }: WifiRevealProps) {
       open={open}
       onOpenChange={(next) => {
         setOpen(next)
+        if (next) trackMenuEvent({ menuSlug, type: 'wifi_reveal' })
         if (!next) setRevealed(false)
       }}
     >

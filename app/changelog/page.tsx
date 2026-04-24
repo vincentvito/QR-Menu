@@ -6,6 +6,20 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.23.0',
+    date: '2026-04-24',
+    title: 'Analytics + Google review spotlight',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'New Analytics page at /dashboard/analytics — see scans over time, unique guests, peak hours (so you know when to staff up), WiFi reveals, review click-through rate, and social clicks by platform. Last 7 / 30 days toggle',
+          'Bigger, more prominent &ldquo;Leave us a Google review&rdquo; button at the bottom of the public menu — still only shows when you&apos;ve set a Google review URL in Settings',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.22.0',
     date: '2026-04-23',
     title: 'Plans, billing, and restaurant staff',

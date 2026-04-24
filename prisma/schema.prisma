@@ -104,6 +104,7 @@ model Menu {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   items          MenuItem[]
+  events         MenuEvent[]
 
   @@index([organizationId])
   @@index([restaurantId])
@@ -239,6 +240,7 @@ model Restaurant {
   menus       Menu[]
   members     RestaurantMember[]
   invitations RestaurantInvitation[]
+  events      MenuEvent[]
 
   @@index([organizationId])
   @@map("restaurant")
@@ -299,6 +301,34 @@ model CreditTransaction {
 
   @@index([organizationId, createdAt])
   @@map("credit_transaction")
+}
+
+// Public-menu telemetry. One row per event fired from the guest-facing
+// menu (page view, dish engagement, link clicks, etc). Dashboard
+// analytics aggregate these at query time. sessionId is a pure random
+// anonymous id stored in a cookie on the public menu — no PII, no
+// cross-site tracking. Cleanup/rollup strategy lives in the
+// analytics job (TODO once we have meaningful traffic).
+model MenuEvent {
+  id           String   @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  menuId       String?
+  menu         Menu?    @relation(fields: [menuId], references: [id], onDelete: SetNull)
+
+  // "view" | "dish_image_tap" | "language_change" | "google_review_click"
+  //   | "wifi_reveal" | "social_click" | "menu_switch"
+  type    String
+  // Arbitrary context per event type: { dishId?, lang?, href?, platform? }
+  payload Json?
+
+  sessionId String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([restaurantId, createdAt])
+  @@index([restaurantId, type, createdAt])
+  @@map("menu_event")
 }
 
 model RestaurantMember {

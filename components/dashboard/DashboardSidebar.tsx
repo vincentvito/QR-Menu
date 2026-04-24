@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { CreditCard, LogOut, Settings, UserCheck, Users, Utensils } from 'lucide-react'
+import { BarChart3, CreditCard, LogOut, Settings, UserCheck, Users, Utensils } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Sidebar,
@@ -26,6 +26,7 @@ import { RestaurantSwitcher } from './RestaurantSwitcher'
 const NAV = [
   { href: '/dashboard/menus', label: 'Menus', icon: Utensils, orgOnly: false },
   { href: '/dashboard/staff', label: 'Staff', icon: UserCheck, orgOnly: false },
+  { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3, orgOnly: true },
   { href: '/dashboard/team', label: 'Team', icon: Users, orgOnly: true },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings, orgOnly: true },
   { href: '/dashboard/billing', label: 'Billing', icon: CreditCard, orgOnly: true },

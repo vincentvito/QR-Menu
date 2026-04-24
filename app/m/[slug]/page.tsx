@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import { Bell } from 'lucide-react'
 import { getMenuBySlug } from '@/lib/menus/get'
 import { currencySymbol } from '@/lib/menus/currency'
 import { PublicMenuBody } from '@/components/menu/PublicMenuBody'
@@ -12,6 +11,8 @@ import { getTemplate } from '@/components/menu/templates'
 import { getTheme } from '@/lib/menus/themes'
 import { FacebookIcon, GoogleIcon, InstagramIcon, TikTokIcon } from '@/components/brand/SocialIcons'
 import { socialUrl } from '@/lib/socials'
+import { MenuAnalyticsBootstrap } from '@/components/menu/MenuAnalyticsBootstrap'
+import { TrackedExternalLink } from '@/components/menu/TrackedExternalLink'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -50,14 +51,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 function SocialLink({
   href,
   label,
+  platform,
+  menuSlug,
   children,
 }: {
   href: string
   label: string
+  platform: 'instagram' | 'tiktok' | 'facebook'
+  menuSlug: string
   children: React.ReactNode
 }) {
   return (
-    <a
+    <TrackedExternalLink
+      menuSlug={menuSlug}
+      trackType="social_click"
+      trackPayload={{ platform, href }}
       href={href}
       target="_blank"
       rel="noopener noreferrer"
@@ -65,7 +73,7 @@ function SocialLink({
       className="border-cream-line bg-card text-muted-foreground hover:text-foreground hover:border-foreground/30 inline-flex size-10 items-center justify-center rounded-full border transition-colors"
     >
       {children}
-    </a>
+    </TrackedExternalLink>
   )
 }
 
@@ -160,6 +168,8 @@ export default async function PublicMenuPage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      {/* Telemetry: fires a `view` event on mount, once per page load. */}
+      <MenuAnalyticsBootstrap menuSlug={slug} />
       <SeasonalOverlay id={restaurant.seasonalOverlay} scope="viewport" />
       {/* Cover / header block — falls back to the brand-color gradient when
           no header image is set. With an image, we keep a dark gradient
@@ -207,6 +217,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
                 ssid={restaurant.wifiSsid}
                 password={restaurant.wifiPassword}
                 hasPassword={restaurant.wifiEncryption !== 'nopass'}
+                menuSlug={slug}
               />
             </div>
           ) : null}
@@ -250,48 +261,56 @@ export default async function PublicMenuPage({ params }: PageProps) {
         }))}
       />
 
-      {/* Floating "call server". Lifted above the sticky bottom chrome
-          on templates that own one (category-tiles) so the bell is
-          never trapped under the search/pills bar. */}
-      <button
-        type="button"
-        aria-label="Call server"
-        className={`bg-pop text-background fixed right-5 flex h-14 w-14 items-center justify-center rounded-full shadow-[0_12px_24px_-8px_rgba(232,85,43,0.6)] transition-transform hover:scale-105 active:scale-95 ${
-          template.chrome === 'bottom' ? 'bottom-36' : 'bottom-5'
-        }`}
-      >
-        <Bell className="h-5 w-5" aria-hidden="true" />
-      </button>
-
       <footer className="mx-auto mt-8 max-w-[720px] px-5 pb-12 sm:px-8">
         {restaurant.googleReviewUrl ? (
-          <div className="mb-6 flex justify-center">
-            <a
+          <div className="mb-8 flex flex-col items-center gap-2 text-center">
+            <p className="text-muted-foreground text-xs">
+              Enjoyed your meal?
+            </p>
+            <TrackedExternalLink
+              menuSlug={slug}
+              trackType="google_review_click"
+              trackPayload={{ href: restaurant.googleReviewUrl }}
               href={restaurant.googleReviewUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="border-cream-line bg-card hover:bg-foreground hover:text-background inline-flex items-center gap-2 rounded-full border px-5 py-3 text-sm font-semibold transition-colors"
+              className="bg-foreground text-background hover:bg-foreground/90 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold shadow-sm transition-colors"
             >
               <GoogleIcon className="size-4" aria-hidden={true} />
               Leave us a Google review
-            </a>
+            </TrackedExternalLink>
           </div>
         ) : null}
 
         {hasSocials && (
           <div className="mb-6 flex justify-center gap-3">
             {instaHref ? (
-              <SocialLink href={instaHref} label="Instagram">
+              <SocialLink
+                href={instaHref}
+                label="Instagram"
+                platform="instagram"
+                menuSlug={slug}
+              >
                 <InstagramIcon className="size-4" aria-hidden={true} />
               </SocialLink>
             ) : null}
             {tiktokHref ? (
-              <SocialLink href={tiktokHref} label="TikTok">
+              <SocialLink
+                href={tiktokHref}
+                label="TikTok"
+                platform="tiktok"
+                menuSlug={slug}
+              >
                 <TikTokIcon className="size-4" aria-hidden={true} />
               </SocialLink>
             ) : null}
             {facebookHref ? (
-              <SocialLink href={facebookHref} label="Facebook">
+              <SocialLink
+                href={facebookHref}
+                label="Facebook"
+                platform="facebook"
+                menuSlug={slug}
+              >
                 <FacebookIcon className="size-4" aria-hidden={true} />
               </SocialLink>
             ) : null}
