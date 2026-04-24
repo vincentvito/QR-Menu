@@ -88,12 +88,11 @@ export async function POST(request: Request) {
     logo: cleanUrl(body.logo) ?? null,
   }
 
+  // Logo is stored on the Restaurant row above (source of truth). Not
+  // passing it to createOrganization keeps `organization.logo` permanently
+  // null, simplifying the eventual column drop.
   const organization = await auth.api.createOrganization({
-    body: {
-      name,
-      slug,
-      logo: cleanUrl(body.logo) ?? undefined,
-    },
+    body: { name, slug },
     headers: requestHeaders,
   })
 

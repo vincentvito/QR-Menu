@@ -8,7 +8,7 @@ import { SettingsForm } from './SettingsForm'
 import { SettingsSideNav } from './SettingsSideNav'
 
 export default async function SettingsPage() {
-  const { org, restaurant, role, scope } = await getDashboardContext()
+  const { restaurant, role, scope } = await getDashboardContext()
   // Restaurant-scoped staff (manager/waiter) don't touch account-level
   // settings — bounce them back to the menus they can actually work on.
   if (scope === 'restaurant') redirect('/dashboard/menus')
@@ -70,6 +70,7 @@ export default async function SettingsPage() {
         </aside>
 
         <SettingsForm
+          key={restaurant.id}
           canEdit={canEdit}
           previewMenu={previewMenu}
           templatePreviewMockupUrl={templatePreviewMockupUrl()}
@@ -77,9 +78,7 @@ export default async function SettingsPage() {
           initial={{
             name: restaurant.name,
             description: restaurant.description ?? '',
-            // Restaurant is the source of truth; fall back to org.logo until
-            // the settings form next saves for any pre-migration row.
-            logo: restaurant.logo ?? org.logo ?? '',
+            logo: restaurant.logo ?? '',
             headerImage: restaurant.headerImage ?? '',
             headerTextColor: restaurant.headerTextColor ?? '',
             sourceUrl: restaurant.sourceUrl ?? '',

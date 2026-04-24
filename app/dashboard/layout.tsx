@@ -6,7 +6,7 @@ import { ImpersonationBanner } from '@/components/dashboard/ImpersonationBanner'
 import { ReadOnlyBanner } from '@/components/dashboard/ReadOnlyBanner'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [{ session, org, restaurant, restaurants, scope }, cookieStore] = await Promise.all([
+  const [{ session, restaurant, restaurants, scope }, cookieStore] = await Promise.all([
     getDashboardContext(),
     cookies(),
   ])
@@ -24,7 +24,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           restaurant={{
             id: restaurant.id,
             name: restaurant.name,
-            logo: restaurant.logo ?? org.logo,
+            logo: restaurant.logo,
           }}
           restaurants={restaurants}
           scope={scope}

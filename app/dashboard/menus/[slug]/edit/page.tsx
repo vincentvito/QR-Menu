@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
@@ -15,7 +15,7 @@ interface PageProps {
 export default async function EditMenuPage({ params }: PageProps) {
   // getDashboardContext handles session + redirect logic and is cached per
   // request alongside the layout call, so this is free.
-  const [{ session }, { slug }, t] = await Promise.all([
+  const [{ session, restaurant }, { slug }, t] = await Promise.all([
     getDashboardContext(),
     params,
     getTranslations('Editor'),
@@ -24,12 +24,28 @@ export default async function EditMenuPage({ params }: PageProps) {
   const menu = await getMenuBySlug(slug)
   if (!menu) notFound()
 
-  // Don't leak existence of menus in orgs the user doesn't belong to.
-  const membership = await prisma.member.findFirst({
-    where: { organizationId: menu.organizationId, userId: session.user.id },
-    select: { id: true },
-  })
-  if (!membership) notFound()
+  // Don't leak existence of menus the user can't access. Access is granted
+  // via org Member *or* RestaurantMember of this menu's restaurant — the
+  // latter is how restaurant-scoped staff get in.
+  const [orgMember, restaurantMember] = await Promise.all([
+    prisma.member.findFirst({
+      where: { organizationId: menu.organizationId, userId: session.user.id },
+      select: { id: true },
+    }),
+    menu.restaurantId
+      ? prisma.restaurantMember.findFirst({
+          where: { restaurantId: menu.restaurantId, userId: session.user.id },
+          select: { id: true },
+        })
+      : Promise.resolve(null),
+  ])
+  if (!orgMember && !restaurantMember) notFound()
+
+  // Menus live under a restaurant, not just an org. If the user switched
+  // restaurants while on this URL, bounce them back to the list so they
+  // don't edit a menu belonging to a different venue than the one their
+  // dashboard is currently scoped to.
+  if (menu.restaurantId !== restaurant.id) redirect('/dashboard/menus')
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">

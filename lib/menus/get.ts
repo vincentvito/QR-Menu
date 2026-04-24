@@ -1,23 +1,35 @@
 import { cache } from 'react'
 import prisma from '@/lib/prisma'
 
-// Resolves a menu by slug and confirms the caller has access via membership
-// in the menu's organization. Throws with `status` callers map to HTTP.
+// Resolves a menu by slug and confirms the caller has access. Two access
+// paths:
+//   - Org-level Member (owner/admin/member) — full access to every menu in
+//     every restaurant under the org.
+//   - Restaurant-level RestaurantMember (manager/waiter) — access only to
+//     menus whose `restaurantId` matches their restaurant membership.
+// Throws with `status` callers map to HTTP.
 export async function requireMenuAccess(slug: string, userId: string) {
   const menu = await prisma.menu.findUnique({
     where: { slug },
-    select: { id: true, slug: true, organizationId: true },
+    select: { id: true, slug: true, organizationId: true, restaurantId: true },
   })
   if (!menu) throw Object.assign(new Error('Menu not found'), { status: 404 })
 
-  const membership = await prisma.member.findFirst({
+  const orgMember = await prisma.member.findFirst({
     where: { organizationId: menu.organizationId, userId },
-    select: { id: true, role: true },
+    select: { role: true },
   })
-  if (!membership) {
-    throw Object.assign(new Error('Not your menu'), { status: 403 })
+  if (orgMember) return { ...menu, role: orgMember.role }
+
+  if (menu.restaurantId) {
+    const restaurantMember = await prisma.restaurantMember.findFirst({
+      where: { restaurantId: menu.restaurantId, userId },
+      select: { role: true },
+    })
+    if (restaurantMember) return { ...menu, role: restaurantMember.role }
   }
-  return { ...menu, role: membership.role }
+
+  throw Object.assign(new Error('Not your menu'), { status: 403 })
 }
 
 // React.cache() dedupes per-request. Public menu page calls this once in

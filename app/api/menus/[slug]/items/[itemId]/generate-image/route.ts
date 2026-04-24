@@ -8,6 +8,7 @@ import { keyForMenuItemImage, uploadBuffer } from '@/lib/storage/r2'
 import { hasCredits } from '@/lib/plans/gates'
 import { spendCredits, InsufficientCreditsError } from '@/lib/plans/credits'
 import { CREDIT_COSTS } from '@/lib/plans/costs'
+import { requireMenuAccess } from '@/lib/menus/get'
 
 export const runtime = 'nodejs'
 // Gemini image generation runs ~15–30s; give it headroom.
@@ -43,28 +44,25 @@ export async function POST(request: Request, { params }: RouteContext) {
     if (trimmed) extraContext = trimmed
   }
 
-  // Ownership check + fetch the dish context in one query.
+  // Access check (org member OR restaurant staff). Item query below is
+  // scoped to the resolved menu id so staff can only touch their own venue.
+  let access
+  try {
+    access = await requireMenuAccess(slug, session.user.id)
+  } catch (err) {
+    const status = (err as { status?: number }).status ?? 500
+    return NextResponse.json({ error: 'Not allowed' }, { status })
+  }
+
   const item = await prisma.menuItem.findFirst({
-    where: {
-      id: itemId,
-      menu: {
-        slug,
-        organization: { members: { some: { userId: session.user.id } } },
-      },
-    },
-    select: {
-      id: true,
-      name: true,
-      category: true,
-      description: true,
-      menu: { select: { organizationId: true } },
-    },
+    where: { id: itemId, menuId: access.id },
+    select: { id: true, name: true, category: true, description: true },
   })
   if (!item) {
     return NextResponse.json({ error: 'Dish not found' }, { status: 404 })
   }
 
-  const creditsOk = await hasCredits(item.menu.organizationId, CREDIT_COSTS.DISH_IMAGE_GENERATE)
+  const creditsOk = await hasCredits(access.organizationId, CREDIT_COSTS.DISH_IMAGE_GENERATE)
   if (!creditsOk) {
     return NextResponse.json(
       { error: 'Out of AI credits. Buy more or upgrade your plan.', gate: 'credits' },
@@ -82,7 +80,7 @@ export async function POST(request: Request, { params }: RouteContext) {
 
     const ext = image.mimeType.split('/')[1]?.replace('jpeg', 'jpg') ?? 'png'
     const stamp = randomBytes(4).toString('hex')
-    const key = keyForMenuItemImage(item.menu.organizationId, item.id, ext, stamp)
+    const key = keyForMenuItemImage(access.organizationId, item.id, ext, stamp)
     const buffer = Buffer.from(image.base64, 'base64')
     const { url } = await uploadBuffer({
       key,
@@ -92,7 +90,7 @@ export async function POST(request: Request, { params }: RouteContext) {
 
     try {
       await spendCredits(
-        item.menu.organizationId,
+        access.organizationId,
         CREDIT_COSTS.DISH_IMAGE_GENERATE,
         'dish-image-generate',
         { menuItemId: item.id },

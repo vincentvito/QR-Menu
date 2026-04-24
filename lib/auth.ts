@@ -122,6 +122,16 @@ export const auth = betterAuth({
     // Force secure cookies only in production
     useSecureCookies: process.env.NODE_ENV === 'production',
   },
+  // Declare the custom `activeRestaurantId` column on the session row so
+  // better-auth's Prisma adapter includes it in its SELECT and
+  // `auth.api.getSession()` surfaces it. Without this, the column is read
+  // from DB as part of *writes* (the set-active route updates it), but
+  // stripped on every session read — so the dashboard never saw the switch.
+  session: {
+    additionalFields: {
+      activeRestaurantId: { type: 'string', required: false },
+    },
+  },
   databaseHooks: {
     user: {
       create: {

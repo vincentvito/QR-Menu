@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { deleteByUrl } from '@/lib/storage/r2'
+import { requireMenuAccess } from '@/lib/menus/get'
 
 export const runtime = 'nodejs'
 
@@ -33,15 +34,17 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'url is required' }, { status: 400 })
   }
 
+  let access
+  try {
+    access = await requireMenuAccess(slug, session.user.id)
+  } catch (err) {
+    const status = (err as { status?: number }).status ?? 500
+    return NextResponse.json({ error: 'Not allowed' }, { status })
+  }
+
   const item = await prisma.menuItem.findFirst({
-    where: {
-      id: itemId,
-      menu: {
-        slug,
-        organization: { members: { some: { userId: session.user.id } } },
-      },
-    },
-    select: { id: true, menu: { select: { organizationId: true } } },
+    where: { id: itemId, menuId: access.id },
+    select: { id: true },
   })
   if (!item) {
     return NextResponse.json({ error: 'Dish not found' }, { status: 404 })
@@ -50,7 +53,7 @@ export async function POST(request: Request, { params }: RouteContext) {
   // Safety: only allow deleting URLs that live under this item's folder.
   // Without this, a compromised client could ask the server to delete any
   // R2 object reachable from the worker.
-  const itemPrefix = `/qrmenucrafter/orgs/${item.menu.organizationId}/items/${item.id}/`
+  const itemPrefix = `/qrmenucrafter/orgs/${access.organizationId}/items/${item.id}/`
   try {
     const parsed = new URL(url)
     if (!parsed.pathname.startsWith(itemPrefix)) {

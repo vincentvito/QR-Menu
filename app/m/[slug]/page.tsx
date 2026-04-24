@@ -100,9 +100,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
     .filter((i) => i.specialUntil && i.specialUntil.getTime() > now)
     .map((i) => i.id)
 
-  // Logo source-of-truth is restaurant.logo. Fallback to org.logo keeps any
-  // pre-migration restaurant rendering until the settings form next saves.
-  const logo = restaurant.logo ?? org.logo
+  const logo = restaurant.logo
   const instaHref = restaurant.instagramUrl ? socialUrl('instagram', restaurant.instagramUrl) : null
   const tiktokHref = restaurant.tiktokUrl ? socialUrl('tiktok', restaurant.tiktokUrl) : null
   const facebookHref = restaurant.facebookUrl ? socialUrl('facebook', restaurant.facebookUrl) : null

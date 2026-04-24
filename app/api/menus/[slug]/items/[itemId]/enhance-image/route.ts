@@ -8,6 +8,7 @@ import { keyForMenuItemImage, uploadBuffer } from '@/lib/storage/r2'
 import { hasCredits } from '@/lib/plans/gates'
 import { spendCredits, InsufficientCreditsError } from '@/lib/plans/credits'
 import { CREDIT_COSTS } from '@/lib/plans/costs'
+import { requireMenuAccess } from '@/lib/menus/get'
 
 export const runtime = 'nodejs'
 export const maxDuration = 90
@@ -42,21 +43,22 @@ export async function POST(request: Request, { params }: RouteContext) {
     if (trimmed) extraContext = trimmed
   }
 
+  let access
+  try {
+    access = await requireMenuAccess(slug, session.user.id)
+  } catch (err) {
+    const status = (err as { status?: number }).status ?? 500
+    return NextResponse.json({ error: 'Not allowed' }, { status })
+  }
+
   const item = await prisma.menuItem.findFirst({
-    where: {
-      id: itemId,
-      menu: {
-        slug,
-        organization: { members: { some: { userId: session.user.id } } },
-      },
-    },
+    where: { id: itemId, menuId: access.id },
     select: {
       id: true,
       name: true,
       category: true,
       description: true,
       imageUrl: true,
-      menu: { select: { organizationId: true } },
     },
   })
   if (!item) {
@@ -66,7 +68,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: 'This dish has no photo to enhance yet' }, { status: 400 })
   }
 
-  const creditsOk = await hasCredits(item.menu.organizationId, CREDIT_COSTS.DISH_IMAGE_ENHANCE)
+  const creditsOk = await hasCredits(access.organizationId, CREDIT_COSTS.DISH_IMAGE_ENHANCE)
   if (!creditsOk) {
     return NextResponse.json(
       { error: 'Out of AI credits. Buy more or upgrade your plan.', gate: 'credits' },
@@ -96,7 +98,7 @@ export async function POST(request: Request, { params }: RouteContext) {
 
     const ext = image.mimeType.split('/')[1]?.replace('jpeg', 'jpg') ?? 'png'
     const stamp = randomBytes(4).toString('hex')
-    const key = keyForMenuItemImage(item.menu.organizationId, item.id, ext, stamp)
+    const key = keyForMenuItemImage(access.organizationId, item.id, ext, stamp)
     const buffer = Buffer.from(image.base64, 'base64')
     const { url } = await uploadBuffer({
       key,
@@ -106,7 +108,7 @@ export async function POST(request: Request, { params }: RouteContext) {
 
     try {
       await spendCredits(
-        item.menu.organizationId,
+        access.organizationId,
         CREDIT_COSTS.DISH_IMAGE_ENHANCE,
         'dish-image-enhance',
         { menuItemId: item.id },

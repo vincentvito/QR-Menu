@@ -109,7 +109,7 @@ export function restaurantInviteEmailTemplate({
   return { subject, html }
 }
 
-type OtpType = 'sign-in' | 'email-verification' | 'forget-password'
+type OtpType = 'sign-in' | 'email-verification' | 'forget-password' | 'change-email'
 
 interface OtpTemplateParams {
   otp: string
@@ -120,7 +120,7 @@ export function otpEmailTemplate({ otp, type }: OtpTemplateParams) {
   const subject =
     type === 'sign-in'
       ? 'Your QRmenucrafter login code'
-      : type === 'email-verification'
+      : type === 'email-verification' || type === 'change-email'
         ? 'Verify your QRmenucrafter email'
         : 'Reset your QRmenucrafter password'
 
@@ -129,7 +129,9 @@ export function otpEmailTemplate({ otp, type }: OtpTemplateParams) {
       ? 'Use this code to sign in to QRmenucrafter:'
       : type === 'email-verification'
         ? 'Use this code to verify your email address:'
-        : 'Use this code to reset your password:'
+        : type === 'change-email'
+          ? 'Use this code to confirm your new email address:'
+          : 'Use this code to reset your password:'
 
   const html = `
     <div style="font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background-color: #FDFCFB; padding: 0;">

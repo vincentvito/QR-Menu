@@ -1,4 +1,4 @@
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import prisma from '@/lib/prisma'
@@ -15,9 +15,12 @@ export default async function MenuQRPage({ params }: PageProps) {
 
   const menu = await prisma.menu.findUnique({
     where: { slug },
-    select: { id: true, name: true, slug: true, organizationId: true },
+    select: { id: true, name: true, slug: true, organizationId: true, restaurantId: true },
   })
   if (!menu || menu.organizationId !== org.id) notFound()
+  // Scope to the active restaurant — switching restaurants should bounce
+  // back to the list rather than keep a stale menu URL open.
+  if (menu.restaurantId !== restaurant.id) redirect('/dashboard/menus')
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
   const publicUrl = `${baseUrl}/m/${menu.slug}`
@@ -56,7 +59,7 @@ export default async function MenuQRPage({ params }: PageProps) {
           backgroundColor: restaurant.qrBackgroundColor,
           centerType: restaurant.qrCenterType,
           centerText: restaurant.qrCenterText,
-          logo: restaurant.logo ?? org.logo ?? null,
+          logo: restaurant.logo ?? null,
         }}
       />
     </main>

@@ -1,15 +1,15 @@
 import Link from 'next/link'
 import { Plus, QrCode } from 'lucide-react'
 import { getDashboardContext } from '@/lib/dashboard/context'
-import { getMenusForOrg } from '@/lib/menus/get'
+import { getMenusForRestaurant } from '@/lib/menus/get'
 import { Button } from '@/components/ui/button'
 import { MenuList } from '@/components/dashboard/MenuList'
 
 export default async function MenusPage() {
   // Cached in getDashboardContext — the layout already resolved this, so
   // this call is a same-request cache hit, not a new round-trip.
-  const { org } = await getDashboardContext()
-  const menus = await getMenusForOrg(org.id)
+  const { restaurant } = await getDashboardContext()
+  const menus = await getMenusForRestaurant(restaurant.id)
   const publicBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
 
   return (
