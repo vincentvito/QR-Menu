@@ -3,6 +3,26 @@ import { resolvePlan, type PlanDefinition } from '@/lib/plans'
 
 const ACTIVE_STATUSES = ['trialing', 'active', 'past_due']
 
+export interface TrialState {
+  trialEnd: Date
+  planName: string
+}
+
+// Thin fetch used by the global TrialBanner. Returns null when the org
+// isn't trialing, so the layout can avoid rendering anything in the
+// common case. Intentionally much lighter than `getBillingState`, which
+// also pulls org overrides + restaurants — neither needed for the
+// banner.
+export async function getTrialState(organizationId: string): Promise<TrialState | null> {
+  const subscription = await prisma.subscription.findFirst({
+    where: { referenceId: organizationId, status: 'trialing' },
+    orderBy: { createdAt: 'desc' },
+    select: { plan: true, trialEnd: true },
+  })
+  if (!subscription?.trialEnd) return null
+  return { trialEnd: subscription.trialEnd, planName: subscription.plan }
+}
+
 export interface BillingState {
   plan: PlanDefinition
   subscription: {

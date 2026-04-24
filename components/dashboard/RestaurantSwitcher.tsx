@@ -12,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { AddRestaurantSheet } from './AddRestaurantSheet'
 
 interface RestaurantOption {
   id: string
@@ -32,6 +33,7 @@ export function RestaurantSwitcher({ current, restaurants }: RestaurantSwitcherP
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
+  const [addOpen, setAddOpen] = useState(false)
 
   async function switchTo(restaurantId: string) {
     if (restaurantId === current.id) {
@@ -55,6 +57,7 @@ export function RestaurantSwitcher({ current, restaurants }: RestaurantSwitcherP
   }
 
   return (
+    <>
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button
@@ -103,12 +106,24 @@ export function RestaurantSwitcher({ current, restaurants }: RestaurantSwitcherP
           </DropdownMenuItem>
         ))}
         <DropdownMenuSeparator />
-        <DropdownMenuItem disabled className="gap-2">
+        <DropdownMenuItem
+          onSelect={(e) => {
+            // Radix closes the menu on select by default — we want that,
+            // but we also need to open the sheet. preventDefault stops
+            // auto-close so the menu state can settle before the sheet
+            // mounts on top of it.
+            e.preventDefault()
+            setOpen(false)
+            setAddOpen(true)
+          }}
+          className="gap-2"
+        >
           <Plus className="size-3.5" aria-hidden="true" />
           <span>Add restaurant</span>
-          <span className="text-muted-foreground ml-auto text-[10px]">soon</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+      <AddRestaurantSheet open={addOpen} onOpenChange={setAddOpen} />
+    </>
   )
 }

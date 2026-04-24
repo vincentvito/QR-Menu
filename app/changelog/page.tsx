@@ -8,13 +8,15 @@ const changelog = [
   {
     version: '0.23.0',
     date: '2026-04-24',
-    title: 'Analytics + Google review spotlight',
+    title: 'Analytics, Google review spotlight, multi-restaurant flow',
     changes: [
       {
         type: 'added' as const,
         items: [
           'New Analytics page at /dashboard/analytics — see scans over time, unique guests, peak hours (so you know when to staff up), WiFi reveals, review click-through rate, and social clicks by platform. Last 7 / 30 days toggle',
           'Bigger, more prominent &ldquo;Leave us a Google review&rdquo; button at the bottom of the public menu — still only shows when you&apos;ve set a Google review URL in Settings',
+          '&ldquo;Add restaurant&rdquo; is live in the restaurant switcher — spin up additional venues under your account without leaving the dashboard. Blocked with a clear message when you&apos;re at your plan&apos;s restaurant limit',
+          'Trial banner at the top of the dashboard shows days remaining and turns red-urgent under 3 days so nobody is surprised by a card charge',
         ],
       },
     ],
