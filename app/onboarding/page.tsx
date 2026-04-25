@@ -18,7 +18,7 @@ export default async function OnboardingPage() {
     <div className="min-h-screen">
       <header className="border-cream-line bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md">
         <div className="mx-auto flex max-w-[1240px] items-center justify-between px-[clamp(20px,5vw,80px)] py-4">
-          <Link href="/" aria-label="QRmenucrafter home">
+          <Link href="/" aria-label="Qtable home">
             <BrandMark size="md" />
           </Link>
           <SignOutButton />

@@ -33,7 +33,7 @@ export function BrandMark({
         <QRDots size={s.dots} seed={7} />
       </span>
       {!iconOnly && (
-        <span className={cn('font-semibold tracking-[-0.02em]', s.text)}>QRmenucrafter</span>
+        <span className={cn('font-semibold tracking-[-0.02em]', s.text)}>Qtable</span>
       )}
     </span>
   )

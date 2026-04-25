@@ -5,9 +5,9 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
-const SITE_NAME = 'QRmenucrafter'
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-const DEFAULT_TITLE = 'QRmenucrafter — Digital menus & QR codes for restaurants'
+const SITE_NAME = 'Qtable'
+const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://qtable.ai'
+const DEFAULT_TITLE = 'Qtable — Digital menus & QR codes for restaurants'
 const DEFAULT_DESCRIPTION =
   'Turn your printed menu into a beautiful mobile page and a QR code for your tables — edit a dish and it updates everywhere, instantly.'
 

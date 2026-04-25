@@ -4,7 +4,7 @@ import { ImageResponse } from 'next/og'
 // or any route without its own opengraph-image.
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
-export const alt = 'QRmenucrafter — Beautiful digital menus for restaurants'
+export const alt = 'Qtable — Beautiful digital menus for restaurants'
 
 export default function OpenGraphImage() {
   return new ImageResponse(
@@ -74,7 +74,7 @@ export default function OpenGraphImage() {
             letterSpacing: '-0.02em',
           }}
         >
-          QRmenucrafter
+          Qtable
         </span>
       </div>
 

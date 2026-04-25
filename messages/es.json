@@ -102,7 +102,7 @@
   },
   "Landing": {
     "nav": {
-      "brand": "QRmenucrafter",
+      "brand": "Qtable",
       "howItWorks": "How it works",
       "examples": "Examples",
       "pricing": "Pricing",
@@ -257,7 +257,7 @@
         "clara": {
           "name": "Clara Domínguez",
           "role": "Owner, Bar Lolita (Madrid)",
-          "quote": "Our reprints cost us nearly €400 a year. With QRmenucrafter, I update a dish from my phone between lunch and dinner."
+          "quote": "Our reprints cost us nearly €400 a year. With Qtable, I update a dish from my phone between lunch and dinner."
         },
         "thomas": {
           "name": "Thomas Renaud",
@@ -326,11 +326,11 @@
       "titleA": "The things",
       "titleB": "we hear",
       "titleC": "the most.",
-      "helpLine": "Can't find your answer? Email us at hello@qrmenucrafter.com — a human replies within an hour, every day of the week.",
+      "helpLine": "Can't find your answer? Email us at hello@qtable.ai — a human replies within an hour, every day of the week.",
       "items": {
         "savvy": {
           "q": "Do I need to be tech-savvy?",
-          "a": "Not at all. If you can take a photo with your phone, you can use QRmenucrafter. Upload your menu and we do the rest — no training needed."
+          "a": "Not at all. If you can take a photo with your phone, you can use Qtable. Upload your menu and we do the rest — no training needed."
         },
         "price": {
           "q": "What if I change a price tomorrow?",
@@ -360,8 +360,8 @@
     },
     "footer": {
       "tagline": "Digital menus and QR codes, built for restaurants. Made in Madrid, served worldwide.",
-      "copyright": "© {year} QRmenucrafter SL",
-      "madeWith": "Made with care in Madrid · hello@qrmenucrafter.com",
+      "copyright": "© {year} Qtable SL",
+      "madeWith": "Made with care in Madrid · hello@qtable.ai",
       "columns": {
         "product": {
           "title": "Product",
@@ -384,7 +384,7 @@
   },
   "Changelog": {
     "title": "Changelog",
-    "description": "All notable changes to QRmenucrafter are documented here.",
+    "description": "All notable changes to Qtable are documented here.",
     "backHome": "Back to home",
     "latest": "Latest",
     "types": {

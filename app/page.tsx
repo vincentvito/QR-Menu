@@ -278,7 +278,7 @@ function PhoneMock({ t }: { t: T }) {
     <div
       className="relative mx-auto flex w-full max-w-[460px] justify-center lg:justify-self-end"
       role="img"
-      aria-label="Example of a published QRmenucrafter menu on a phone"
+      aria-label="Example of a published Qtable menu on a phone"
     >
       <div
         aria-hidden="true"
@@ -993,7 +993,7 @@ function FooterCta({ t, ctaHref }: { t: T; ctaHref: string }) {
               size="lg"
               className="border-background text-background hover:bg-background/10 hover:text-background"
             >
-              <a href="mailto:hello@qrmenucrafter.com">{t('footerCta.ctaSecondary')}</a>
+              <a href="mailto:hello@qtable.ai">{t('footerCta.ctaSecondary')}</a>
             </PillButton>
           </div>
         </div>

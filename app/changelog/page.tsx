@@ -19,6 +19,13 @@ const changelog = [
           'Trial banner at the top of the dashboard shows days remaining and turns red-urgent under 3 days so nobody is surprised by a card charge',
         ],
       },
+      {
+        type: 'changed' as const,
+        items: [
+          'Rebranded to <strong>Qtable</strong> — new name, new home at <strong>qtable.ai</strong>. Same product, sharper identity. Wordmark, page titles, social cards, PWA install name, and OTP/invitation emails all reflect the new brand',
+          'Support and contact emails moved to <strong>hello@qtable.ai</strong>; transactional mail now sends from <strong>noreply@qtable.ai</strong>',
+        ],
+      },
     ],
   },
   {
@@ -545,7 +552,7 @@ export default async function ChangelogPage() {
     <div className="bg-background text-foreground min-h-screen">
       <nav className="border-border bg-card/80 sticky top-0 z-40 border-b backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <Link href="/" aria-label="QRmenucrafter home">
+          <Link href="/" aria-label="Qtable home">
             <BrandMark size="md" />
           </Link>
         </div>

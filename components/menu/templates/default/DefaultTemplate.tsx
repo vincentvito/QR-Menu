@@ -9,7 +9,7 @@ import type {
 } from '@/components/menu/templates/types'
 
 // Default template: text-first list with a small square photo thumbnail on
-// the left when the dish has one. The original QRmenucrafter look.
+// the left when the dish has one. The original Qtable look.
 
 function DefaultBody({
   groups,

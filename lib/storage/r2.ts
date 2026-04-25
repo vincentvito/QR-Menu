@@ -10,11 +10,11 @@ import { DeleteObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client
  *   CLOUDFLARE_BUCKET_NAME       — bucket name (shared)
  *   CLOUDFLARE_PUBLIC_URL        — public base URL, e.g. https://files.screenslick.com
  *
- * qrmenucrafter objects live under the `qrmenucrafter/` key prefix so they
- * don't collide with menugenai/ or screenslick's transfer/ objects.
+ * Qtable objects live under the `qtable/` key prefix so they don't collide
+ * with menugenai/ or screenslick's transfer/ objects in a shared bucket.
  */
 
-const KEY_PREFIX = 'qrmenucrafter'
+const KEY_PREFIX = 'qtable'
 
 function requireEnv(key: string): string {
   const v = process.env[key]

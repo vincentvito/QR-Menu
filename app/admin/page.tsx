@@ -38,7 +38,7 @@ export default async function AdminPage() {
       <header className="border-cream-line bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md">
         <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-6 px-[clamp(20px,5vw,80px)] py-4">
           <div className="flex items-center gap-4">
-            <Link href="/" aria-label="QRmenucrafter home">
+            <Link href="/" aria-label="Qtable home">
               <BrandMark size="md" />
             </Link>
             <span className="text-muted-foreground text-xs tracking-[0.14em] uppercase">

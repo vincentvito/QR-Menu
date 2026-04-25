@@ -87,7 +87,7 @@ function InviteShell({ children }: { children: React.ReactNode }) {
     <main className="bg-background flex min-h-screen items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center">
-          <Link href="/" aria-label="QRmenucrafter home">
+          <Link href="/" aria-label="Qtable home">
             <BrandMark size="lg" />
           </Link>
         </div>

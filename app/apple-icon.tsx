@@ -1,8 +1,8 @@
 import { ImageResponse } from 'next/og'
 
 // iOS home-screen icon — 180×180, matches the favicon's look at a larger
-// size so the Q stays centered and readable when users save QRmenucrafter
-// to their home screen.
+// size so the Q stays centered and readable when users save Qtable to their
+// home screen.
 export const size = { width: 180, height: 180 }
 export const contentType = 'image/png'
 

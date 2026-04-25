@@ -3,7 +3,7 @@ import { publicUrl } from '@/lib/storage/r2'
 // Stable R2 key for the template-picker phone mockup. Uploaded once via
 // `scripts/upload-template-assets.ts`. Server-side helpers only — client
 // receives the URL as a prop from the Settings page.
-export const TEMPLATE_PREVIEW_MOCKUP_KEY = 'qrmenucrafter/assets/template-preview-iphone-17-pro.png'
+export const TEMPLATE_PREVIEW_MOCKUP_KEY = 'qtable/assets/template-preview-iphone-17-pro.png'
 
 // Original uploaded asset size from `screenslick/public/mockups/...`.
 // Keeping this in one place lets the settings preview match the bezel's

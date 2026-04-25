@@ -62,7 +62,7 @@ export function DashboardSidebar({ restaurant, restaurants, viewer, scope }: Das
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-1 group-data-[collapsible=icon]:hidden">
-          <Link href="/" aria-label="QRmenucrafter home" className="shrink-0">
+          <Link href="/" aria-label="Qtable home" className="shrink-0">
             <BrandMark size="sm" />
           </Link>
         </div>

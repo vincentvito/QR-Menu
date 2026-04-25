@@ -13,8 +13,8 @@ export async function sendEmail({
 }: SendEmailParams): Promise<{ success: boolean; error?: string }> {
   const apiUrl = process.env.ZEPTOMAIL_API_URL
   const apiKey = process.env.ZEPTO_MAIL_API_KEY
-  const fromEmail = process.env.EMAIL_FROM ?? 'noreply@qrmenucrafter.com'
-  const fromName = process.env.EMAIL_FROM_NAME ?? 'QRmenucrafter'
+  const fromEmail = process.env.EMAIL_FROM ?? 'noreply@qtable.ai'
+  const fromName = process.env.EMAIL_FROM_NAME ?? 'Qtable'
 
   if (!apiUrl || !apiKey) {
     console.warn('[email] ZeptoMail not configured — logging instead of sending')

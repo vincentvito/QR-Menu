@@ -9,21 +9,21 @@ export function inviteEmailTemplate({
   restaurantName,
   acceptUrl,
 }: InviteTemplateParams) {
-  const subject = `${inviterName} invited you to ${restaurantName} on QRmenucrafter`
+  const subject = `${inviterName} invited you to ${restaurantName} on Qtable`
 
   const html = `
     <div style="font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background-color: #FDFCFB; padding: 0;">
       <div style="max-width: 520px; margin: 0 auto; padding: 48px 24px;">
         <div style="margin-bottom: 32px;">
           <h1 style="font-size: 22px; font-weight: 600; color: #1C1917; margin: 0 0 4px 0; letter-spacing: -0.015em;">
-            QRmenucrafter
+            Qtable
           </h1>
           <p style="font-size: 13px; color: #78716C; margin: 0;">Digital QR menus for restaurants</p>
         </div>
 
         <p style="font-size: 14px; color: #57534E; line-height: 1.6; margin: 0 0 24px 0;">
           <strong style="color: #1C1917;">${inviterName}</strong> invited you to join
-          <strong style="color: #1C1917;">${restaurantName}</strong> on QRmenucrafter so you can help manage menus.
+          <strong style="color: #1C1917;">${restaurantName}</strong> on Qtable so you can help manage menus.
         </p>
 
         <div style="text-align: center; margin-bottom: 24px;">
@@ -43,7 +43,7 @@ export function inviteEmailTemplate({
         <div style="height: 1px; background-color: #E7E5E4; margin: 32px 0;"></div>
 
         <p style="font-size: 11px; color: #A8A29E; margin: 0;">
-          QRmenucrafter &mdash; Turn any menu into a beautiful QR experience.
+          Qtable &mdash; Turn any menu into a beautiful QR experience.
         </p>
       </div>
     </div>
@@ -72,7 +72,7 @@ export function restaurantInviteEmailTemplate({
       <div style="max-width: 520px; margin: 0 auto; padding: 48px 24px;">
         <div style="margin-bottom: 32px;">
           <h1 style="font-size: 22px; font-weight: 600; color: #1C1917; margin: 0 0 4px 0; letter-spacing: -0.015em;">
-            QRmenucrafter
+            Qtable
           </h1>
           <p style="font-size: 13px; color: #78716C; margin: 0;">Digital QR menus for restaurants</p>
         </div>
@@ -100,7 +100,7 @@ export function restaurantInviteEmailTemplate({
         <div style="height: 1px; background-color: #E7E5E4; margin: 32px 0;"></div>
 
         <p style="font-size: 11px; color: #A8A29E; margin: 0;">
-          QRmenucrafter &mdash; Turn any menu into a beautiful QR experience.
+          Qtable &mdash; Turn any menu into a beautiful QR experience.
         </p>
       </div>
     </div>
@@ -119,14 +119,14 @@ interface OtpTemplateParams {
 export function otpEmailTemplate({ otp, type }: OtpTemplateParams) {
   const subject =
     type === 'sign-in'
-      ? 'Your QRmenucrafter login code'
+      ? 'Your Qtable login code'
       : type === 'email-verification' || type === 'change-email'
-        ? 'Verify your QRmenucrafter email'
-        : 'Reset your QRmenucrafter password'
+        ? 'Verify your Qtable email'
+        : 'Reset your Qtable password'
 
   const actionText =
     type === 'sign-in'
-      ? 'Use this code to sign in to QRmenucrafter:'
+      ? 'Use this code to sign in to Qtable:'
       : type === 'email-verification'
         ? 'Use this code to verify your email address:'
         : type === 'change-email'
@@ -138,7 +138,7 @@ export function otpEmailTemplate({ otp, type }: OtpTemplateParams) {
       <div style="max-width: 520px; margin: 0 auto; padding: 48px 24px;">
         <div style="margin-bottom: 32px;">
           <h1 style="font-size: 22px; font-weight: 600; color: #1C1917; margin: 0 0 4px 0; letter-spacing: -0.015em;">
-            QRmenucrafter
+            Qtable
           </h1>
           <p style="font-size: 13px; color: #78716C; margin: 0;">Digital QR menus for restaurants</p>
         </div>
@@ -163,7 +163,7 @@ export function otpEmailTemplate({ otp, type }: OtpTemplateParams) {
         <div style="height: 1px; background-color: #E7E5E4; margin: 32px 0;"></div>
 
         <p style="font-size: 11px; color: #A8A29E; margin: 0;">
-          QRmenucrafter &mdash; Turn any menu into a beautiful QR experience.
+          Qtable &mdash; Turn any menu into a beautiful QR experience.
         </p>
       </div>
     </div>

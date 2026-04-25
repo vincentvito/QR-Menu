@@ -95,7 +95,7 @@ export default function LoginPage() {
     >
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center">
-          <Link href="/" aria-label="QRmenucrafter home">
+          <Link href="/" aria-label="Qtable home">
             <BrandMark size="lg" />
           </Link>
         </div>

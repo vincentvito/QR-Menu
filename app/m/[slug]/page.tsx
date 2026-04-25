@@ -320,7 +320,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
         <p className="text-muted-foreground text-center text-xs">
           Menu by{' '}
           <a href="/" className="underline-offset-4 hover:underline">
-            QRmenucrafter
+            Qtable
           </a>
         </p>
       </footer>

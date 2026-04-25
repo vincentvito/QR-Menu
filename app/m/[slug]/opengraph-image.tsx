@@ -16,7 +16,7 @@ interface Props {
 
 // Per-menu share card. Uses the restaurant's brand colors (with theme
 // fallback) so share previews feel like that specific restaurant, not a
-// generic QRmenucrafter card.
+// generic Qtable card.
 export default async function MenuOpenGraphImage({ params }: Props) {
   const { slug } = await params
   const menu = await getMenuBySlug(slug)
@@ -156,7 +156,7 @@ export default async function MenuOpenGraphImage({ params }: Props) {
         ) : null}
       </div>
 
-      {/* Footer row: dish count + QRmenucrafter wordmark */}
+      {/* Footer row: dish count + Qtable wordmark */}
       <div
         style={{
           display: 'flex',
@@ -213,7 +213,7 @@ export default async function MenuOpenGraphImage({ params }: Props) {
           >
             Q
           </div>
-          <span style={{ fontWeight: 600 }}>QRmenucrafter</span>
+          <span style={{ fontWeight: 600 }}>Qtable</span>
         </div>
       </div>
     </div>,
