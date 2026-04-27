@@ -2,7 +2,16 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { BarChart3, CreditCard, LogOut, Settings, UserCheck, Users, Utensils } from 'lucide-react'
+import {
+  BarChart3,
+  CreditCard,
+  LogOut,
+  Settings,
+  Shield,
+  UserCheck,
+  Users,
+  Utensils,
+} from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   Sidebar,
@@ -35,7 +44,7 @@ const NAV = [
 interface DashboardSidebarProps {
   restaurant: { id: string; name: string; logo: string | null }
   restaurants: Array<{ id: string; slug: string; name: string }>
-  viewer: { name: string; email: string; image: string | null }
+  viewer: { name: string; email: string; image: string | null; role: string }
   scope: 'org' | 'restaurant'
 }
 
@@ -91,6 +100,21 @@ export function DashboardSidebar({ restaurant, restaurants, viewer, scope }: Das
                   </SidebarMenuItem>
                 )
               })}
+              {viewer.role === 'admin' ? (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname.startsWith('/admin')}
+                    tooltip="Admin"
+                    className={collapsedButtonClass}
+                  >
+                    <Link href="/admin">
+                      <Shield />
+                      <span>Admin</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ) : null}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -26,6 +26,14 @@ const changelog = [
           'Support and contact emails moved to <strong>hello@qtable.ai</strong>; transactional mail now sends from <strong>noreply@qtable.ai</strong>',
         ],
       },
+      {
+        type: 'fixed' as const,
+        items: [
+          'Admin overview &ldquo;Restaurants&rdquo; stat now counts actual restaurants instead of organizations, and &ldquo;Active&rdquo; reflects restaurants currently editable on their plan',
+          'Admin section split into Overview and Users tabs, with Users paginated 50 at a time so the page stays fast as the platform grows',
+          'Admin link now appears in the dashboard sidebar for users with the admin role (hidden for everyone else)',
+        ],
+      },
     ],
   },
   {

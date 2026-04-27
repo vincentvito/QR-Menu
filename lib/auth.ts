@@ -1,3 +1,5 @@
+import { cache } from 'react'
+import { headers } from 'next/headers'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { admin, emailOTP, organization } from 'better-auth/plugins'
@@ -262,4 +264,11 @@ export const auth = betterAuth({
       : []),
   ],
   trustedOrigins: [process.env.BETTER_AUTH_URL || 'http://localhost:3000'],
+})
+
+// Per-request session cache. RSC layouts can't pass props to child pages,
+// so the same session is otherwise fetched twice (once in the layout, once
+// in the page). React.cache dedupes within a single request.
+export const getCachedSession = cache(async () => {
+  return auth.api.getSession({ headers: await headers() })
 })

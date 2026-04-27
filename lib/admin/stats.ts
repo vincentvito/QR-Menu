@@ -55,8 +55,8 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     totalUsers,
     usersToday,
     usersLast7,
-    totalOrgs,
-    activeOrgs,
+    totalRestaurants,
+    activeRestaurants,
     totalMenus,
     totalItems,
     pendingInvitations,
@@ -64,8 +64,8 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     prisma.user.count(),
     prisma.user.count({ where: { createdAt: { gte: startOfToday } } }),
     prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
-    prisma.organization.count(),
-    prisma.organization.count({ where: { members: { some: {} } } }),
+    prisma.restaurant.count(),
+    prisma.restaurant.count({ where: { readOnly: false } }),
     prisma.menu.count(),
     prisma.menuItem.count(),
     prisma.invitation.count({ where: { status: 'pending' } }),
@@ -73,7 +73,7 @@ export async function getPlatformStats(): Promise<PlatformStats> {
 
   return {
     users: { total: totalUsers, today: usersToday, last7Days: usersLast7 },
-    restaurants: { total: totalOrgs, active: activeOrgs },
+    restaurants: { total: totalRestaurants, active: activeRestaurants },
     menus: { total: totalMenus, items: totalItems },
     invitations: { pending: pendingInvitations },
   }

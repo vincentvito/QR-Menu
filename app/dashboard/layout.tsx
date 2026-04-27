@@ -34,6 +34,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
             name: session.user.name,
             email: session.user.email,
             image: session.user.image ?? null,
+            role: session.user.role ?? 'user',
           }}
         />
         <SidebarInset>
