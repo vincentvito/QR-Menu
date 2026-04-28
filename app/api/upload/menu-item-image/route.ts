@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { extFromMimeType, keyForMenuItemImage, uploadBuffer } from '@/lib/storage/r2'
+import { canWriteRestaurant } from '@/lib/plans/subscription-access'
 
 export const runtime = 'nodejs'
 
@@ -60,11 +61,16 @@ export async function POST(request: Request) {
     },
     select: {
       id: true,
-      menu: { select: { organizationId: true } },
+      menu: { select: { organizationId: true, restaurantId: true } },
     },
   })
   if (!item) {
     return NextResponse.json({ error: 'Dish not found' }, { status: 404 })
+  }
+
+  const writeGate = await canWriteRestaurant(item.menu.organizationId, item.menu.restaurantId)
+  if (!writeGate.allowed) {
+    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
   }
 
   const buffer = Buffer.from(await file.arrayBuffer())

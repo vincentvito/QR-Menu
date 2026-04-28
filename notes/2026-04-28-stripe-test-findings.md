@@ -109,16 +109,18 @@ Cheapest, highest-leverage fix is probably the inline callout — one component,
 - `resolvePlan(null)` returns the **trial plan** (`lib/plans.ts:95`) which has `maxMenusPerRestaurant: 5` and `maxRestaurants: 1`.
 - So a canceled-trial user can effectively keep using a "trial-equivalent" plan without paying. Not the intended behavior.
 
-**Product decision needed (not yet decided):**
+**Product decision made 2026-04-28:** Option 1. Public menus stay live after a
+subscription is canceled or a trial expires, but dashboard writes become
+read-only until the owner picks a plan again.
 
 | State                         | Public menu     | Dashboard editing | Create menu | Create restaurant | AI actions |
 |-------------------------------|-----------------|-------------------|-------------|-------------------|------------|
 | Trialing                      | live            | full              | ✅ up to 5   | ✅ up to 1         | ✅ via credits |
 | Active (paid plan)            | live            | full              | ✅ per plan  | ✅ per plan        | ✅ via credits |
 | Active, cancel-at-period-end  | live            | full              | ✅ per plan  | ✅ per plan        | ✅ via credits |
-| Canceled / trial expired      | **?**           | **?**             | **?**       | **?**             | ❌ no credits |
+| Canceled / trial expired      | live            | read-only         | ❌          | ❌                | ❌ paused |
 
-**Two policy options on the table — owner decides:**
+**Two policy options considered:**
 
 **Option 1 — public menus keep serving even when the subscription is canceled / trial expired without conversion.**
 - Pros: guests with already-distributed QR codes don't see a broken menu; the owner's churn doesn't punish their customers; "public menu uptime" is the value prop.
@@ -181,6 +183,26 @@ That's the right pattern. **The active-subscription branch should match this for
 
 - ✅ Menu creation no longer spends a credit (0.23.1, 2026-04-28). `MENU_EXTRACTION` removed from `lib/plans/costs.ts`; gate + spend stripped from `app/api/menus/route.ts`.
 - ✅ Trial-start step added after onboarding (0.23.3, 2026-04-28). `app/onboarding/start-trial/{page,StartTrialPanel}.tsx`; `OnboardingFlow.createOrganization` now redirects there instead of `/dashboard`.
+- ✅ AI credit gates are actionable (0.23.5, 2026-04-28). The menu editor shows an out-of-credits banner; AI generate/enhance toasts expose the API error and include a Buy credits action.
+- ✅ URL onboarding fills name/description more reliably (0.23.5, 2026-04-28). Firecrawl branding now requests markdown too; Gemini fills missing restaurant name/description from page text.
+- ✅ Onboarding order changed to name → URL → details (0.23.5, 2026-04-28). Known user names skip the name step.
+- ✅ Credit balance is visible in the menu editor (0.23.5, 2026-04-28). The editor toolbar shows the current AI credit count and decrements after successful AI image generation/enhancement.
+- ✅ Menu editor now signposts Settings (0.23.5, 2026-04-28). Inline callout links users to branding, template, QR, WiFi, and header-image settings.
+- ✅ Post-cancellation/read-only policy implemented (0.23.5, 2026-04-28). Dashboard shows a subscription-ended banner, Billing explains the state, public menus stay live, and dashboard write APIs return a 402 gate.
+- ✅ Canceled/expired subscriptions can no longer keep creating/editing for free (0.23.5, 2026-04-28). Server gates cover menu creation, menu/item edits, settings, uploads, AI image actions, restaurant creation/activation, staff invites/removals, and credit-pack checkout.
+- ✅ Billing credit display no longer conflates monthly and bonus credits (0.23.5, 2026-04-28). Big number is total; monthly and bonus buckets are shown separately.
+- ✅ FAQ updated (0.23.5, 2026-04-28). Landing FAQ now answers "What happens if my subscription expires?"
+
+## Remaining launch tasks from this finding set
+
+- [ ] Re-run Stripe cancellation/regression test after the new read-only policy:
+  - Start trial → credits granted.
+  - Cancel subscription/trial → dashboard banner appears.
+  - Public menu URL still loads.
+  - Menu edits, new menus, settings, uploads, staff changes, credit-pack checkout, and AI image actions are blocked with a clear 402 message.
+  - Re-subscribe → dashboard editing and plan caps restore.
+- [ ] Confirm Customer Portal return path refreshes the dashboard state after cancellation. If canceling from the Stripe Dashboard while the app is already open, the user may still need a refresh; live polling/SSE is optional post-launch polish.
+- [ ] Decide later whether to add expiration warning emails. Current launch policy keeps public menus live indefinitely and pauses dashboard writes immediately after cancellation/expiration.
 
 ## Test environment
 

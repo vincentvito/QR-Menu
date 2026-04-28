@@ -65,6 +65,12 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
 
   const currentPlanId = state.plan.id
   const isTrialing = state.subscription?.status === 'trialing'
+  const isLapsed = state.subscriptionAccess.isLapsed
+  const displayPlanName =
+    isLapsed && state.subscriptionAccess.latestPlan
+      ? (planCatalog.find((p) => p.id === state.subscriptionAccess.latestPlan)?.name ??
+        state.subscriptionAccess.latestPlan)
+      : state.plan.name
 
   async function startUpgrade(planId: string) {
     setPendingPlan(planId)
@@ -121,9 +127,6 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
       }
     })
   }
-
-  const totalCreditLimit =
-    state.plan.monthlyCredits !== null ? state.plan.monthlyCredits : null
 
   const cap = state.plan.maxRestaurants
   const hasReadOnly = state.restaurants.some((r) => r.readOnly)
@@ -215,7 +218,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
               )
             })}
           </div>
-          {canManage ? (
+          {canManage && !isLapsed ? (
             <div className="mt-4 flex items-center gap-2">
               <span className="text-muted-foreground text-xs">
                 {activePicks.size} of {cap} slot{cap === 1 ? '' : 's'} picked
@@ -236,6 +239,28 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
         </section>
       ) : null}
 
+      {isLapsed ? (
+        <section className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-950">
+          <h2 className="text-sm font-semibold tracking-wide uppercase">Subscription canceled</h2>
+          <p className="mt-2 text-sm leading-6">
+            Public menus are still live for guests. Dashboard editing, new menus, uploads, and AI
+            photo actions are paused until you pick a plan.
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            className="mt-4"
+            onClick={() => {
+              document
+                .getElementById('plan-picker')
+                ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            }}
+          >
+            Pick a plan
+          </Button>
+        </section>
+      ) : null}
+
       {/* Current plan + credits */}
       <div className="grid gap-4 md:grid-cols-2">
         <section className="border-cream-line bg-card rounded-2xl border p-5">
@@ -245,7 +270,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
               Current plan
             </h2>
           </div>
-          <p className="mt-3 text-2xl font-semibold tracking-tight">{state.plan.name}</p>
+          <p className="mt-3 text-2xl font-semibold tracking-tight">{displayPlanName}</p>
           <p className="text-muted-foreground mt-1 text-sm">
             {state.subscription ? (
               <>
@@ -254,7 +279,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                 {state.subscription.periodEnd ? ` · renews ${formatDate(state.subscription.periodEnd)}` : ''}
               </>
             ) : (
-              'Not subscribed yet'
+              isLapsed ? 'Subscription ended' : 'Not subscribed yet'
             )}
           </p>
           {isTrialing && state.subscription?.trialEnd ? (
@@ -288,14 +313,14 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
           </div>
           <p className="mt-3 text-2xl font-semibold tracking-tight tabular-nums">
             {state.credits.total}
-            {totalCreditLimit !== null ? (
-              <span className="text-muted-foreground text-base font-normal">
-                {' '}/ {totalCreditLimit} this month
-              </span>
-            ) : null}
           </p>
           <div className="text-muted-foreground mt-2 space-y-0.5 text-xs">
-            <div>Monthly bucket: <span className="tabular-nums">{state.credits.monthly}</span></div>
+            <div>
+              Monthly bucket: <span className="tabular-nums">{state.credits.monthly}</span>
+              {state.plan.monthlyCredits !== null ? (
+                <span className="tabular-nums"> of {state.plan.monthlyCredits}</span>
+              ) : null}
+            </div>
             <div>
               Bonus (never expire): <span className="tabular-nums">{state.credits.bonus}</span>
             </div>
@@ -303,7 +328,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
               <div>Resets {formatDate(state.credits.resetsAt)}</div>
             ) : null}
           </div>
-          {canManage ? (
+          {canManage && !isLapsed ? (
             <Button
               variant="outline"
               size="sm"
@@ -321,10 +346,17 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
       </div>
 
       {/* Plan picker */}
-      <section className="border-cream-line bg-card rounded-2xl border p-5">
+      <section
+        id="plan-picker"
+        className="border-cream-line bg-card scroll-mt-24 rounded-2xl border p-5"
+      >
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base font-semibold tracking-tight">
-            {state.subscription ? 'Change plan' : 'Choose a plan'}
+            {isLapsed
+              ? 'Choose a plan to keep going'
+              : state.subscription
+                ? 'Change plan'
+                : 'Choose a plan'}
           </h2>
           <div className="border-cream-line inline-flex rounded-full border p-0.5 text-xs">
             <button

@@ -20,9 +20,21 @@ interface AIPhotoPanelProps {
   currentImageUrl: string | null
   onApply: (url: string) => void
   onClose: () => void
+  onCreditSpent?: () => void
 }
 
 type Status = 'setup' | 'processing' | 'review'
+type ApiErrorBody = { error?: string; gate?: string }
+
+async function buyCreditPack() {
+  const res = await fetch('/api/billing/credit-pack/checkout', { method: 'POST' })
+  const body = (await res.json().catch(() => ({}))) as { url?: string; error?: string }
+  if (!res.ok || !body.url) {
+    toast.error(body.error ?? 'Could not start checkout')
+    return
+  }
+  window.location.href = body.url
+}
 
 // Inline panel rendered below a dish row. Owns its own lifecycle + fetch; if
 // the user closes it mid-call, the AbortController kills the request and the
@@ -35,6 +47,7 @@ export function AIPhotoPanel({
   currentImageUrl,
   onApply,
   onClose,
+  onCreditSpent,
 }: AIPhotoPanelProps) {
   const [status, setStatus] = useState<Status>('setup')
   const [extraContext, setExtraContext] = useState('')
@@ -96,11 +109,28 @@ export function AIPhotoPanel({
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        toast.error(data.error ?? 'AI request failed')
+        const body = data as ApiErrorBody
+        const message = body.error ?? 'AI request failed'
+        console.error(`[${mode}-image]`, res.status, body)
+        if (body.gate === 'credits') {
+          toast.error(message, {
+            action: {
+              label: 'Buy credits',
+              onClick: () => {
+                buyCreditPack().catch((err) => {
+                  toast.error(err instanceof Error ? err.message : 'Checkout failed')
+                })
+              },
+            },
+          })
+        } else {
+          toast.error(message)
+        }
         setStatus('setup')
         return
       }
       setResultUrl(data.url)
+      onCreditSpent?.()
       setStatus('review')
       // Owner may have scrolled away during the 15–30s wait. Nudge them
       // back with a toast — action scrolls the dish row into view.
@@ -132,7 +162,7 @@ export function AIPhotoPanel({
     abortRef.current?.abort()
   }
 
-  const primaryLabel = mode === 'enhance' ? 'Enhance photo' : 'Generate photo'
+  const primaryLabel = mode === 'enhance' ? 'Enhance photo (1 credit)' : 'Generate photo (1 credit)'
   const primaryIcon = mode === 'enhance' ? Wand2 : Sparkles
 
   return (

@@ -7,6 +7,7 @@ import { getActiveOrganization } from '@/lib/organizations/get-active-org'
 import { makeSlug } from '@/lib/menus/slug'
 import { isSupportedCurrency, DEFAULT_CURRENCY } from '@/lib/menus/currency'
 import { resolvePlan } from '@/lib/plans'
+import { canWriteDashboard } from '@/lib/plans/subscription-access'
 
 export const runtime = 'nodejs'
 
@@ -68,6 +69,10 @@ export async function POST(request: Request) {
 
   if (!membership || !['owner', 'admin'].includes(membership.role)) {
     return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+  }
+  const writeGate = await canWriteDashboard(org.id)
+  if (!writeGate.allowed) {
+    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
   }
 
   const plan = resolvePlan(subscription, orgOverrides)

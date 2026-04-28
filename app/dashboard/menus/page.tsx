@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Plus, QrCode } from 'lucide-react'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import { getMenusForRestaurant } from '@/lib/menus/get'
+import { getSubscriptionAccessState } from '@/lib/plans/subscription-access'
 import { Button } from '@/components/ui/button'
 import { MenuList } from '@/components/dashboard/MenuList'
 
@@ -9,19 +10,30 @@ export default async function MenusPage() {
   // Cached in getDashboardContext — the layout already resolved this, so
   // this call is a same-request cache hit, not a new round-trip.
   const { restaurant } = await getDashboardContext()
-  const menus = await getMenusForRestaurant(restaurant.id)
+  const [menus, subscriptionAccess] = await Promise.all([
+    getMenusForRestaurant(restaurant.id),
+    getSubscriptionAccessState(restaurant.organizationId),
+  ])
   const publicBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const canCreateMenu = !restaurant.readOnly && !subscriptionAccess.isLapsed
 
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">Menus</h1>
-        <Button asChild size="sm">
-          <Link href="/dashboard/menus/new">
+        {canCreateMenu ? (
+          <Button asChild size="sm">
+            <Link href="/dashboard/menus/new">
+              <Plus className="size-4" aria-hidden="true" />
+              <span>New menu</span>
+            </Link>
+          </Button>
+        ) : (
+          <Button size="sm" disabled>
             <Plus className="size-4" aria-hidden="true" />
             <span>New menu</span>
-          </Link>
-        </Button>
+          </Button>
+        )}
       </div>
 
       {menus.length === 0 ? (
@@ -33,12 +45,19 @@ export default async function MenusPage() {
           <p className="text-muted-foreground mt-2 max-w-sm text-sm">
             Create your first menu from a URL, photo, PDF, or pasted text.
           </p>
-          <Button asChild className="mt-5" size="sm">
-            <Link href="/dashboard/menus/new">
+          {canCreateMenu ? (
+            <Button asChild className="mt-5" size="sm">
+              <Link href="/dashboard/menus/new">
+                <Plus className="size-4" aria-hidden="true" />
+                <span>New menu</span>
+              </Link>
+            </Button>
+          ) : (
+            <Button className="mt-5" size="sm" disabled>
               <Plus className="size-4" aria-hidden="true" />
               <span>New menu</span>
-            </Link>
-          </Button>
+            </Button>
+          )}
         </div>
       ) : (
         <MenuList

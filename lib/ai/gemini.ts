@@ -1,7 +1,15 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY!)
 const MODEL = 'gemini-3.1-flash-lite-preview'
+let genAI: GoogleGenerativeAI | null = null
+
+function getGenAI() {
+  if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    throw new Error('Gemini is not configured')
+  }
+  genAI ??= new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY)
+  return genAI
+}
 
 export type DietaryTag = 'V' | 'VG' | 'GF' | 'DF' | 'NF'
 
@@ -16,6 +24,11 @@ export interface ExtractedMenuItem {
 export interface ExtractedMenu {
   restaurantName: string
   items: ExtractedMenuItem[]
+}
+
+export interface ExtractedBrandFallback {
+  name?: string
+  description?: string
 }
 
 export type ExtractInput = { text: string } | { fileBase64: string; mimeType: string }
@@ -55,7 +68,7 @@ function instructionFor(input: ExtractInput): string {
 }
 
 export async function extractMenu(input: ExtractInput): Promise<ExtractedMenu> {
-  const model = genAI.getGenerativeModel({ model: MODEL })
+  const model = getGenAI().getGenerativeModel({ model: MODEL })
 
   const parts: Array<{ text: string } | { inlineData: { data: string; mimeType: string } }> = []
 
@@ -104,5 +117,44 @@ export async function extractMenu(input: ExtractInput): Promise<ExtractedMenu> {
   return {
     restaurantName: String(parsed.restaurantName ?? 'Untitled Menu').trim() || 'Untitled Menu',
     items,
+  }
+}
+
+export async function extractBrandingFallback(markdown: string): Promise<ExtractedBrandFallback> {
+  const source = markdown.trim().slice(0, 12000)
+  if (!source) return {}
+
+  const model = getGenAI().getGenerativeModel({ model: MODEL })
+  const result = await model.generateContent(`You are extracting restaurant branding from webpage text.
+
+Return ONLY a raw JSON object with this exact shape:
+{
+  "name": "short restaurant name, or empty string if unknown",
+  "description": "one sentence tagline/description, or empty string if unknown"
+}
+
+Rules:
+- Use only evidence from the text.
+- Prefer the restaurant's own name over page titles, delivery platform names, or SEO phrases.
+- Keep description under 160 characters.
+- Do not include markdown fences or commentary.
+
+Webpage text:
+
+${source}`)
+  const raw = result.response.text().trim()
+  const cleaned = raw
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/```$/i, '')
+    .trim()
+  const jsonStr = cleaned.startsWith('{') ? cleaned : (cleaned.match(/\{[\s\S]*\}/) ?? [])[0]
+  if (!jsonStr) return {}
+
+  const parsed = JSON.parse(jsonStr) as { name?: unknown; description?: unknown }
+  const name = String(parsed.name ?? '').trim()
+  const description = String(parsed.description ?? '').trim()
+  return {
+    name: name || undefined,
+    description: description || undefined,
   }
 }

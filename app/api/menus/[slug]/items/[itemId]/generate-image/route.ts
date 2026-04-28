@@ -9,6 +9,7 @@ import { hasCredits } from '@/lib/plans/gates'
 import { spendCredits, InsufficientCreditsError } from '@/lib/plans/credits'
 import { CREDIT_COSTS } from '@/lib/plans/costs'
 import { requireMenuAccess } from '@/lib/menus/get'
+import { canWriteRestaurant } from '@/lib/plans/subscription-access'
 
 export const runtime = 'nodejs'
 // Gemini image generation runs ~15–30s; give it headroom.
@@ -52,6 +53,11 @@ export async function POST(request: Request, { params }: RouteContext) {
   } catch (err) {
     const status = (err as { status?: number }).status ?? 500
     return NextResponse.json({ error: 'Not allowed' }, { status })
+  }
+
+  const writeGate = await canWriteRestaurant(access.organizationId, access.restaurantId)
+  if (!writeGate.allowed) {
+    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
   }
 
   const item = await prisma.menuItem.findFirst({

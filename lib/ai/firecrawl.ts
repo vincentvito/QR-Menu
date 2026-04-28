@@ -1,3 +1,5 @@
+import { extractBrandingFallback } from '@/lib/ai/gemini'
+
 // Scrape a URL to markdown via Firecrawl's main-content extractor.
 // Returns trimmed markdown; throws if the page is empty or the API errors.
 export async function scrapeUrl(url: string): Promise<string> {
@@ -44,6 +46,7 @@ interface FirecrawlBrandingResponse {
     ogTitle?: string
     ogDescription?: string
   }
+  markdown?: string
 }
 
 const HEX_RE = /^#[0-9A-Fa-f]{6}$/
@@ -64,7 +67,7 @@ export async function scrapeBranding(url: string): Promise<ExtractedBranding> {
       Authorization: `Bearer ${process.env.FIRECRAWL_API_KEY}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ url, formats: ['branding'], onlyMainContent: false }),
+    body: JSON.stringify({ url, formats: ['branding', 'markdown'], onlyMainContent: false }),
   })
 
   if (!res.ok) {
@@ -88,9 +91,22 @@ export async function scrapeBranding(url: string): Promise<ExtractedBranding> {
     colors.link,
   )
 
+  let name = meta?.ogTitle || meta?.title || undefined
+  let description = meta?.ogDescription || meta?.description || undefined
+
+  if ((!name || !description) && data?.markdown) {
+    try {
+      const fallback = await extractBrandingFallback(data.markdown)
+      name ||= fallback.name
+      description ||= fallback.description
+    } catch (err) {
+      console.warn('[scrapeBranding] Gemini fallback failed:', err)
+    }
+  }
+
   return {
-    name: meta?.ogTitle || meta?.title || undefined,
-    description: meta?.ogDescription || meta?.description || undefined,
+    name,
+    description,
     logo: branding?.images?.logo || branding?.images?.ogImage || undefined,
     primaryColor,
     secondaryColor,

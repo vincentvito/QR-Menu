@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { getActiveOrganization } from '@/lib/organizations/get-active-org'
+import { canWriteDashboard } from '@/lib/plans/subscription-access'
 
 export const runtime = 'nodejs'
 
@@ -30,6 +31,10 @@ export async function POST(request: Request) {
   })
   if (!membership || !['owner', 'admin'].includes(membership.role)) {
     return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+  }
+  const writeGate = await canWriteDashboard(org.id)
+  if (!writeGate.allowed) {
+    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
   }
 
   let body: { email?: unknown; role?: unknown }

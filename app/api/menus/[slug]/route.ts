@@ -3,6 +3,7 @@ import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { requireMenuAccess } from '@/lib/menus/get'
+import { canWriteRestaurant } from '@/lib/plans/subscription-access'
 
 export const runtime = 'nodejs'
 
@@ -43,6 +44,13 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
   try {
     const access = await requireMenuAccess(slug, session.user.id)
+    const writeGate = await canWriteRestaurant(access.organizationId, access.restaurantId)
+    if (!writeGate.allowed) {
+      return NextResponse.json(
+        { error: writeGate.reason, gate: writeGate.gate },
+        { status: 402 },
+      )
+    }
     const menu = await prisma.menu.update({
       where: { id: access.id },
       data: updates,

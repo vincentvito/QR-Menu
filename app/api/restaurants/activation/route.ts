@@ -5,6 +5,10 @@ import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { getActiveOrganization } from '@/lib/organizations/get-active-org'
 import { resolvePlan } from '@/lib/plans'
+import {
+  ACTIVE_SUBSCRIPTION_STATUSES,
+  canWriteDashboard,
+} from '@/lib/plans/subscription-access'
 
 export const runtime = 'nodejs'
 
@@ -34,6 +38,10 @@ export async function POST(request: Request) {
   if (!member || !['owner', 'admin'].includes(member.role)) {
     return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
   }
+  const writeGate = await canWriteDashboard(org.id)
+  if (!writeGate.allowed) {
+    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
+  }
 
   let body: { activeIds?: unknown }
   try {
@@ -52,7 +60,7 @@ export async function POST(request: Request) {
     prisma.subscription.findFirst({
       where: {
         referenceId: org.id,
-        status: { in: ['trialing', 'active', 'past_due'] },
+        status: { in: [...ACTIVE_SUBSCRIPTION_STATUSES] },
       },
       orderBy: { createdAt: 'desc' },
       select: { plan: true },

@@ -881,7 +881,7 @@ function Pricing({ t, ctaHref }: { t: T; ctaHref: string }) {
 // FAQ
 // ─────────────────────────────────────────────────────────────────────────
 function Faq({ t }: { t: T }) {
-  const items = ['savvy', 'price', 'wifi', 'scans', 'domain'] as const
+  const items = ['savvy', 'price', 'wifi', 'scans', 'expired', 'domain'] as const
 
   return (
     <section id="resources" className={`bg-card ${SECTION_Y}`}>

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
+import { canWriteDashboard } from '@/lib/plans/subscription-access'
 
 export const runtime = 'nodejs'
 
@@ -35,6 +36,10 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
   })
   if (!member || !['owner', 'admin'].includes(member.role)) {
     return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+  }
+  const writeGate = await canWriteDashboard(invitation.restaurant.organizationId)
+  if (!writeGate.allowed) {
+    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
   }
 
   if (invitation.status === 'pending') {

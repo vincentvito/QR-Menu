@@ -1,10 +1,12 @@
 'use client'
 
+import Link from 'next/link'
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useTranslations } from 'next-intl'
 import {
   Check,
+  CreditCard,
   LayoutGrid,
   Loader2,
   Plus,
@@ -15,6 +17,7 @@ import {
   Trash2,
   Wand2,
   X,
+  Zap,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -55,6 +58,8 @@ interface MenuEditorProps {
   initial: {
     name: string
     currency: string
+    aiCreditsTotal: number
+    readOnlyReason: string | null
     items: EditorItem[]
   }
 }
@@ -70,6 +75,9 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
   const t = useTranslations('Editor')
   const [menuName, setMenuName] = useState(initial.name)
   const [items, setItems] = useState<EditorItem[]>(initial.items)
+  const [aiCreditsTotal, setAiCreditsTotal] = useState(initial.aiCreditsTotal)
+  const [isBuyingCredits, setIsBuyingCredits] = useState(false)
+  const isReadOnly = Boolean(initial.readOnlyReason)
   // Currency comes from the organization and is fixed at the menu level.
   // The symbol drives price rendering; if we ever add per-menu overrides,
   // this becomes state again.
@@ -141,6 +149,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
   }, [items, selectedCategory, query])
 
   const hasQuery = query.trim().length > 0
+  const hasAICredits = aiCreditsTotal > 0
 
   useEffect(() => {
     const timers = savedTimers.current
@@ -308,6 +317,10 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
     [slug, setSaveFor, handleErrorFor, t],
   )
 
+  const handleCreditSpent = useCallback(() => {
+    setAiCreditsTotal((cur) => Math.max(0, cur - 1))
+  }, [])
+
   const liveMessage = useMemo(() => {
     const values = Object.values(saves)
     const err = values.find((v) => v.state === 'error')
@@ -317,10 +330,94 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
     return ''
   }, [saves, t])
 
+  const buyCreditPack = useCallback(async () => {
+    setIsBuyingCredits(true)
+    try {
+      const res = await fetch('/api/billing/credit-pack/checkout', { method: 'POST' })
+      const body = (await res.json().catch(() => ({}))) as { url?: string; error?: string }
+      if (!res.ok || !body.url) {
+        toast.error(body.error ?? 'Could not start checkout')
+        return
+      }
+      window.location.href = body.url
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Checkout failed')
+    } finally {
+      setIsBuyingCredits(false)
+    }
+  }, [])
+
   return (
     <div>
       <div className="sr-only" aria-live="polite">
         {liveMessage}
+      </div>
+
+      <div className="mb-5 space-y-3">
+        {initial.readOnlyReason ? (
+          <section className="rounded-[18px] border border-red-200 bg-red-50 p-4 text-red-950">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm font-semibold tracking-tight">Editing paused</h2>
+                <p className="mt-1 text-sm">{initial.readOnlyReason}</p>
+              </div>
+              <Button asChild size="sm" className="shrink-0">
+                <Link href="/dashboard/billing">Pick a plan</Link>
+              </Button>
+            </div>
+          </section>
+        ) : null}
+
+        {!isReadOnly && !hasAICredits ? (
+          <section className="border-accent bg-accent/10 rounded-[18px] border p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <Zap className="text-accent-deep size-4" aria-hidden="true" />
+                  <h2 className="text-sm font-semibold tracking-tight">
+                    You're out of AI credits
+                  </h2>
+                </div>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Top up to keep generating and enhancing dish photos, or switch plans from
+                  Billing.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={buyCreditPack}
+                  disabled={isBuyingCredits}
+                >
+                  {isBuyingCredits ? (
+                    <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <CreditCard className="size-3.5" aria-hidden="true" />
+                  )}
+                  Buy 100 credits ($15)
+                </Button>
+                <Button asChild type="button" size="sm" variant="outline">
+                  <Link href="/dashboard/billing">Upgrade plan</Link>
+                </Button>
+              </div>
+            </div>
+          </section>
+        ) : null}
+
+        <section className="border-cream-line bg-card rounded-[18px] border p-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="min-w-0 flex-1">
+              <h2 className="text-sm font-semibold tracking-tight">Want to style this menu?</h2>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Customize colors, templates, logo, QR style, WiFi, and header images in Settings.
+              </p>
+            </div>
+            <Button asChild type="button" size="sm" variant="outline">
+              <Link href="/dashboard/settings">Open Settings</Link>
+            </Button>
+          </div>
+        </section>
       </div>
 
       <div className="lg:flex lg:gap-10">
@@ -334,11 +431,13 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
               save={saves[MENU_KEY]}
               onNameChange={setMenuName}
               onNameBlur={() => {
+                if (isReadOnly) return
                 const trimmed = menuName.trim()
                 if (trimmed && trimmed !== initial.name) {
                   saveMenu({ name: trimmed })
                 }
               }}
+              readOnly={isReadOnly}
             />
 
             {/* Desktop: vertical category rail. No ScrollArea — lets the rail
@@ -406,32 +505,38 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
               item card being edited, not here, so the search bar doesn't resize
               when an autosave fires. */}
           <div className="bg-background/90 sticky top-[65px] z-10 mb-6 py-3 backdrop-blur-md lg:top-[77px]">
-            <div className="relative">
-              <Search
-                className="text-muted-foreground absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2"
-                aria-hidden="true"
-              />
-              <input
-                type="search"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t('searchPlaceholder')}
-                className="border-cream-line bg-card focus:border-foreground/40 focus:bg-background h-11 w-full rounded-full border pr-10 pl-10 text-sm transition-colors outline-none"
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck={false}
-                aria-label={t('searchPlaceholder')}
-              />
-              {query && (
-                <button
-                  type="button"
-                  aria-label={t('searchClear')}
-                  onClick={() => setQuery('')}
-                  className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full"
-                >
-                  <X className="h-4 w-4" aria-hidden="true" />
-                </button>
-              )}
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="relative min-w-0 flex-1">
+                <Search
+                  className="text-muted-foreground absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2"
+                  aria-hidden="true"
+                />
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={t('searchPlaceholder')}
+                  className="border-cream-line bg-card focus:border-foreground/40 focus:bg-background h-11 w-full rounded-full border pr-10 pl-10 text-sm transition-colors outline-none"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  aria-label={t('searchPlaceholder')}
+                />
+                {query && (
+                  <button
+                    type="button"
+                    aria-label={t('searchClear')}
+                    onClick={() => setQuery('')}
+                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full"
+                  >
+                    <X className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                )}
+              </div>
+              <div className="border-cream-line bg-card text-muted-foreground inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border px-3 text-xs font-semibold tabular-nums">
+                <Zap className="size-3.5" aria-hidden="true" />
+                {aiCreditsTotal} AI credit{aiCreditsTotal === 1 ? '' : 's'}
+              </div>
             </div>
           </div>
 
@@ -463,6 +568,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
                         size="sm"
                         variant={isAdding ? 'ghost' : 'outline'}
                         onClick={() => setAddingToCategory(isAdding ? null : cat)}
+                        disabled={isReadOnly}
                       >
                         {isAdding ? (
                           <>
@@ -502,6 +608,8 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
                           enabledBadges={enabledBadgeKeys}
                           onChange={saveItem}
                           onDelete={deleteItem}
+                          onCreditSpent={handleCreditSpent}
+                          readOnly={isReadOnly}
                         />
                       ))}
                     </ul>
@@ -522,12 +630,14 @@ function MenuSettingsCard({
   save,
   onNameChange,
   onNameBlur,
+  readOnly,
 }: {
   menuName: string
   initialName: string
   save: SaveStatus | undefined
   onNameChange: (v: string) => void
   onNameBlur: () => void
+  readOnly: boolean
 }) {
   const t = useTranslations('Editor')
   return (
@@ -545,6 +655,7 @@ function MenuSettingsCard({
           onChange={(e) => onNameChange(e.target.value)}
           onBlur={onNameBlur}
           data-initial={initialName}
+          disabled={readOnly}
           className="focus:border-foreground/30 focus:bg-background w-full rounded-md border border-transparent bg-transparent px-2 py-1.5 text-lg font-semibold tracking-[-0.01em] outline-none"
         />
       </label>
@@ -749,6 +860,8 @@ const ItemRow = memo(function ItemRow({
   enabledBadges,
   onChange,
   onDelete,
+  onCreditSpent,
+  readOnly,
 }: {
   slug: string
   item: EditorItem
@@ -768,6 +881,8 @@ const ItemRow = memo(function ItemRow({
     },
   ) => void
   onDelete: (id: string) => void
+  onCreditSpent: () => void
+  readOnly: boolean
 }) {
   const t = useTranslations('Editor')
   const [localName, setLocalName] = useState(item.name)
@@ -796,6 +911,7 @@ const ItemRow = memo(function ItemRow({
               type="button"
               aria-label={t('cancelDelete')}
               onClick={() => setConfirming(false)}
+              disabled={readOnly}
               className="text-muted-foreground hover:text-foreground grid size-7 place-items-center rounded-full transition-colors"
             >
               <X className="size-3.5" aria-hidden="true" />
@@ -806,6 +922,7 @@ const ItemRow = memo(function ItemRow({
                 setConfirming(false)
                 onDelete(item.id)
               }}
+              disabled={readOnly}
               className="bg-destructive hover:bg-destructive/90 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white transition-colors"
             >
               <Trash2 className="size-3" aria-hidden="true" />
@@ -817,6 +934,7 @@ const ItemRow = memo(function ItemRow({
             type="button"
             aria-label={t('deleteDish')}
             onClick={() => setConfirming(true)}
+            disabled={readOnly}
             className="text-muted-foreground hover:text-destructive grid size-7 place-items-center rounded-full transition-colors"
           >
             <Trash2 className="size-3.5" aria-hidden="true" />
@@ -829,6 +947,7 @@ const ItemRow = memo(function ItemRow({
             itemId={item.id}
             value={item.imageUrl}
             onChange={(url) => onChange(item.id, { imageUrl: url })}
+            disabled={readOnly}
           />
           {item.imageUrl ? (
             <div className="flex flex-col gap-1">
@@ -836,11 +955,13 @@ const ItemRow = memo(function ItemRow({
                 icon={Wand2}
                 label="Enhance"
                 onClick={() => setAIMode('enhance')}
+                disabled={readOnly}
               />
               <PhotoActionButton
                 icon={RefreshCw}
                 label="Regen"
                 onClick={() => setAIMode('generate')}
+                disabled={readOnly}
               />
             </div>
           ) : (
@@ -848,6 +969,7 @@ const ItemRow = memo(function ItemRow({
               icon={Sparkles}
               label="Generate"
               onClick={() => setAIMode('generate')}
+              disabled={readOnly}
             />
           )}
         </div>
@@ -859,6 +981,7 @@ const ItemRow = memo(function ItemRow({
               value={localName}
               onChange={(e) => setLocalName(e.target.value)}
               onBlur={() => {
+                if (readOnly) return
                 const trimmed = localName.trim()
                 if (!trimmed) {
                   setLocalName(item.name)
@@ -866,6 +989,7 @@ const ItemRow = memo(function ItemRow({
                 }
                 if (trimmed !== item.name) onChange(item.id, { name: trimmed })
               }}
+              disabled={readOnly}
               className="focus:border-foreground/30 focus:bg-card flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-[17px] font-semibold tracking-[-0.01em] outline-none"
             />
             <div className="bg-pop text-pop-foreground flex shrink-0 items-center rounded-full pr-1 pl-3 text-[13px] font-semibold">
@@ -877,6 +1001,7 @@ const ItemRow = memo(function ItemRow({
                 value={localPrice}
                 onChange={(e) => setLocalPrice(e.target.value)}
                 onBlur={() => {
+                  if (readOnly) return
                   const parsed = parsePriceInput(localPrice)
                   if (parsed === null) {
                     setLocalPrice(formatPriceInput(item.price))
@@ -887,6 +1012,7 @@ const ItemRow = memo(function ItemRow({
                     setLocalPrice(formatPriceInput(parsed))
                   }
                 }}
+                disabled={readOnly}
                 className="placeholder:text-pop-foreground/70 focus:bg-background/15 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none"
               />
             </div>
@@ -896,8 +1022,10 @@ const ItemRow = memo(function ItemRow({
             value={localDesc}
             onChange={(e) => setLocalDesc(e.target.value)}
             onBlur={() => {
+              if (readOnly) return
               if (localDesc !== item.description) onChange(item.id, { description: localDesc })
             }}
+            disabled={readOnly}
             placeholder={t('itemDescription')}
             // Override shadcn defaults to look inline (transparent, no border
             // at rest) while keeping field-sizing-content auto-growth.
@@ -920,6 +1048,7 @@ const ItemRow = memo(function ItemRow({
               <SpecialToggle
                 specialUntil={item.specialUntil}
                 onChange={(next) => onChange(item.id, { specialUntil: next })}
+                disabled={readOnly}
               />
               {enabledBadges.map((key) => {
                 const def = BADGES[key]
@@ -937,6 +1066,7 @@ const ItemRow = memo(function ItemRow({
                         : [...item.badges, key]
                       onChange(item.id, { badges: next })
                     }}
+                    disabled={readOnly}
                     className={cn(
                       'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors',
                       selected
@@ -973,6 +1103,7 @@ const ItemRow = memo(function ItemRow({
             currentImageUrl={item.imageUrl}
             onApply={(url) => onChange(item.id, { imageUrl: url })}
             onClose={() => setAIMode(null)}
+            onCreditSpent={onCreditSpent}
           />
         </div>
       ) : null}
@@ -984,16 +1115,19 @@ function PhotoActionButton({
   icon: Icon,
   label,
   onClick,
+  disabled = false,
 }: {
   icon: React.ComponentType<{ className?: string; 'aria-hidden'?: boolean }>
   label: string
   onClick: () => void
+  disabled?: boolean
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="border-cream-line bg-card text-muted-foreground hover:border-foreground/30 hover:text-foreground inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1 text-[10px] font-semibold transition-colors"
+      disabled={disabled}
+      className="border-cream-line bg-card text-muted-foreground hover:border-foreground/30 hover:text-foreground inline-flex items-center justify-center gap-1 rounded-md border px-2 py-1 text-[10px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50"
     >
       <Icon className="size-3" aria-hidden={true} />
       {label}
@@ -1013,9 +1147,11 @@ function endOfTodayIso(): string {
 function SpecialToggle({
   specialUntil,
   onChange,
+  disabled = false,
 }: {
   specialUntil: string | null
   onChange: (next: string | null) => void
+  disabled?: boolean
 }) {
   const active = specialUntil ? new Date(specialUntil).getTime() > Date.now() : false
   return (
@@ -1024,8 +1160,9 @@ function SpecialToggle({
       role="switch"
       aria-checked={active}
       onClick={() => onChange(active ? null : endOfTodayIso())}
+      disabled={disabled}
       className={cn(
-        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors',
+        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50',
         active
           ? 'border-pop bg-pop text-pop-foreground'
           : 'border-cream-line bg-card text-muted-foreground hover:border-foreground/30',

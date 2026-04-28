@@ -6,6 +6,36 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.23.5',
+    date: '2026-04-28',
+    title: 'Launch polish for onboarding, AI credits, and billing',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Onboarding now asks for your name before the restaurant website, then uses the site to pre-fill restaurant details when possible',
+          'The menu editor now shows your AI credit balance, an out-of-credits top-up prompt, and a direct link to styling settings',
+          'Dashboard now shows a clear subscription-ended banner when a trial or paid plan expires, with a direct path back to Billing',
+          'Read-only menu editor banners now include a Pick a plan button so expired accounts can restart billing from the blocked editing screen',
+          'FAQ now explains what happens when a subscription expires: public menus stay live while dashboard editing pauses',
+        ],
+      },
+      {
+        type: 'changed' as const,
+        items: [
+          'Expired or canceled subscriptions now become dashboard read-only: public menus keep serving guests, but editing, new menus, uploads, staff changes, and AI actions pause until a plan is selected',
+        ],
+      },
+      {
+        type: 'fixed' as const,
+        items: [
+          'AI photo generation and enhancement now surface the real error message from the server, with a Buy credits action when credits run out',
+          'Billing now separates total AI credits from monthly and bonus buckets instead of showing bonus credits as part of a misleading monthly fraction',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.23.4',
     date: '2026-04-28',
     title: 'Monthly credits now grant on first paid subscription',

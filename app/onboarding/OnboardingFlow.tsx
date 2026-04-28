@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { ArrowLeft, Loader2, Sparkles } from 'lucide-react'
+import { ArrowLeft, Loader2, Sparkles, UserRound } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -44,7 +44,10 @@ interface OnboardingFlowProps {
 
 export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
   const router = useRouter()
-  const [step, setStep] = useState<'url' | 'details'>('url')
+  const hasInitialUserName = initialUserName.trim().length > 0
+  const [step, setStep] = useState<'name' | 'url' | 'details'>(
+    hasInitialUserName ? 'url' : 'name',
+  )
   const [url, setUrl] = useState('')
   const [userName, setUserName] = useState(initialUserName)
   const [draft, setDraft] = useState<BrandDraft>(EMPTY_DRAFT)
@@ -88,6 +91,15 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
     setStep('details')
   }
 
+  function continueFromName(e: React.FormEvent) {
+    e.preventDefault()
+    if (!userName.trim()) {
+      toast.error('Please enter your name')
+      return
+    }
+    setStep('url')
+  }
+
   async function createOrganization(e: React.FormEvent) {
     e.preventDefault()
     if (!draft.name.trim()) {
@@ -115,12 +127,50 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
     }
   }
 
+  if (step === 'name') {
+    return (
+      <form
+        onSubmit={continueFromName}
+        className="border-cream-line bg-card space-y-5 rounded-2xl border p-8"
+      >
+        <div className="space-y-2">
+          <Label htmlFor="user-name">Your name</Label>
+          <Input
+            id="user-name"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            maxLength={120}
+            placeholder="How your teammates will see you"
+            autoComplete="name"
+            autoFocus
+          />
+        </div>
+
+        <Button type="submit" className="w-full" size="lg" disabled={!userName.trim()}>
+          <UserRound className="size-4" aria-hidden="true" />
+          <span>Continue</span>
+        </Button>
+      </form>
+    )
+  }
+
   if (step === 'url') {
     return (
       <form
         onSubmit={extractFromUrl}
         className="border-cream-line bg-card space-y-5 rounded-2xl border p-8"
       >
+        {!hasInitialUserName ? (
+          <button
+            type="button"
+            onClick={() => setStep('name')}
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs transition-colors"
+          >
+            <ArrowLeft className="size-3" aria-hidden="true" />
+            Back
+          </button>
+        ) : null}
+
         <div className="space-y-2">
           <Label htmlFor="onboarding-url">Restaurant website</Label>
           <Input

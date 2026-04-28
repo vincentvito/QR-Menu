@@ -1,5 +1,10 @@
 import prisma from '@/lib/prisma'
 import { resolvePlan } from '@/lib/plans'
+import {
+  ACTIVE_SUBSCRIPTION_STATUSES,
+  SUBSCRIPTION_LAPSED_MESSAGE,
+  canWriteDashboard,
+} from '@/lib/plans/subscription-access'
 
 export interface GateResult {
   allowed: boolean
@@ -12,12 +17,10 @@ export interface GateResult {
 // past_due both still have access; canceled/incomplete do not. The plugin
 // creates new subscription rows on resubscribe so we pick the most recent
 // active-ish one rather than rely on uniqueness.
-const ACTIVE_STATUSES = ['trialing', 'active', 'past_due']
-
 async function loadPlanContext(organizationId: string) {
   const [subscription, org] = await Promise.all([
     prisma.subscription.findFirst({
-      where: { referenceId: organizationId, status: { in: ACTIVE_STATUSES } },
+      where: { referenceId: organizationId, status: { in: [...ACTIVE_SUBSCRIPTION_STATUSES] } },
       orderBy: { createdAt: 'desc' },
     }),
     prisma.organization.findUnique({
@@ -29,10 +32,19 @@ async function loadPlanContext(organizationId: string) {
 }
 
 export async function canCreateRestaurant(organizationId: string): Promise<GateResult> {
-  const [{ plan }, currentCount] = await Promise.all([
+  const [writeGate, { plan }, currentCount] = await Promise.all([
+    canWriteDashboard(organizationId),
     loadPlanContext(organizationId),
     prisma.restaurant.count({ where: { organizationId } }),
   ])
+  if (!writeGate.allowed) {
+    return {
+      allowed: false,
+      reason: writeGate.reason ?? SUBSCRIPTION_LAPSED_MESSAGE,
+      currentCount,
+      limit: 0,
+    }
+  }
   const limit = plan.maxRestaurants
   const allowed = limit === null || currentCount < limit
   return {
@@ -66,7 +78,18 @@ export async function canCreateMenu(restaurantId: string): Promise<GateResult> {
       limit: 0,
     }
   }
-  const { plan } = await loadPlanContext(restaurant.organizationId)
+  const [writeGate, { plan }] = await Promise.all([
+    canWriteDashboard(restaurant.organizationId),
+    loadPlanContext(restaurant.organizationId),
+  ])
+  if (!writeGate.allowed) {
+    return {
+      allowed: false,
+      reason: writeGate.reason ?? SUBSCRIPTION_LAPSED_MESSAGE,
+      currentCount: restaurant._count.menus,
+      limit: 0,
+    }
+  }
   const limit = plan.maxMenusPerRestaurant
   const currentCount = restaurant._count.menus
   const allowed = currentCount < limit

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import prisma from '@/lib/prisma'
 import { getDashboardContext } from '@/lib/dashboard/context'
+import { getSubscriptionAccessState } from '@/lib/plans/subscription-access'
 import { templatePreviewMockupUrl } from '@/lib/menus/template-assets'
 import { currencySymbol } from '@/lib/menus/currency'
 import type { TemplateItem } from '@/components/menu/templates/types'
@@ -12,7 +13,8 @@ export default async function SettingsPage() {
   // Restaurant-scoped staff (manager/waiter) don't touch account-level
   // settings — bounce them back to the menus they can actually work on.
   if (scope === 'restaurant') redirect('/dashboard/menus')
-  const canEdit = ['owner', 'admin'].includes(role)
+  const subscriptionAccess = await getSubscriptionAccessState(restaurant.organizationId)
+  const canEdit = ['owner', 'admin'].includes(role) && !subscriptionAccess.isLapsed
 
   // Grab the most recent menu for this restaurant — used both for the QR
   // preview (needs a real slug) and the template preview (needs the items +

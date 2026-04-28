@@ -5,6 +5,7 @@ import prisma from '@/lib/prisma'
 import { requireMenuAccess } from '@/lib/menus/get'
 import { isBadgeKey } from '@/lib/menus/badges'
 import { deleteByUrl } from '@/lib/storage/r2'
+import { canWriteRestaurant } from '@/lib/plans/subscription-access'
 
 export const runtime = 'nodejs'
 
@@ -21,7 +22,12 @@ async function ensureOwnership(slug: string, itemId: string, userId: string) {
   if (!item || item.menuId !== access.id) {
     throw Object.assign(new Error('Item not found'), { status: 404 })
   }
-  return { menuId: access.id, itemId: item.id }
+  return {
+    menuId: access.id,
+    itemId: item.id,
+    organizationId: access.organizationId,
+    restaurantId: access.restaurantId,
+  }
 }
 
 export async function PATCH(request: Request, { params }: RouteContext) {
@@ -124,7 +130,14 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   }
 
   try {
-    await ensureOwnership(slug, itemId, session.user.id)
+    const ownership = await ensureOwnership(slug, itemId, session.user.id)
+    const writeGate = await canWriteRestaurant(ownership.organizationId, ownership.restaurantId)
+    if (!writeGate.allowed) {
+      return NextResponse.json(
+        { error: writeGate.reason, gate: writeGate.gate },
+        { status: 402 },
+      )
+    }
 
     // If imageUrl is changing, look up the previous value so we can clean
     // up its R2 object after the DB update succeeds.
@@ -169,7 +182,14 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
   const { slug, itemId } = await params
 
   try {
-    await ensureOwnership(slug, itemId, session.user.id)
+    const ownership = await ensureOwnership(slug, itemId, session.user.id)
+    const writeGate = await canWriteRestaurant(ownership.organizationId, ownership.restaurantId)
+    if (!writeGate.allowed) {
+      return NextResponse.json(
+        { error: writeGate.reason, gate: writeGate.gate },
+        { status: 402 },
+      )
+    }
     // Look up the image before deleting so we can clean up R2 afterwards.
     const existing = await prisma.menuItem.findUnique({
       where: { id: itemId },

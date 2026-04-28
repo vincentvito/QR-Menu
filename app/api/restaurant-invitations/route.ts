@@ -7,6 +7,7 @@ import { getActiveOrganization } from '@/lib/organizations/get-active-org'
 import { getActiveRestaurant } from '@/lib/restaurants/get-active-restaurant'
 import { sendEmail } from '@/lib/email'
 import { restaurantInviteEmailTemplate } from '@/lib/email-templates'
+import { canWriteDashboard } from '@/lib/plans/subscription-access'
 
 export const runtime = 'nodejs'
 
@@ -45,6 +46,10 @@ export async function POST(request: Request) {
 
   if (!(await requireOrgAdmin(org.id, session.user.id))) {
     return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+  }
+  const writeGate = await canWriteDashboard(org.id)
+  if (!writeGate.allowed) {
+    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
   }
 
   const activeRestaurantId = (session.session as { activeRestaurantId?: string | null })

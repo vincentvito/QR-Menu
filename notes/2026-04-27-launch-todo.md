@@ -34,6 +34,8 @@ App is live on `https://qtable.ai`.
 
 ## Phase 4 — Stripe end-to-end test (~45min)
 
+Code support for trial start, credit grants, credit packs, cancellation read-only mode, and re-subscribe recovery is implemented. Keep this phase open until the full flow is re-tested after the latest read-only changes.
+
 - [ ] Trial signup → card capture → 5 free credits granted
 - [ ] Upgrade plan (monthly + yearly toggle)
 - [ ] Buy credit pack ($15 / 100 credits) → credits land
@@ -54,4 +56,4 @@ App is live on `https://qtable.ai`.
 
 ---
 
-**Status (2026-04-28):** 1 ✅, 2 ✅, 3 mostly done (Stripe live keys remaining). Remaining work: Stripe live + E2E test (3 + 4), landing demo QR + legal pages (5), SEO (6).
+**Status (2026-04-28):** 1 ✅, 2 ✅, 3 mostly done (Stripe live keys remaining). Stripe polish code is in; remaining work is Stripe live setup + final E2E retest (3 + 4), landing demo QR + legal pages (5), SEO/analytics kickoff (6).

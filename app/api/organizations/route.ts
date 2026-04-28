@@ -12,6 +12,7 @@ import { isTemplateId } from '@/components/menu/templates'
 import { isThemeId } from '@/lib/menus/themes'
 import { isSeasonalOverlayId } from '@/lib/menus/seasonal-overlays'
 import { deleteByUrl } from '@/lib/storage/r2'
+import { canWriteDashboard } from '@/lib/plans/subscription-access'
 
 export const runtime = 'nodejs'
 
@@ -80,6 +81,10 @@ export async function PATCH(request: Request) {
   })
   if (!membership || !['owner', 'admin'].includes(membership.role)) {
     return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+  }
+  const writeGate = await canWriteDashboard(org.id)
+  if (!writeGate.allowed) {
+    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
   }
 
   let body: Record<string, unknown>
@@ -326,6 +331,16 @@ export async function PATCH(request: Request) {
   const activeRestaurantId = (session.session as { activeRestaurantId?: string | null })
     .activeRestaurantId
   const activeRestaurant = await getActiveRestaurant(org.id, activeRestaurantId, session.user.id)
+  if (activeRestaurant?.readOnly) {
+    return NextResponse.json(
+      {
+        error:
+          'This restaurant is read-only under your current plan. Activate it from Billing or upgrade your plan.',
+        gate: 'restaurant-read-only',
+      },
+      { status: 402 },
+    )
+  }
 
   let previousHeaderImage: string | null = null
   if ('headerImage' in restaurantUpdates && activeRestaurant) {

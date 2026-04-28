@@ -5,6 +5,7 @@ import { ArrowLeft, ExternalLink } from 'lucide-react'
 import prisma from '@/lib/prisma'
 import { getMenuBySlug } from '@/lib/menus/get'
 import { getDashboardContext } from '@/lib/dashboard/context'
+import { getBillingState } from '@/lib/plans/billing-state'
 import { Button } from '@/components/ui/button'
 import { MenuEditor } from '@/components/editor/MenuEditor'
 
@@ -27,7 +28,7 @@ export default async function EditMenuPage({ params }: PageProps) {
   // Don't leak existence of menus the user can't access. Access is granted
   // via org Member *or* RestaurantMember of this menu's restaurant — the
   // latter is how restaurant-scoped staff get in.
-  const [orgMember, restaurantMember] = await Promise.all([
+  const [orgMember, restaurantMember, billingState] = await Promise.all([
     prisma.member.findFirst({
       where: { organizationId: menu.organizationId, userId: session.user.id },
       select: { id: true },
@@ -38,6 +39,7 @@ export default async function EditMenuPage({ params }: PageProps) {
           select: { id: true },
         })
       : Promise.resolve(null),
+    getBillingState(menu.organizationId),
   ])
   if (!orgMember && !restaurantMember) notFound()
 
@@ -70,6 +72,12 @@ export default async function EditMenuPage({ params }: PageProps) {
         initial={{
           name: menu.name,
           currency: menu.restaurant?.currency ?? 'USD',
+          aiCreditsTotal: billingState.credits.total,
+          readOnlyReason: billingState.subscriptionAccess.isLapsed
+            ? 'Your subscription has ended. Public menus stay live, but editing is paused until you pick a plan.'
+            : menu.restaurant?.readOnly
+              ? 'This restaurant is read-only under your current plan.'
+              : null,
           items: menu.items.map((i) => ({
             id: i.id,
             category: i.category,

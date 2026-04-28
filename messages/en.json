@@ -344,6 +344,10 @@
           "q": "Do you charge per scan?",
           "a": "Never. Every plan — including the free one — comes with unlimited scans."
         },
+        "expired": {
+          "q": "What happens if my subscription expires?",
+          "a": "Your public menus stay live, so guests scanning existing QR codes can still view them. Dashboard editing, new menus, uploads, and AI photo tools pause until you pick a plan again."
+        },
         "domain": {
           "q": "Can I use my own domain?",
           "a": "Yes, on the Restaurant plan and above. Point your domain to us and we handle the rest, including the secure certificate."
