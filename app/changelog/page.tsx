@@ -6,6 +6,58 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.23.4',
+    date: '2026-04-28',
+    title: 'Monthly credits now grant on first paid subscription',
+    changes: [
+      {
+        type: 'fixed' as const,
+        items: [
+          'Subscribing directly to a paid plan (without going through a trial) now grants your plan&apos;s monthly AI credits immediately. Previously these were only granted on renewal, leaving returning customers and post-cancellation re-subscribers with zero credits until the next billing cycle',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.23.3',
+    date: '2026-04-28',
+    title: 'Onboarding now offers your free trial',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'After setting up your restaurant you land on a Start your free trial step — pick Basic, Pro, or Business, capture a card through Stripe Checkout, and your 14 days plus 5 AI credits start instantly. Skip if you want to look around first; the trial is always available from Billing',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.23.2',
+    date: '2026-04-28',
+    title: 'Login page polish',
+    changes: [
+      {
+        type: 'changed' as const,
+        items: [
+          'Login now has a more polished restaurant-focused layout with a custom mobile-menu hero image and clearer benefit-led sign-in flow',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.23.1',
+    date: '2026-04-28',
+    title: 'Free menu extraction',
+    changes: [
+      {
+        type: 'changed' as const,
+        items: [
+          'Creating a menu (URL scrape, PDF, text paste, photo) no longer spends an AI credit — extraction is free. Credits are reserved for per-dish image generation and enhancement, where the real cost lives',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.23.0',
     date: '2026-04-24',
     title: 'Analytics, Google review spotlight, multi-restaurant flow',

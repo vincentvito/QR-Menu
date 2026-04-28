@@ -1,231 +1,114 @@
-'use client'
-
-import { useEffect, useRef, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
-import { useTranslations } from 'next-intl'
-import { ArrowLeft, Loader2 } from 'lucide-react'
-import { authClient, useSession } from '@/lib/auth-client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { OtpInput } from '@/components/auth/OtpInput'
+import { redirect } from 'next/navigation'
+import { getCachedSession } from '@/lib/auth'
 import { BrandMark } from '@/components/brand/BrandMark'
+import { Kicker } from '@/components/ui/kicker'
+import { LoginForm } from './LoginForm'
 
-const OTP_LENGTH = 6
+type LoginPageProps = {
+  searchParams?: Promise<{
+    callbackUrl?: string | string[]
+  }>
+}
 
-export default function LoginPage() {
-  const t = useTranslations('Auth')
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const rawCallback = searchParams.get('callbackUrl') || '/dashboard'
-  const callbackUrl =
-    rawCallback.startsWith('/') && !rawCallback.startsWith('//') ? rawCallback : '/dashboard'
-  const { data: session } = useSession()
+const HERO_IMAGE = '/images/auth-mobile-menu-hero.png'
 
-  const [step, setStep] = useState<'email' | 'otp'>('email')
-  const [email, setEmail] = useState('')
-  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(''))
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const inFlightRef = useRef(false)
+function normalizeCallbackUrl(raw: string | string[] | undefined) {
+  const value = Array.isArray(raw) ? raw[0] : raw
+  return value?.startsWith('/') && !value.startsWith('//') ? value : '/dashboard'
+}
 
-  useEffect(() => {
-    if (session) router.push(callbackUrl)
-  }, [session, router, callbackUrl])
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const [session, params] = await Promise.all([getCachedSession(), searchParams])
+  const callbackUrl = normalizeCallbackUrl(params?.callbackUrl)
 
-  async function sendOtp(e?: React.FormEvent) {
-    e?.preventDefault()
-    if (inFlightRef.current) return
-    const normalized = email.trim().toLowerCase()
-    if (!normalized) return
-    inFlightRef.current = true
-    setLoading(true)
-    setError('')
-    try {
-      const res = await authClient.emailOtp.sendVerificationOtp({
-        email: normalized,
-        type: 'sign-in',
-      })
-      if (res.error) {
-        setError(res.error.message ?? t('errors.sendFailed'))
-      } else {
-        setEmail(normalized)
-        setStep('otp')
-      }
-    } catch {
-      setError(t('errors.sendFailed'))
-    } finally {
-      inFlightRef.current = false
-      setLoading(false)
-    }
-  }
-
-  async function verifyOtp(code: string) {
-    if (inFlightRef.current) return
-    inFlightRef.current = true
-    setLoading(true)
-    setError('')
-    try {
-      const res = await authClient.signIn.emailOtp({ email, otp: code })
-      if (res.error) {
-        setError(res.error.message ?? t('errors.invalidCode'))
-        setOtp(Array(OTP_LENGTH).fill(''))
-      } else {
-        router.push(callbackUrl)
-      }
-    } catch {
-      setError(t('errors.verifyFailed'))
-      setOtp(Array(OTP_LENGTH).fill(''))
-    } finally {
-      inFlightRef.current = false
-      setLoading(false)
-    }
-  }
-
-  const emailErrorId = 'email-error'
-  const otpErrorId = 'otp-error'
-  const otpHeadingId = 'otp-heading'
+  if (session) redirect(callbackUrl)
 
   return (
     <main
       id="main-content"
       tabIndex={-1}
-      className="bg-background flex min-h-screen items-center justify-center px-4 py-12"
+      className="bg-background text-foreground grid min-h-screen lg:grid-cols-[minmax(0,0.92fr)_minmax(520px,1.08fr)]"
     >
-      <div className="w-full max-w-md">
-        <div className="mb-8 flex justify-center">
-          <Link href="/" aria-label="Qtable home">
+      <section className="flex min-h-screen items-start px-[clamp(20px,6vw,72px)] py-8 lg:py-12">
+        <div className="mx-auto flex w-full max-w-[520px] flex-col gap-7">
+          <Link href="/" aria-label="Qtable home" className="self-start">
             <BrandMark size="lg" />
           </Link>
-        </div>
 
-        {/* Stable page heading — visually hidden so each step can show its own title. */}
-        <h1 className="sr-only">{t('signIn')}</h1>
+          <div className="border-cream-line bg-foreground relative h-44 overflow-hidden rounded-[28px] border shadow-[0_18px_50px_rgba(26,30,23,0.18)] sm:h-56 lg:hidden">
+            <Image
+              src={HERO_IMAGE}
+              alt=""
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 0vw"
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1a1e17]/55 via-transparent to-transparent" />
+          </div>
 
-        <div className="border-border bg-card rounded-2xl border p-8 shadow-sm">
-          {step === 'email' ? (
-            <form onSubmit={sendOtp} className="space-y-5" noValidate>
-              <div className="space-y-1.5 text-center">
-                <h2 className="text-2xl font-medium tracking-tight">{t('signIn')}</h2>
-                <p className="text-muted-foreground text-sm">{t('sendCodePrompt')}</p>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">{t('emailLabel')}</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  inputMode="email"
-                  autoComplete="email"
-                  placeholder="you@restaurant.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  aria-invalid={error ? true : undefined}
-                  aria-describedby={error ? emailErrorId : undefined}
-                  autoFocus
-                  required
-                />
-              </div>
-
-              {error && (
-                <p
-                  id={emailErrorId}
-                  role="alert"
-                  aria-live="polite"
-                  className="text-destructive text-center text-xs"
-                >
-                  {error}
-                </p>
-              )}
-
-              <Button
-                type="submit"
-                className="h-12 w-full text-base sm:h-10 sm:text-sm"
-                size="lg"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                    <span className="sr-only">{t('loading')}</span>
-                  </>
-                ) : (
-                  t('sendCode')
-                )}
-              </Button>
-            </form>
-          ) : (
-            <div className="space-y-5">
-              <button
-                type="button"
-                onClick={() => {
-                  setStep('email')
-                  setError('')
-                  setOtp(Array(OTP_LENGTH).fill(''))
-                }}
-                className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs transition-colors"
-              >
-                <ArrowLeft className="size-3" aria-hidden="true" />
-                {t('back')}
-              </button>
-
-              <div className="space-y-1.5">
-                <h2 id={otpHeadingId} className="text-2xl font-medium tracking-tight">
-                  {t('checkEmail')}
-                </h2>
-                <p className="text-muted-foreground text-sm break-words">
-                  {t.rich('codeSent', {
-                    email: () => <span className="text-foreground font-medium">{email}</span>,
-                  })}
-                </p>
-              </div>
-
-              <OtpInput
-                value={otp}
-                onChange={setOtp}
-                onComplete={verifyOtp}
-                disabled={loading}
-                labelledBy={otpHeadingId}
-                describedBy={error ? otpErrorId : undefined}
-                invalid={Boolean(error)}
-              />
-
-              {error && (
-                <p
-                  id={otpErrorId}
-                  role="alert"
-                  aria-live="polite"
-                  className="text-destructive text-center text-xs"
-                >
-                  {error}
-                </p>
-              )}
-
-              {loading && (
-                <div className="flex justify-center" aria-hidden="true">
-                  <Loader2 className="text-muted-foreground size-4 animate-spin" />
-                </div>
-              )}
-
-              <p className="text-muted-foreground text-center text-xs">
-                {t('noCode')}{' '}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setError('')
-                    sendOtp()
+          <div className="space-y-8">
+            <div className="space-y-4">
+              <Kicker tone="pop">Built for busy service</Kicker>
+              <div className="space-y-3">
+                <h1
+                  className="max-w-[12ch] font-semibold"
+                  style={{
+                    fontSize: 'clamp(44px, 6vw, 72px)',
+                    lineHeight: 1.02,
+                    letterSpacing: '-0.035em',
                   }}
-                  className="text-foreground font-medium underline-offset-2 hover:underline disabled:opacity-50"
-                  disabled={loading}
                 >
-                  {t('resend')}
-                </button>
+                  Your menu is already on the <i className="text-pop">table.</i>
+                </h1>
+                <p className="text-muted-foreground max-w-md text-base leading-7">
+                  Sign in to polish mobile menus, QR codes, dish photos, and restaurant settings
+                  before guests scan.
+                </p>
+              </div>
+            </div>
+
+            <LoginForm callbackUrl={callbackUrl} />
+          </div>
+        </div>
+      </section>
+
+      <aside className="relative hidden min-h-screen p-4 lg:block">
+        <div className="bg-foreground sticky top-4 h-[calc(100vh-2rem)] min-h-[640px] overflow-hidden rounded-[36px]">
+          <Image
+            src={HERO_IMAGE}
+            alt="Restaurant table with QR menu tent and mobile digital menus"
+            fill
+            priority
+            sizes="52vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(26,30,23,0.86)_0%,rgba(26,30,23,0.36)_42%,rgba(26,30,23,0.08)_100%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_20%,rgba(200,224,106,0.18),transparent_32%),radial-gradient(circle_at_20%_80%,rgba(232,85,43,0.24),transparent_30%)]" />
+
+          <div className="absolute top-8 left-8">
+            <BrandMark size="md" invert className="text-background" />
+          </div>
+
+          <div className="text-background absolute right-8 bottom-8 left-8">
+            <div className="border-background/25 max-w-xl border-t pt-6">
+              <Kicker tone="accent">From scan to supper</Kicker>
+              <p
+                className="mt-4 max-w-[760px] font-semibold"
+                style={{
+                  fontSize: 'clamp(42px, 5.2vw, 64px)',
+                  lineHeight: 1,
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                Designed for restaurants that move fast and still care about <i>taste.</i>
               </p>
             </div>
-          )}
+          </div>
         </div>
-      </div>
+      </aside>
     </main>
   )
 }

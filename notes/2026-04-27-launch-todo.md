@@ -12,31 +12,24 @@ Sequenced so each phase unblocks the next. Check off as you go.
 
 ### Still TODO before deleting screenslick access
 
-- [ ] **Local `.env` R2 creds** — replace screenslick-account creds with qtable-account creds: `CLOUDFLARE_BUCKET_API`, `CLOUDFLARE_ACCESS_KEY_ID`, `CLOUDFLARE_SECRET_ACCESS_KEY`. Then dev uploads also go to the new bucket.
-- [ ] **Revoke screenslick invite** — once local + prod both use qtable-account creds.
+- [x] **Local `.env` R2 creds** — swapped to qtable-account creds.
+- [x] **Revoke screenslick invite** — done; prod + local both use qtable-account creds.
 
-## Phase 2 — Domain + deploy (~30min)
+## Phase 2 — Domain + deploy ✅ DONE
 
-DNS at Cloudflare, app at Vercel.
+App is live on `https://qtable.ai`.
 
-- [ ] **Vercel** → Project → Settings → Domains → add `qtable.ai` and `www.qtable.ai`.
-- [ ] **Cloudflare DNS** (grey cloud / DNS-only):
+- [x] **Vercel** → Project → Settings → Domains → add `qtable.ai` and `www.qtable.ai`.
+- [x] **Cloudflare DNS** (grey cloud / DNS-only):
   - `A` record `qtable.ai` → `76.76.21.21`
   - `CNAME` record `www` → `cname.vercel-dns.com`
-- [ ] **Vercel env vars**:
-  - `NEXT_PUBLIC_APP_URL=https://qtable.ai`
-  - `BETTER_AUTH_URL=https://qtable.ai`
-  - `CLOUDFLARE_PUBLIC_URL=https://cdn.qtable.ai`
-  - `CLOUDFLARE_BUCKET_NAME=qtable`
-  - new `CLOUDFLARE_BUCKET_API` / `CLOUDFLARE_ACCESS_KEY_ID` / `CLOUDFLARE_SECRET_ACCESS_KEY` (qtable account)
-  - `EMAIL_FROM=noreply@qtable.ai`, `EMAIL_FROM_NAME=Qtable`, `EMAIL_REPLY_TO=noreply@qtable.ai`
-  - real `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` (live keys come in Phase 3)
-- [ ] **Deploy** + smoke-test on `https://qtable.ai`: `/`, OTP login, dashboard, public menu, images from `cdn.qtable.ai`.
+- [x] **Vercel env vars** set (`NEXT_PUBLIC_APP_URL`, `BETTER_AUTH_URL`, `CLOUDFLARE_*`, `EMAIL_*`, Stripe test keys).
+- [x] **Deploy** + smoke-test on `https://qtable.ai`.
 
-## Phase 3 — External services (~1hr)
+## Phase 3 — External services
 
-- [ ] **Google OAuth** — add `https://qtable.ai` to authorized origins + redirect URIs.
-- [ ] **ZeptoMail** — verify `qtable.ai` (SPF, DKIM, DMARC); send test OTP.
+- [x] ~~Google OAuth~~ — **N/A**, not using Google login.
+- [x] **ZeptoMail** — `qtable.ai` verified (SPF/DKIM/DMARC), OTP working.
 - [ ] **Stripe** — switch to live keys, register webhook at `https://qtable.ai/api/...`, update business profile + branding to Qtable.
 
 ## Phase 4 — Stripe end-to-end test (~45min)
@@ -49,8 +42,8 @@ DNS at Cloudflare, app at Vercel.
 
 ## Phase 5 — Landing + legal
 
-- [ ] Finish landing page sections.
-- [ ] Terms + Privacy pages (required for Stripe live + OAuth verification).
+- [ ] Finish landing page sections — add a real QR code pointing to a real menu as the live demo.
+- [ ] Terms + Privacy pages (required for Stripe live).
 
 ## Phase 6 — SEO kickoff (post-launch)
 
@@ -61,4 +54,4 @@ DNS at Cloudflare, app at Vercel.
 
 ---
 
-**Order for today:** 1 ✅ → 2 → 3 → 4 (product proven end-to-end on new domain), then 5, then 6.
+**Status (2026-04-28):** 1 ✅, 2 ✅, 3 mostly done (Stripe live keys remaining). Remaining work: Stripe live + E2E test (3 + 4), landing demo QR + legal pages (5), SEO (6).

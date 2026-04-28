@@ -112,6 +112,55 @@ async function isRenewalEvent(organizationId: string, newPeriodStart: Date | nul
   return newPeriodStart.getTime() > org.monthlyCreditsResetAt.getTime()
 }
 
+// Shared lifecycle handler used by both `onSubscriptionCreated` and
+// `onSubscriptionUpdate` — Better Auth fires those for separate Stripe events
+// (`customer.subscription.created` vs `.updated`), and both can mark the start
+// of a fresh billing period that needs the monthly credit bucket reset.
+//
+// Skips trialing subs intentionally: trial users get the one-time bonus from
+// `onTrialStart` only. The plan's monthly allowance lands when the trial
+// converts to active (which fires an `.updated` event with `status === 'active'`).
+async function handleSubscriptionLifecycle(subscription: {
+  referenceId: string
+  plan: string
+  status: string
+  periodStart?: Date | null
+}) {
+  // TEMP debug — remove after the full clean-room test confirms the flow.
+  console.log('[handleSubscriptionLifecycle] entered', {
+    referenceId: subscription.referenceId,
+    plan: subscription.plan,
+    status: subscription.status,
+    periodStart: subscription.periodStart,
+  })
+  if (subscription.status === 'active') {
+    const isRenewal = await isRenewalEvent(subscription.referenceId, subscription.periodStart)
+    console.log('[handleSubscriptionLifecycle] active branch', {
+      isRenewal,
+      planLookup: PLANS[subscription.plan as keyof typeof PLANS]?.id ?? 'NOT FOUND',
+      monthlyCredits: PLANS[subscription.plan as keyof typeof PLANS]?.monthlyCredits,
+    })
+    if (isRenewal) {
+      const planDef = PLANS[subscription.plan as keyof typeof PLANS]
+      const amount = planDef?.monthlyCredits ?? 0
+      if (amount > 0 && subscription.periodStart) {
+        console.log('[handleSubscriptionLifecycle] granting', { amount })
+        await resetMonthlyCredits(subscription.referenceId, amount, subscription.periodStart)
+      } else {
+        console.log('[handleSubscriptionLifecycle] skipped grant', {
+          amount,
+          hasPeriodStart: !!subscription.periodStart,
+        })
+      }
+    }
+  } else {
+    console.log('[handleSubscriptionLifecycle] non-active status, skipping grant')
+  }
+  // Any plan change may shift the restaurant cap — reconcile readOnly flags
+  // against the current cap regardless of period state.
+  await reconcileRestaurantActivation(subscription.referenceId)
+}
+
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:3000',
   database: prismaAdapter(prisma, {
@@ -197,28 +246,55 @@ export const auth = betterAuth({
                 }
                 return true
               },
-              // Fires on every Stripe subscription.created/updated webhook.
-              // If the billing period rolled over, refill the monthly bucket
-              // from the plan's allowance. The bonus bucket is untouched.
+              // Fires when a user finishes Stripe Checkout (the typical
+              // subscribe path). This is the hook that actually runs for
+              // Checkout-initiated subs — `onSubscriptionCreated` is only
+              // invoked for dashboard-created subs that don't exist in our DB
+              // yet, which means it's effectively unreachable in our app.
+              onSubscriptionComplete: async ({
+                subscription,
+              }: {
+                subscription: {
+                  referenceId: string
+                  plan: string
+                  status: string
+                  periodStart?: Date | null
+                }
+              }) => {
+                console.log('[onSubscriptionComplete] fired')
+                await handleSubscriptionLifecycle(subscription)
+              },
+              // Belt-and-braces: fires when a Stripe subscription is created
+              // outside the Checkout flow (e.g. directly via Dashboard) and
+              // wasn't pre-staged in our DB. Rare, but harmless to handle.
+              onSubscriptionCreated: async ({
+                subscription,
+              }: {
+                subscription: {
+                  referenceId: string
+                  plan: string
+                  status: string
+                  periodStart?: Date | null
+                }
+              }) => {
+                console.log('[onSubscriptionCreated] fired')
+                await handleSubscriptionLifecycle(subscription)
+              },
+              // Fired by Better Auth on `customer.subscription.updated`. Covers
+              // trial→active conversion, plan changes, and monthly renewals —
+              // all of which may roll the billing period and need the monthly
+              // bucket refilled.
               onSubscriptionUpdate: async ({
                 subscription,
               }: {
-                subscription: { referenceId: string; plan: string; periodStart?: Date }
-              }) => {
-                if (await isRenewalEvent(subscription.referenceId, subscription.periodStart)) {
-                  const planDef = PLANS[subscription.plan as keyof typeof PLANS]
-                  const amount = planDef?.monthlyCredits ?? 0
-                  if (amount > 0 && subscription.periodStart) {
-                    await resetMonthlyCredits(
-                      subscription.referenceId,
-                      amount,
-                      subscription.periodStart,
-                    )
-                  }
+                subscription: {
+                  referenceId: string
+                  plan: string
+                  status: string
+                  periodStart?: Date | null
                 }
-                // Any plan change may shift the restaurant cap — reconcile
-                // readOnly flags against the current cap.
-                await reconcileRestaurantActivation(subscription.referenceId)
+              }) => {
+                await handleSubscriptionLifecycle(subscription)
               },
             },
             organization: { enabled: true },

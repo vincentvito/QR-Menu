@@ -106,7 +106,7 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
         toast.error(data.error ?? 'Could not create restaurant')
         return
       }
-      router.push('/dashboard')
+      router.push('/onboarding/start-trial')
       router.refresh()
     } catch {
       toast.error('Network error — please try again')
