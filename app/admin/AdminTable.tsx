@@ -1,11 +1,12 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { Ban, CheckCircle2, Loader2, ShieldCheck, UserRound } from 'lucide-react'
 import { toast } from 'sonner'
 import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
+import { AdminOrgRow, type AdminOrganization } from './AdminOrgRow'
 
 interface AdminUser {
   id: string
@@ -14,7 +15,7 @@ interface AdminUser {
   role: string
   banned: boolean
   banReason: string | null
-  orgCount: number
+  organizations: AdminOrganization[]
 }
 
 interface AdminTableProps {
@@ -24,6 +25,7 @@ interface AdminTableProps {
 
 export function AdminTable({ viewerId, users }: AdminTableProps) {
   const router = useRouter()
+  const [, startTransition] = useTransition()
   const [pendingId, setPendingId] = useState<string | null>(null)
 
   async function impersonate(userId: string) {
@@ -34,10 +36,12 @@ export function AdminTable({ viewerId, users }: AdminTableProps) {
         toast.error(res.error.message ?? 'Impersonation failed')
         return
       }
-      router.push('/dashboard')
-      router.refresh()
+      startTransition(() => {
+        router.push('/dashboard')
+        router.refresh()
+      })
     } catch {
-      toast.error('Network error — please try again')
+      toast.error('Network error - please try again')
     } finally {
       setPendingId(null)
     }
@@ -66,9 +70,9 @@ export function AdminTable({ viewerId, users }: AdminTableProps) {
         }
         toast.success(`${user.email} banned`)
       }
-      router.refresh()
+      startTransition(() => router.refresh())
     } catch {
-      toast.error('Network error — please try again')
+      toast.error('Network error - please try again')
     } finally {
       setPendingId(null)
     }
@@ -81,7 +85,7 @@ export function AdminTable({ viewerId, users }: AdminTableProps) {
         const isAdmin = user.role === 'admin'
         const isPending = pendingId === user.id
         return (
-          <li key={user.id} className="flex flex-wrap items-center gap-4 px-5 py-4">
+          <li key={user.id} className="flex flex-wrap items-start gap-4 px-5 py-4">
             <div className="bg-background text-muted-foreground border-cream-line flex size-9 shrink-0 items-center justify-center rounded-full border">
               {isAdmin ? (
                 <ShieldCheck className="size-4" aria-hidden="true" />
@@ -105,11 +109,20 @@ export function AdminTable({ viewerId, users }: AdminTableProps) {
                 )}
               </div>
               <div className="text-muted-foreground mt-0.5 truncate text-xs">
-                {user.email} · {user.orgCount} restaurant{user.orgCount === 1 ? '' : 's'}
+                {user.email} - {user.organizations.length} organization
+                {user.organizations.length === 1 ? '' : 's'}
               </div>
               {user.banned && user.banReason && (
                 <div className="text-destructive mt-1 truncate text-xs">{user.banReason}</div>
               )}
+
+              {user.organizations.length > 0 ? (
+                <div className="mt-3 grid gap-2">
+                  {user.organizations.map((org) => (
+                    <AdminOrgRow key={org.id} org={org} />
+                  ))}
+                </div>
+              ) : null}
             </div>
             <div className="flex shrink-0 gap-2">
               <Button

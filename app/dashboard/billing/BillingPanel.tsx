@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
-import { Check, CreditCard, Lock, Loader2, Sparkles, Zap } from 'lucide-react'
+import { Check, CreditCard, Gift, Lock, Loader2, Sparkles, Zap } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { authClient } from '@/lib/auth-client'
@@ -28,7 +28,11 @@ function formatPrice(cents: number | null): string {
 
 function formatDate(date: Date | null): string {
   if (!date) return '—'
-  return new Date(date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(date).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
 }
 
 export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPanelProps) {
@@ -66,8 +70,10 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
   const currentPlanId = state.plan.id
   const isTrialing = state.subscription?.status === 'trialing'
   const isLapsed = state.subscriptionAccess.isLapsed
-  const displayPlanName =
-    isLapsed && state.subscriptionAccess.latestPlan
+  const isComped = Boolean(state.comp.plan)
+  const displayPlanName = isComped
+    ? `Complimentary ${state.plan.name}`
+    : isLapsed && state.subscriptionAccess.latestPlan
       ? (planCatalog.find((p) => p.id === state.subscriptionAccess.latestPlan)?.name ??
         state.subscriptionAccess.latestPlan)
       : state.plan.name
@@ -188,9 +194,9 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
             </h2>
           </div>
           <p className="text-muted-foreground mt-2 text-sm">
-            Your {state.plan.name} plan allows {cap} active restaurant{cap === 1 ? '' : 's'}.
-            Frozen ones still serve their public menus, but their dashboards are view-only
-            until you re-activate them or upgrade.
+            Your {state.plan.name} plan allows {cap} active restaurant{cap === 1 ? '' : 's'}. Frozen
+            ones still serve their public menus, but their dashboards are view-only until you
+            re-activate them or upgrade.
           </p>
           <div className="mt-4 space-y-2">
             {state.restaurants.map((r) => {
@@ -266,7 +272,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
         <section className="border-cream-line bg-card rounded-2xl border p-5">
           <div className="flex items-center gap-2">
             <CreditCard className="text-muted-foreground size-4" aria-hidden="true" />
-            <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
+            <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
               Current plan
             </h2>
           </div>
@@ -276,19 +282,29 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
               <>
                 {state.subscription.status}
                 {state.subscription.cancelAtPeriodEnd ? ' · cancels at period end' : ''}
-                {state.subscription.periodEnd ? ` · renews ${formatDate(state.subscription.periodEnd)}` : ''}
+                {state.subscription.periodEnd
+                  ? ` · renews ${formatDate(state.subscription.periodEnd)}`
+                  : ''}
               </>
+            ) : isLapsed ? (
+              'Subscription ended'
             ) : (
-              isLapsed ? 'Subscription ended' : 'Not subscribed yet'
+              'Not subscribed yet'
             )}
           </p>
           {isTrialing && state.subscription?.trialEnd ? (
-            <div className="mt-4 rounded-lg bg-accent/10 px-3 py-2 text-xs">
+            <div className="bg-accent/10 mt-4 rounded-lg px-3 py-2 text-xs">
               <Sparkles className="mr-1 inline size-3" aria-hidden="true" />
               Trial ends {formatDate(state.subscription.trialEnd)}
             </div>
           ) : null}
-          {canManage && state.subscription ? (
+          {isComped ? (
+            <div className="bg-accent/10 mt-4 rounded-lg px-3 py-2 text-xs">
+              <Gift className="mr-1 inline size-3" aria-hidden="true" />
+              Owner-granted access{state.comp.reason ? ` - ${state.comp.reason}` : ''}
+            </div>
+          ) : null}
+          {canManage && state.subscription && !isComped ? (
             <Button
               variant="outline"
               size="sm"
@@ -296,9 +312,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
               onClick={openBillingPortal}
               disabled={isPending}
             >
-              {isPending ? (
-                <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-              ) : null}
+              {isPending ? <Loader2 className="size-3.5 animate-spin" aria-hidden="true" /> : null}
               Manage billing
             </Button>
           ) : null}
@@ -307,7 +321,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
         <section className="border-cream-line bg-card rounded-2xl border p-5">
           <div className="flex items-center gap-2">
             <Zap className="text-muted-foreground size-4" aria-hidden="true" />
-            <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
+            <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
               AI credits
             </h2>
           </div>
@@ -324,9 +338,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
             <div>
               Bonus (never expire): <span className="tabular-nums">{state.credits.bonus}</span>
             </div>
-            {state.credits.resetsAt ? (
-              <div>Resets {formatDate(state.credits.resetsAt)}</div>
-            ) : null}
+            {state.credits.resetsAt ? <div>Resets {formatDate(state.credits.resetsAt)}</div> : null}
           </div>
           {canManage && !isLapsed ? (
             <Button
@@ -407,7 +419,8 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                       <>
                         {formatPrice(priceCents)}
                         <span className="text-muted-foreground text-xs font-normal">
-                          {' '}/{interval === 'year' ? 'yr' : 'mo'}
+                          {' '}
+                          /{interval === 'year' ? 'yr' : 'mo'}
                         </span>
                       </>
                     )}
@@ -430,7 +443,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                         : `${p.monthlyCredits} AI credits/mo`}
                     </li>
                   </ul>
-                  {canManage && !isCurrent ? (
+                  {canManage && !isCurrent && !isComped ? (
                     <Button
                       size="sm"
                       className="mt-4 w-full"

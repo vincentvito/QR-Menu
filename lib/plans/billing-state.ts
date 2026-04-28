@@ -1,6 +1,7 @@
 import { cache } from 'react'
 import prisma from '@/lib/prisma'
 import { resolvePlan, type PlanDefinition } from '@/lib/plans'
+import { ensureCompMonthlyCredits } from '@/lib/plans/credits'
 import {
   ACTIVE_SUBSCRIPTION_STATUSES,
   getSubscriptionAccessState,
@@ -19,11 +20,18 @@ export interface TrialState {
 export const getTrialState = cache(async function getTrialState(
   organizationId: string,
 ): Promise<TrialState | null> {
-  const subscription = await prisma.subscription.findFirst({
-    where: { referenceId: organizationId, status: 'trialing' },
-    orderBy: { createdAt: 'desc' },
-    select: { plan: true, trialEnd: true },
-  })
+  const [org, subscription] = await Promise.all([
+    prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { compPlan: true },
+    }),
+    prisma.subscription.findFirst({
+      where: { referenceId: organizationId, status: 'trialing' },
+      orderBy: { createdAt: 'desc' },
+      select: { plan: true, trialEnd: true },
+    }),
+  ])
+  if (org?.compPlan) return null
   if (!subscription?.trialEnd) return null
   return { trialEnd: subscription.trialEnd, planName: subscription.plan }
 })
@@ -41,6 +49,7 @@ export interface BillingState {
   } | null
   subscriptionAccess: {
     isLapsed: boolean
+    isComped: boolean
     hasSubscriptionHistory: boolean
     latestStatus: string | null
     latestPlan: string | null
@@ -58,6 +67,11 @@ export interface BillingState {
   overrides: {
     maxRestaurantsOverride: number | null
     monthlyCreditsOverride: number | null
+  }
+  comp: {
+    plan: string | null
+    reason: string | null
+    grantedAt: Date | null
   }
   restaurants: Array<{
     id: string
@@ -96,6 +110,9 @@ export const getBillingState = cache(async function getBillingState(
         monthlyCreditsResetAt: true,
         maxRestaurantsOverride: true,
         monthlyCreditsOverride: true,
+        compPlan: true,
+        compReason: true,
+        compGrantedAt: true,
       },
     }),
     prisma.restaurant.findMany({
@@ -106,11 +123,13 @@ export const getBillingState = cache(async function getBillingState(
   ])
 
   const plan = resolvePlan(subscription, org)
+  const credits = await ensureCompMonthlyCredits(organizationId)
   return {
     plan,
     subscription,
     subscriptionAccess: {
       isLapsed: subscriptionAccess.isLapsed,
+      isComped: subscriptionAccess.isComped,
       hasSubscriptionHistory: subscriptionAccess.hasSubscriptionHistory,
       latestStatus: subscriptionAccess.latestSubscription?.status ?? null,
       latestPlan: subscriptionAccess.latestSubscription?.plan ?? null,
@@ -122,15 +141,21 @@ export const getBillingState = cache(async function getBillingState(
         null,
     },
     credits: {
-      monthly: org?.monthlyCreditsRemaining ?? 0,
-      bonus: org?.bonusCreditsRemaining ?? 0,
-      total: (org?.monthlyCreditsRemaining ?? 0) + (org?.bonusCreditsRemaining ?? 0),
-      resetsAt: org?.monthlyCreditsResetAt ?? null,
+      monthly: credits?.monthly ?? org?.monthlyCreditsRemaining ?? 0,
+      bonus: credits?.bonus ?? org?.bonusCreditsRemaining ?? 0,
+      total:
+        credits?.total ?? (org?.monthlyCreditsRemaining ?? 0) + (org?.bonusCreditsRemaining ?? 0),
+      resetsAt: credits?.resetsAt ?? org?.monthlyCreditsResetAt ?? null,
     },
     usage: { restaurantCount: restaurants.length },
     overrides: {
       maxRestaurantsOverride: org?.maxRestaurantsOverride ?? null,
       monthlyCreditsOverride: org?.monthlyCreditsOverride ?? null,
+    },
+    comp: {
+      plan: org?.compPlan ?? null,
+      reason: org?.compReason ?? null,
+      grantedAt: org?.compGrantedAt ?? null,
     },
     restaurants,
   }

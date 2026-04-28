@@ -5,10 +5,7 @@ import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { getActiveOrganization } from '@/lib/organizations/get-active-org'
 import { resolvePlan } from '@/lib/plans'
-import {
-  ACTIVE_SUBSCRIPTION_STATUSES,
-  canWriteDashboard,
-} from '@/lib/plans/subscription-access'
+import { ACTIVE_SUBSCRIPTION_STATUSES, canWriteDashboard } from '@/lib/plans/subscription-access'
 
 export const runtime = 'nodejs'
 
@@ -67,7 +64,11 @@ export async function POST(request: Request) {
     }),
     prisma.organization.findUnique({
       where: { id: org.id },
-      select: { maxRestaurantsOverride: true, monthlyCreditsOverride: true },
+      select: {
+        maxRestaurantsOverride: true,
+        monthlyCreditsOverride: true,
+        compPlan: true,
+      },
     }),
     prisma.restaurant.findMany({
       where: { organizationId: org.id },
@@ -83,7 +84,9 @@ export async function POST(request: Request) {
   }
   if (cap !== null && activeIds.length > cap) {
     return NextResponse.json(
-      { error: `Your ${plan.name} plan only allows ${cap} active restaurant${cap === 1 ? '' : 's'}.` },
+      {
+        error: `Your ${plan.name} plan only allows ${cap} active restaurant${cap === 1 ? '' : 's'}.`,
+      },
       { status: 409 },
     )
   }

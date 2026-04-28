@@ -62,7 +62,11 @@ export async function POST(request: Request) {
     }),
     prisma.organization.findUnique({
       where: { id: org.id },
-      select: { maxRestaurantsOverride: true, monthlyCreditsOverride: true },
+      select: {
+        maxRestaurantsOverride: true,
+        monthlyCreditsOverride: true,
+        compPlan: true,
+      },
     }),
     prisma.restaurant.count({ where: { organizationId: org.id } }),
   ])

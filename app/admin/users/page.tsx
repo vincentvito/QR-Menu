@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getCachedSession } from '@/lib/auth'
 import prisma from '@/lib/prisma'
+import { resolvePlan } from '@/lib/plans'
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { AdminTable } from '../AdminTable'
@@ -32,11 +33,59 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
         role: true,
         banned: true,
         banReason: true,
-        _count: { select: { members: true } },
+        members: {
+          select: {
+            organization: {
+              select: {
+                id: true,
+                name: true,
+                compPlan: true,
+                compReason: true,
+                compGrantedAt: true,
+                maxRestaurantsOverride: true,
+                monthlyCreditsOverride: true,
+                monthlyCreditsRemaining: true,
+                bonusCreditsRemaining: true,
+                _count: { select: { restaurants: true, menus: true } },
+              },
+            },
+          },
+        },
       },
     }),
     prisma.user.count(),
   ])
+
+  const orgIds = Array.from(
+    new Set(users.flatMap((user) => user.members.map((member) => member.organization.id))),
+  )
+  const subscriptions =
+    orgIds.length > 0
+      ? await prisma.subscription.findMany({
+          where: { referenceId: { in: orgIds } },
+          orderBy: { updatedAt: 'desc' },
+          select: {
+            referenceId: true,
+            plan: true,
+            status: true,
+            billingInterval: true,
+            updatedAt: true,
+          },
+        })
+      : []
+  const latestSubscriptionByOrg = new Map<string, (typeof subscriptions)[number]>()
+  const activeSubscriptionByOrg = new Map<string, (typeof subscriptions)[number]>()
+  for (const subscription of subscriptions) {
+    if (!latestSubscriptionByOrg.has(subscription.referenceId)) {
+      latestSubscriptionByOrg.set(subscription.referenceId, subscription)
+    }
+    if (
+      !activeSubscriptionByOrg.has(subscription.referenceId) &&
+      ['trialing', 'active', 'past_due'].includes(subscription.status)
+    ) {
+      activeSubscriptionByOrg.set(subscription.referenceId, subscription)
+    }
+  }
 
   const totalPages = Math.max(1, Math.ceil(totalUsers / PAGE_SIZE))
   const hasPrev = page > 1
@@ -61,7 +110,27 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
           role: u.role,
           banned: u.banned,
           banReason: u.banReason,
-          orgCount: u._count.members,
+          organizations: u.members.map((member) => {
+            const organization = member.organization
+            const activeSubscription = activeSubscriptionByOrg.get(organization.id) ?? null
+            const latestSubscription = latestSubscriptionByOrg.get(organization.id) ?? null
+            const plan = resolvePlan(activeSubscription, organization)
+            return {
+              id: organization.id,
+              name: organization.name,
+              compPlan: organization.compPlan,
+              compReason: organization.compReason,
+              compGrantedAt: organization.compGrantedAt,
+              monthlyCreditsRemaining: organization.monthlyCreditsRemaining,
+              bonusCreditsRemaining: organization.bonusCreditsRemaining,
+              restaurantCount: organization._count.restaurants,
+              menuCount: organization._count.menus,
+              planName: plan.name,
+              subscriptionStatus: latestSubscription?.status ?? null,
+              subscriptionPlan: latestSubscription?.plan ?? null,
+              billingInterval: latestSubscription?.billingInterval ?? null,
+            }
+          }),
         }))}
       />
 

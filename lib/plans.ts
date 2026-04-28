@@ -90,9 +90,14 @@ export function resolvePlan(
   overrides?: {
     maxRestaurantsOverride?: number | null
     monthlyCreditsOverride?: number | null
+    compPlan?: string | null
   } | null,
 ): PlanDefinition {
-  const planId: PlanId = isPlanId(subscription?.plan) ? (subscription.plan as PlanId) : 'trial'
+  const planId: PlanId = isPlanId(overrides?.compPlan)
+    ? (overrides.compPlan as PlanId)
+    : isPlanId(subscription?.plan)
+      ? (subscription.plan as PlanId)
+      : 'trial'
   const base = PLANS[planId]
   return {
     ...base,

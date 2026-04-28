@@ -1,8 +1,12 @@
 import type { Prisma } from '@/lib/generated/prisma/client'
 import prisma from '@/lib/prisma'
+import { resolvePlan } from '@/lib/plans'
 
 export class InsufficientCreditsError extends Error {
-  constructor(public available: number, public requested: number) {
+  constructor(
+    public available: number,
+    public requested: number,
+  ) {
     super(`Insufficient credits: have ${available}, need ${requested}`)
     this.name = 'InsufficientCreditsError'
   }
@@ -14,6 +18,114 @@ interface SpendResult {
   fromBonus: number
   newMonthly: number
   newBonus: number
+}
+
+const COMP_MONTH_MS = 30 * 24 * 60 * 60 * 1000
+
+export interface CreditBalances {
+  monthly: number
+  bonus: number
+  total: number
+  resetsAt: Date | null
+}
+
+// Comped organizations do not receive Stripe renewal webhooks. Refill their
+// monthly bucket lazily whenever billing or AI-credit code reads the balance.
+export async function ensureCompMonthlyCredits(
+  organizationId: string,
+): Promise<CreditBalances | null> {
+  const org = await prisma.organization.findUnique({
+    where: { id: organizationId },
+    select: {
+      compPlan: true,
+      maxRestaurantsOverride: true,
+      monthlyCreditsOverride: true,
+      monthlyCreditsRemaining: true,
+      monthlyCreditsResetAt: true,
+      bonusCreditsRemaining: true,
+    },
+  })
+  if (!org) return null
+
+  if (!org.compPlan) {
+    return {
+      monthly: org.monthlyCreditsRemaining,
+      bonus: org.bonusCreditsRemaining,
+      total: org.monthlyCreditsRemaining + org.bonusCreditsRemaining,
+      resetsAt: org.monthlyCreditsResetAt,
+    }
+  }
+
+  const plan = resolvePlan(null, org)
+  const amount = plan.monthlyCredits ?? 0
+  if (amount <= 0) {
+    return {
+      monthly: org.monthlyCreditsRemaining,
+      bonus: org.bonusCreditsRemaining,
+      total: org.monthlyCreditsRemaining + org.bonusCreditsRemaining,
+      resetsAt: org.monthlyCreditsResetAt,
+    }
+  }
+
+  const now = new Date()
+  const shouldReset =
+    !org.monthlyCreditsResetAt ||
+    now.getTime() - org.monthlyCreditsResetAt.getTime() >= COMP_MONTH_MS
+  if (!shouldReset) {
+    return {
+      monthly: org.monthlyCreditsRemaining,
+      bonus: org.bonusCreditsRemaining,
+      total: org.monthlyCreditsRemaining + org.bonusCreditsRemaining,
+      resetsAt: org.monthlyCreditsResetAt,
+    }
+  }
+
+  const staleBefore = new Date(now.getTime() - COMP_MONTH_MS)
+
+  return prisma.$transaction(async (tx) => {
+    const result = await tx.organization.updateMany({
+      where: {
+        id: organizationId,
+        OR: [{ monthlyCreditsResetAt: null }, { monthlyCreditsResetAt: { lt: staleBefore } }],
+      },
+      data: {
+        monthlyCreditsRemaining: amount,
+        monthlyCreditsResetAt: now,
+      },
+    })
+
+    const current = await tx.organization.findUnique({
+      where: { id: organizationId },
+      select: {
+        monthlyCreditsRemaining: true,
+        bonusCreditsRemaining: true,
+        monthlyCreditsResetAt: true,
+      },
+    })
+    if (!current) return null
+
+    if (result.count > 0) {
+      await tx.creditTransaction.create({
+        data: {
+          organizationId,
+          type: 'reset',
+          bucket: 'monthly',
+          amount,
+          balanceMonthlyAfter: current.monthlyCreditsRemaining,
+          balanceBonusAfter: current.bonusCreditsRemaining,
+          reason: 'comp-monthly-reset',
+          metadata: { plan: plan.id },
+        },
+      })
+    }
+
+    return {
+      monthly: current.monthlyCreditsRemaining,
+      bonus: current.bonusCreditsRemaining,
+      total: current.monthlyCreditsRemaining + current.bonusCreditsRemaining,
+      resetsAt: current.monthlyCreditsResetAt,
+    }
+  })
 }
 
 // Atomic credit spend. Drains the monthly bucket first (it resets on renewal,
@@ -29,6 +141,8 @@ export async function spendCredits(
   if (!Number.isInteger(amount) || amount <= 0) {
     throw new Error('Credit amount must be a positive integer')
   }
+
+  await ensureCompMonthlyCredits(organizationId)
 
   return prisma.$transaction(async (tx) => {
     const org = await tx.organization.findUnique({

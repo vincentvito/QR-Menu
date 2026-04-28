@@ -18,12 +18,16 @@ const changelog = [
           'Dashboard now shows a clear subscription-ended banner when a trial or paid plan expires, with a direct path back to Billing',
           'Read-only menu editor banners now include a Pick a plan button so expired accounts can restart billing from the blocked editing screen',
           'FAQ now explains what happens when a subscription expires: public menus stay live while dashboard editing pauses',
+          'Admin Users now lets the app owner grant or revoke complimentary plans for an account organization without sending it through Stripe',
+          'Admin Users now lets the app owner add bonus AI credits to an organization for internal, family, or support use',
+          'Admin overview now separates paying, trialing, lapsed, and complimentary organizations so platform health is easier to read',
         ],
       },
       {
         type: 'changed' as const,
         items: [
           'Expired or canceled subscriptions now become dashboard read-only: public menus keep serving guests, but editing, new menus, uploads, staff changes, and AI actions pause until a plan is selected',
+          'Billing now labels owner-granted complimentary plans clearly instead of showing them as unsubscribed accounts',
         ],
       },
       {

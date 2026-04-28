@@ -16,6 +16,7 @@ const SUBSCRIPTION_HISTORY_STATUSES = [
 export interface SubscriptionAccessState {
   hasActiveSubscription: boolean
   hasSubscriptionHistory: boolean
+  isComped: boolean
   isLapsed: boolean
   latestSubscription: {
     id: string
@@ -34,7 +35,11 @@ export const SUBSCRIPTION_LAPSED_MESSAGE =
 export const getSubscriptionAccessState = cache(async function getSubscriptionAccessState(
   organizationId: string,
 ): Promise<SubscriptionAccessState> {
-  const [latestSubscription, subscriptionHistory, creditHistory] = await Promise.all([
+  const [organization, latestSubscription, subscriptionHistory, creditHistory] = await Promise.all([
+    prisma.organization.findUnique({
+      where: { id: organizationId },
+      select: { compPlan: true },
+    }),
     prisma.subscription.findFirst({
       where: { referenceId: organizationId },
       orderBy: { updatedAt: 'desc' },
@@ -58,15 +63,13 @@ export const getSubscriptionAccessState = cache(async function getSubscriptionAc
     prisma.creditTransaction.findFirst({
       where: {
         organizationId,
-        OR: [
-          { reason: { in: SUBSCRIPTION_HISTORY_REASONS } },
-          { type: 'reset', bucket: 'monthly' },
-        ],
+        reason: { in: SUBSCRIPTION_HISTORY_REASONS },
       },
       select: { id: true },
     }),
   ])
 
+  const isComped = Boolean(organization?.compPlan)
   const hasActiveSubscription = latestSubscription
     ? ACTIVE_SUBSCRIPTION_STATUSES.includes(
         latestSubscription.status as (typeof ACTIVE_SUBSCRIPTION_STATUSES)[number],
@@ -75,9 +78,10 @@ export const getSubscriptionAccessState = cache(async function getSubscriptionAc
   const hasSubscriptionHistory = Boolean(subscriptionHistory || creditHistory)
 
   return {
-    hasActiveSubscription,
+    hasActiveSubscription: isComped || hasActiveSubscription,
     hasSubscriptionHistory,
-    isLapsed: hasSubscriptionHistory && !hasActiveSubscription,
+    isComped,
+    isLapsed: hasSubscriptionHistory && !hasActiveSubscription && !isComped,
     latestSubscription,
   }
 })

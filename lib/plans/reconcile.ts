@@ -20,7 +20,11 @@ export async function reconcileRestaurantActivation(organizationId: string): Pro
     }),
     prisma.organization.findUnique({
       where: { id: organizationId },
-      select: { maxRestaurantsOverride: true, monthlyCreditsOverride: true },
+      select: {
+        maxRestaurantsOverride: true,
+        monthlyCreditsOverride: true,
+        compPlan: true,
+      },
     }),
     prisma.restaurant.findMany({
       where: { organizationId },

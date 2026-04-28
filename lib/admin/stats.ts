@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma'
 
 export interface PlatformStats {
   users: { total: number; today: number; last7Days: number }
+  organizations: { total: number; comped: number; paying: number; trialing: number; lapsed: number }
   restaurants: { total: number; active: number }
   menus: { total: number; items: number }
   invitations: { pending: number }
@@ -55,6 +56,7 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     totalUsers,
     usersToday,
     usersLast7,
+    organizations,
     totalRestaurants,
     activeRestaurants,
     totalMenus,
@@ -64,6 +66,9 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     prisma.user.count(),
     prisma.user.count({ where: { createdAt: { gte: startOfToday } } }),
     prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } }),
+    prisma.organization.findMany({
+      select: { id: true, compPlan: true },
+    }),
     prisma.restaurant.count(),
     prisma.restaurant.count({ where: { readOnly: false } }),
     prisma.menu.count(),
@@ -71,8 +76,47 @@ export async function getPlatformStats(): Promise<PlatformStats> {
     prisma.invitation.count({ where: { status: 'pending' } }),
   ])
 
+  const orgIds = organizations.map((org) => org.id)
+  const subscriptions =
+    orgIds.length > 0
+      ? await prisma.subscription.findMany({
+          where: { referenceId: { in: orgIds } },
+          orderBy: { updatedAt: 'desc' },
+          select: { referenceId: true, status: true },
+        })
+      : []
+  const latestByOrg = new Map<string, (typeof subscriptions)[number]>()
+  for (const subscription of subscriptions) {
+    if (!latestByOrg.has(subscription.referenceId)) {
+      latestByOrg.set(subscription.referenceId, subscription)
+    }
+  }
+
+  let comped = 0
+  let paying = 0
+  let trialing = 0
+  let lapsed = 0
+  for (const org of organizations) {
+    if (org.compPlan) {
+      comped += 1
+      continue
+    }
+    const latest = latestByOrg.get(org.id)
+    if (!latest) continue
+    if (latest.status === 'trialing') trialing += 1
+    else if (latest.status === 'active' || latest.status === 'past_due') paying += 1
+    else lapsed += 1
+  }
+
   return {
     users: { total: totalUsers, today: usersToday, last7Days: usersLast7 },
+    organizations: {
+      total: organizations.length,
+      comped,
+      paying,
+      trialing,
+      lapsed,
+    },
     restaurants: { total: totalRestaurants, active: activeRestaurants },
     menus: { total: totalMenus, items: totalItems },
     invitations: { pending: pendingInvitations },

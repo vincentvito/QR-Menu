@@ -132,6 +132,13 @@ model Organization {
   maxRestaurantsOverride Int?
   monthlyCreditsOverride Int?
 
+  // Admin-granted complimentary access. Lets the app owner comp internal,
+  // family, beta, or promo accounts without creating fake Stripe revenue.
+  compPlan      String?
+  compReason    String?
+  compGrantedBy String?
+  compGrantedAt DateTime?
+
   members            Member[]
   invitations        Invitation[]
   menus              Menu[]
@@ -310,11 +317,11 @@ model CreditTransaction {
 // cross-site tracking. Cleanup/rollup strategy lives in the
 // analytics job (TODO once we have meaningful traffic).
 model MenuEvent {
-  id           String   @id @default(cuid())
+  id           String     @id @default(cuid())
   restaurantId String
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
   menuId       String?
-  menu         Menu?    @relation(fields: [menuId], references: [id], onDelete: SetNull)
+  menu         Menu?      @relation(fields: [menuId], references: [id], onDelete: SetNull)
 
   // "view" | "dish_image_tap" | "language_change" | "google_review_click"
   //   | "wifi_reveal" | "social_click" | "menu_switch"

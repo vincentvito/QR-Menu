@@ -1,5 +1,6 @@
 import prisma from '@/lib/prisma'
 import { resolvePlan } from '@/lib/plans'
+import { ensureCompMonthlyCredits } from '@/lib/plans/credits'
 import {
   ACTIVE_SUBSCRIPTION_STATUSES,
   SUBSCRIPTION_LAPSED_MESSAGE,
@@ -25,7 +26,7 @@ async function loadPlanContext(organizationId: string) {
     }),
     prisma.organization.findUnique({
       where: { id: organizationId },
-      select: { maxRestaurantsOverride: true, monthlyCreditsOverride: true },
+      select: { maxRestaurantsOverride: true, monthlyCreditsOverride: true, compPlan: true },
     }),
   ])
   return { subscription, plan: resolvePlan(subscription, org) }
@@ -95,9 +96,7 @@ export async function canCreateMenu(restaurantId: string): Promise<GateResult> {
   const allowed = currentCount < limit
   return {
     allowed,
-    reason: allowed
-      ? undefined
-      : `Each restaurant supports up to ${limit} menus on your plan.`,
+    reason: allowed ? undefined : `Each restaurant supports up to ${limit} menus on your plan.`,
     currentCount,
     limit,
   }
@@ -110,6 +109,15 @@ export interface CreditsAvailable {
 }
 
 export async function getAvailableCredits(organizationId: string): Promise<CreditsAvailable> {
+  const refreshed = await ensureCompMonthlyCredits(organizationId)
+  if (refreshed) {
+    return {
+      monthly: refreshed.monthly,
+      bonus: refreshed.bonus,
+      total: refreshed.total,
+    }
+  }
+
   const org = await prisma.organization.findUnique({
     where: { id: organizationId },
     select: { monthlyCreditsRemaining: true, bonusCreditsRemaining: true },

@@ -1,4 +1,14 @@
-import { Mail, QrCode, Store, TrendingUp, UserPlus, Users, Utensils } from 'lucide-react'
+import {
+  CreditCard,
+  Gift,
+  Mail,
+  QrCode,
+  Store,
+  TrendingUp,
+  UserPlus,
+  Users,
+  Utensils,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { PlatformStats } from '@/lib/admin/stats'
 
@@ -20,6 +30,21 @@ export function StatsGrid({ stats, className }: StatsGridProps) {
       label: 'Total users',
       value: stats.users.total,
       sub: null,
+    },
+    {
+      icon: CreditCard,
+      label: 'Billing orgs',
+      value: stats.organizations.total,
+      sub: `${stats.organizations.paying} paying, ${stats.organizations.trialing} trialing`,
+    },
+    {
+      icon: Gift,
+      label: 'Comp orgs',
+      value: stats.organizations.comped,
+      sub:
+        stats.organizations.lapsed > 0
+          ? `${stats.organizations.lapsed} lapsed`
+          : 'Owner-granted access',
     },
     {
       icon: Store,
@@ -51,7 +76,7 @@ export function StatsGrid({ stats, className }: StatsGridProps) {
   ]
 
   return (
-    <div className={cn('grid gap-3 sm:grid-cols-2 lg:grid-cols-3', className)}>
+    <div className={cn('grid gap-3 sm:grid-cols-2 lg:grid-cols-4', className)}>
       {cards.map((card) => (
         <StatCard key={card.label} {...card} />
       ))}
