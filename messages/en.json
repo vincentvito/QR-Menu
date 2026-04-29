@@ -273,51 +273,74 @@
     },
     "pricing": {
       "kicker": "Simple pricing",
-      "title": "One plan per restaurant.\nNo surprises.",
+      "title": "Plans that match\nyour floor.",
       "mostPopular": "Most popular",
+      "allFeatures": "All tiers include all features",
+      "trial": {
+        "title": "14-day trial with card required",
+        "detail": "Start with 5 AI credits before your first paid billing cycle."
+      },
+      "addOns": "Add-on: extra AI credits are $15 per 100 and never expire.",
       "plans": {
-        "starter": {
-          "name": "Starter",
-          "price": "0",
-          "unit": "/month",
-          "tagline": "Perfect to try it out",
+        "basic": {
+          "name": "Basic",
+          "prefix": "",
+          "price": "14",
+          "unit": "/mo",
+          "yearly": "$135/yr",
+          "tagline": "For one venue getting started",
           "features": [
-            "1 menu, up to 40 dishes",
-            "Printable QR code",
+            "1 restaurant, 5 menus",
+            "30 AI credits/month",
             "Unlimited scans",
-            "Works on any phone"
+            "All menu features included"
           ],
-          "cta": "Start free"
+          "cta": "Choose Basic"
         },
-        "restaurant": {
-          "name": "Restaurant",
-          "price": "19",
-          "unit": "/month",
-          "tagline": "Most popular",
+        "pro": {
+          "name": "Pro",
+          "prefix": "",
+          "price": "29",
+          "unit": "/mo",
+          "yearly": "$279/yr",
+          "tagline": "Most popular for growing teams",
           "features": [
-            "Unlimited menus & dishes",
-            "Your own custom domain",
-            "Branded QR codes",
-            "Allergens & diet tags",
-            "Dish analytics",
-            "Remove watermark"
+            "3 restaurants, 5 menus each",
+            "80 AI credits/month",
+            "Unlimited scans",
+            "All menu features included"
           ],
-          "cta": "Choose Restaurant"
+          "cta": "Choose Pro"
         },
-        "group": {
-          "name": "Group",
-          "price": "49",
-          "unit": "/month",
-          "tagline": "For 2 or more locations",
+        "business": {
+          "name": "Business",
+          "prefix": "",
+          "price": "69",
+          "unit": "/mo",
+          "yearly": "$665/yr",
+          "tagline": "For multi-location operators",
           "features": [
-            "Everything in Restaurant",
-            "Up to 10 locations",
-            "Wine pairing cards",
-            "Staff accounts",
-            "Priority support",
-            "POS integration"
+            "Up to 5 restaurants, 5 menus each",
+            "250 AI credits/month",
+            "Unlimited scans",
+            "All menu features included"
           ],
-          "cta": "Choose Group"
+          "cta": "Choose Business"
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "prefix": "from",
+          "price": "149",
+          "unit": "/mo",
+          "yearly": "Yearly plans are custom",
+          "tagline": "For larger groups and custom needs",
+          "features": [
+            "6+ restaurants",
+            "Custom AI allowance",
+            "Unlimited scans",
+            "All menu features included"
+          ],
+          "cta": "Talk to sales"
         }
       }
     },
@@ -342,7 +365,7 @@
         },
         "scans": {
           "q": "Do you charge per scan?",
-          "a": "Never. Every plan — including the free one — comes with unlimited scans."
+          "a": "Never. Every tier comes with unlimited scans."
         },
         "expired": {
           "q": "What happens if my subscription expires?",
@@ -350,7 +373,7 @@
         },
         "domain": {
           "q": "Can I use my own domain?",
-          "a": "Yes, on the Restaurant plan and above. Point your domain to us and we handle the rest, including the secure certificate."
+          "a": "Yes. Point your domain to us and we handle the rest, including the secure certificate."
         }
       }
     },
@@ -358,14 +381,14 @@
       "kicker": "Ready when you are",
       "titleA": "Your first digital menu,",
       "titleB": "in two minutes.",
-      "description": "No credit card required. You can print your QR today.",
+      "description": "Start a 14-day trial with 5 AI credits, then pick the plan that fits your restaurant.",
       "ctaPrimary": "Start for free",
       "ctaSecondary": "Talk to sales"
     },
     "footer": {
       "tagline": "Digital menus and QR codes, built for restaurants. Made in Madrid, served worldwide.",
       "copyright": "© {year} Qtable SL",
-      "madeWith": "Made with care in Madrid · hello@qtable.ai",
+      "madeWith": "Made with care by",
       "columns": {
         "product": {
           "title": "Product",

@@ -147,7 +147,7 @@ export const getBillingState = cache(async function getBillingState(
         credits?.total ?? (org?.monthlyCreditsRemaining ?? 0) + (org?.bonusCreditsRemaining ?? 0),
       resetsAt: credits?.resetsAt ?? org?.monthlyCreditsResetAt ?? null,
     },
-    usage: { restaurantCount: restaurants.length },
+    usage: { restaurantCount: restaurants.filter((restaurant) => !restaurant.readOnly).length },
     overrides: {
       maxRestaurantsOverride: org?.maxRestaurantsOverride ?? null,
       monthlyCreditsOverride: org?.monthlyCreditsOverride ?? null,

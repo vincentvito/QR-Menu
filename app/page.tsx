@@ -1,5 +1,6 @@
 import { headers } from 'next/headers'
 import { getTranslations } from 'next-intl/server'
+import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Bell, Check, Download, Play, Plus } from 'lucide-react'
 import { auth } from '@/lib/auth'
@@ -24,6 +25,29 @@ const IMG = {
   plating: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=1200&q=75',
   tables: 'https://images.unsplash.com/photo-1552566626-52f8b828add9?w=1400&q=75',
 }
+
+const PRICING_VISUALS = {
+  basic: {
+    imageSrc: '/images/pricing-basic-plan.png',
+    label: 'Solo menu',
+    overlay: 'from-[#1a1e17]/92 via-[#1a1e17]/50 to-[#1a1e17]/4',
+  },
+  pro: {
+    imageSrc: '/images/pricing-pro-plan.png',
+    label: 'Guest ready',
+    overlay: 'from-[#1a1e17]/94 via-[#1a1e17]/42 to-[#1a1e17]/4',
+  },
+  business: {
+    imageSrc: '/images/pricing-business-plan.png',
+    label: 'Multi-location',
+    overlay: 'from-[#1a1e17]/92 via-[#1a1e17]/48 to-[#1a1e17]/4',
+  },
+  enterprise: {
+    imageSrc: '/images/pricing-enterprise-plan.png',
+    label: 'Scaled service',
+    overlay: 'from-[#1a1e17]/94 via-[#1a1e17]/52 to-[#1a1e17]/4',
+  },
+} as const
 
 // Spec: max content width 1240px, horizontal padding clamp(20px, 5vw, 80px).
 const SECTION = 'mx-auto max-w-[1240px] px-[clamp(20px,5vw,80px)]'
@@ -130,7 +154,7 @@ function Hero({ t, ctaHref }: { t: T; ctaHref: string }) {
       <svg
         aria-hidden="true"
         viewBox="0 0 500 500"
-        className="text-accent pointer-events-none absolute top-10 -left-24 h-[500px] w-[500px] opacity-35"
+        className="text-accent animate-landing-float-wide pointer-events-none absolute top-10 -left-24 h-[500px] w-[500px] opacity-35"
       >
         <path
           d="M250,80 C360,60 440,160 430,280 C420,400 310,440 220,420 C110,400 60,290 80,200 C100,120 160,90 250,80 Z"
@@ -140,7 +164,7 @@ function Hero({ t, ctaHref }: { t: T; ctaHref: string }) {
       <svg
         aria-hidden="true"
         viewBox="0 0 380 380"
-        className="text-pop pointer-events-none absolute -right-20 -bottom-12 h-[380px] w-[380px] opacity-20"
+        className="text-pop animate-landing-float-tall pointer-events-none absolute -right-20 -bottom-12 h-[380px] w-[380px] opacity-20"
       >
         <path
           d="M190,40 C290,60 350,170 320,260 C290,350 180,360 100,310 C30,270 30,160 80,100 C120,50 150,35 190,40 Z"
@@ -643,7 +667,15 @@ function QrDemo({ t, ctaHref }: { t: T; ctaHref: string }) {
           <div className="relative">
             <div className="bg-card relative grid aspect-square place-items-center overflow-hidden rounded-[36px] p-8 sm:p-10">
               <div className="bg-background rounded-[24px] p-6 shadow-[0_10px_30px_-12px_rgba(26,30,23,0.18)] sm:p-7">
-                <QRCode size={260} />
+                {/* Real, scannable QR pointing at a live demo menu — visitors can
+                    scan it with their phone to see a Qtable menu in the wild. */}
+                <img
+                  src="/sea-level-test-2-qr.svg"
+                  width={260}
+                  height={260}
+                  alt="Scan to open a live Qtable menu"
+                  className="block size-[260px]"
+                />
                 <div className="text-muted-foreground mt-4 text-center text-[13px] font-medium">
                   {t('qrDemo.scanLabel')}
                 </div>
@@ -774,7 +806,7 @@ function LovedBy({ t }: { t: T }) {
 // PRICING
 // ─────────────────────────────────────────────────────────────────────────
 function Pricing({ t, ctaHref }: { t: T; ctaHref: string }) {
-  const plans = ['starter', 'restaurant', 'group'] as const
+  const plans = ['basic', 'pro', 'business', 'enterprise'] as const
 
   return (
     <section id="pricing" className={SECTION_Y}>
@@ -793,85 +825,135 @@ function Pricing({ t, ctaHref }: { t: T; ctaHref: string }) {
           </h2>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="border-cream-line bg-card/60 mb-6 flex flex-wrap items-center justify-between gap-3 rounded-[24px] border px-5 py-4">
+          <div>
+            <div className="text-[15px] font-semibold tracking-[-0.01em]">
+              {t('pricing.trial.title')}
+            </div>
+            <div className="text-muted-foreground mt-0.5 text-sm">{t('pricing.trial.detail')}</div>
+          </div>
+          <div className="bg-background text-foreground rounded-full px-3 py-1.5 text-[12px] font-semibold">
+            {t('pricing.allFeatures')}
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
           {plans.map((key, i) => {
             const featured = i === 1
             const features = t.raw(
-              `pricing.plans.${key}.features` as 'pricing.plans.starter.features',
+              `pricing.plans.${key}.features` as 'pricing.plans.basic.features',
             ) as string[]
-            const price = t(`pricing.plans.${key}.price` as 'pricing.plans.starter.price')
+            const price = t(`pricing.plans.${key}.price` as 'pricing.plans.basic.price')
+            const prefix = t(`pricing.plans.${key}.prefix` as 'pricing.plans.basic.prefix')
+            const yearly = t(`pricing.plans.${key}.yearly` as 'pricing.plans.basic.yearly')
+            const visual = PRICING_VISUALS[key]
 
             return (
               <div
                 key={key}
-                className={`relative rounded-[24px] px-9 py-9 ${
+                className={`group relative flex min-h-full flex-col overflow-hidden rounded-[24px] ${
                   featured
                     ? 'bg-foreground text-background -translate-y-2 shadow-[0_10px_30px_-12px_rgba(26,30,23,0.3)]'
                     : 'bg-card text-foreground'
                 }`}
               >
+                <div className="relative h-32 overflow-hidden">
+                  <Image
+                    src={visual.imageSrc}
+                    alt=""
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 310px"
+                    className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+                  />
+                  <div className={`absolute inset-0 bg-gradient-to-t ${visual.overlay}`} />
+                  <div className="text-background absolute right-5 bottom-4 left-5">
+                    <div className="text-background/70 text-[10px] font-semibold tracking-[0.1em] uppercase">
+                      {visual.label}
+                    </div>
+                  </div>
+                </div>
+
                 {featured && (
-                  <div className="bg-accent text-accent-foreground absolute top-4 right-4 rounded-full px-2.5 py-1 text-[11px] font-medium tracking-[0.04em]">
+                  <div className="bg-accent text-accent-foreground absolute top-4 right-4 z-10 rounded-full px-2.5 py-1 text-[11px] font-medium tracking-[0.04em]">
                     {t('pricing.mostPopular')}
                   </div>
                 )}
-                <div className="text-[22px] font-semibold tracking-[-0.02em]">
-                  {t(`pricing.plans.${key}.name` as 'pricing.plans.starter.name')}
-                </div>
-                <div
-                  className={`mt-1 text-[13px] ${
-                    featured ? 'text-background/70' : 'text-muted-foreground'
-                  }`}
-                >
-                  {t(`pricing.plans.${key}.tagline` as 'pricing.plans.starter.tagline')}
-                </div>
 
-                <div className="mt-6 flex items-baseline gap-1.5">
-                  <span className="text-[52px] leading-none font-semibold tracking-[-0.03em]">
-                    {price === '0' ? 'Free' : `€${price}`}
-                  </span>
-                  {price !== '0' && (
+                <div className="flex flex-1 flex-col px-7 py-8">
+                  <div className="text-[22px] font-semibold tracking-[-0.02em]">
+                    {t(`pricing.plans.${key}.name` as 'pricing.plans.basic.name')}
+                  </div>
+                  <div
+                    className={`mt-1 text-[13px] ${
+                      featured ? 'text-background/70' : 'text-muted-foreground'
+                    }`}
+                  >
+                    {t(`pricing.plans.${key}.tagline` as 'pricing.plans.basic.tagline')}
+                  </div>
+
+                  <div className="mt-6">
+                    {prefix && (
+                      <span
+                        className={`mr-1 text-sm ${
+                          featured ? 'text-background/70' : 'text-muted-foreground'
+                        }`}
+                      >
+                        {prefix}
+                      </span>
+                    )}
+                    <span className="text-[52px] leading-none font-semibold tracking-[-0.03em]">
+                      ${price}
+                    </span>
                     <span
-                      className={`text-sm ${
+                      className={`ml-1.5 text-sm ${
                         featured ? 'text-background/70' : 'text-muted-foreground'
                       }`}
                     >
-                      {t(`pricing.plans.${key}.unit` as 'pricing.plans.starter.unit')}
+                      {t(`pricing.plans.${key}.unit` as 'pricing.plans.basic.unit')}
                     </span>
-                  )}
+                    <div
+                      className={`mt-2 text-[13px] ${
+                        featured ? 'text-background/70' : 'text-muted-foreground'
+                      }`}
+                    >
+                      {yearly}
+                    </div>
+                  </div>
+
+                  <ul className="m-0 mt-7 mb-7 list-none space-y-1.5 p-0">
+                    {features.map((f) => (
+                      <li key={f} className="flex items-start gap-2.5 text-sm">
+                        <span
+                          className={`mt-0.5 grid h-[18px] w-[18px] flex-shrink-0 place-items-center rounded-full ${
+                            featured
+                              ? 'bg-accent text-accent-foreground'
+                              : 'bg-background text-foreground'
+                          }`}
+                        >
+                          <Check className="h-2.5 w-2.5" strokeWidth={2.4} aria-hidden="true" />
+                        </span>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <PillButton
+                    asChild
+                    variant={featured ? 'accent' : 'primary'}
+                    size="lg"
+                    className="mt-auto w-full"
+                  >
+                    <Link href={key === 'enterprise' ? 'mailto:hello@qtable.ai' : ctaHref}>
+                      {t(`pricing.plans.${key}.cta` as 'pricing.plans.basic.cta')}
+                    </Link>
+                  </PillButton>
                 </div>
-
-                <ul className="m-0 mt-7 mb-7 list-none space-y-1.5 p-0">
-                  {features.map((f) => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm">
-                      <span
-                        className={`mt-0.5 grid h-[18px] w-[18px] flex-shrink-0 place-items-center rounded-full ${
-                          featured
-                            ? 'bg-accent text-accent-foreground'
-                            : 'bg-background text-foreground'
-                        }`}
-                      >
-                        <Check className="h-2.5 w-2.5" strokeWidth={2.4} aria-hidden="true" />
-                      </span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <PillButton
-                  asChild
-                  variant={featured ? 'accent' : 'primary'}
-                  size="lg"
-                  className="w-full"
-                >
-                  <Link href={ctaHref}>
-                    {t(`pricing.plans.${key}.cta` as 'pricing.plans.starter.cta')}
-                  </Link>
-                </PillButton>
               </div>
             )
           })}
         </div>
+
+        <div className="text-muted-foreground mt-6 text-center text-sm">{t('pricing.addOns')}</div>
       </div>
     </section>
   )
@@ -945,7 +1027,7 @@ function FooterCta({ t, ctaHref }: { t: T; ctaHref: string }) {
         <svg
           aria-hidden="true"
           viewBox="0 0 260 260"
-          className="text-accent pointer-events-none absolute -top-16 -left-16 h-[260px] w-[260px] opacity-20"
+          className="text-accent animate-landing-float-wide pointer-events-none absolute -top-16 -left-16 h-[260px] w-[260px] opacity-20"
         >
           <path
             d="M130,20 C220,30 250,130 220,190 C190,250 90,240 40,190 C-10,140 20,50 130,20 Z"
@@ -955,7 +1037,7 @@ function FooterCta({ t, ctaHref }: { t: T; ctaHref: string }) {
         <svg
           aria-hidden="true"
           viewBox="0 0 280 280"
-          className="text-pop pointer-events-none absolute -right-20 -bottom-16 h-[280px] w-[280px] opacity-20"
+          className="text-pop animate-landing-float-tall pointer-events-none absolute -right-20 -bottom-16 h-[280px] w-[280px] opacity-20"
         >
           <path
             d="M140,30 C240,40 260,160 220,220 C180,280 80,270 40,210 C0,150 40,20 140,30 Z"
@@ -1042,7 +1124,17 @@ function Footer({ t, year }: { t: T; year: number }) {
         </div>
         <div className="text-muted-foreground flex flex-wrap justify-between gap-3 pt-5 text-xs">
           <span>{t('footer.copyright', { year })}</span>
-          <span>{t('footer.madeWith')}</span>
+          <span>
+            {t('footer.madeWith')}{' '}
+            <a
+              href="https://clickstudio.ai"
+              target="_blank"
+              rel="noreferrer"
+              className="text-foreground font-medium transition-opacity hover:opacity-70"
+            >
+              Clickstudio.ai
+            </a>
+          </span>
         </div>
       </div>
     </footer>

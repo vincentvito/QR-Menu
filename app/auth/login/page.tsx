@@ -29,7 +29,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     <main
       id="main-content"
       tabIndex={-1}
-      className="bg-background text-foreground grid min-h-screen lg:grid-cols-[minmax(0,0.92fr)_minmax(520px,1.08fr)]"
+      className="bg-background text-foreground motion-safe:animate-login-shell grid min-h-screen lg:grid-cols-[minmax(0,0.92fr)_minmax(520px,1.08fr)]"
     >
       <section className="flex min-h-screen items-start px-[clamp(20px,6vw,72px)] py-8 lg:py-12">
         <div className="mx-auto flex w-full max-w-[520px] flex-col gap-7">
@@ -44,13 +44,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 0vw"
-              className="object-cover"
+              className="motion-safe:animate-login-image object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-[#1a1e17]/55 via-transparent to-transparent" />
           </div>
 
           <div className="space-y-8">
-            <div className="space-y-4">
+            <div className="motion-safe:animate-login-copy space-y-4">
               <Kicker tone="pop">Built for busy service</Kicker>
               <div className="space-y-3">
                 <h1
@@ -70,20 +70,22 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               </div>
             </div>
 
-            <LoginForm callbackUrl={callbackUrl} />
+            <div className="motion-safe:animate-login-form">
+              <LoginForm callbackUrl={callbackUrl} />
+            </div>
           </div>
         </div>
       </section>
 
       <aside className="relative hidden min-h-screen p-4 lg:block">
-        <div className="bg-foreground sticky top-4 h-[calc(100vh-2rem)] min-h-[640px] overflow-hidden rounded-[36px]">
+        <div className="bg-foreground motion-safe:animate-login-form sticky top-4 h-[calc(100vh-2rem)] min-h-[640px] overflow-hidden rounded-[36px]">
           <Image
             src={HERO_IMAGE}
             alt="Restaurant table with QR menu tent and mobile digital menus"
             fill
             priority
             sizes="52vw"
-            className="object-cover"
+            className="motion-safe:animate-login-image object-cover"
           />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(26,30,23,0.86)_0%,rgba(26,30,23,0.36)_42%,rgba(26,30,23,0.08)_100%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_20%,rgba(200,224,106,0.18),transparent_32%),radial-gradient(circle_at_20%_80%,rgba(232,85,43,0.24),transparent_30%)]" />

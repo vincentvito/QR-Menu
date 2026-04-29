@@ -6,6 +6,22 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.23.6',
+    date: '2026-04-29',
+    title: 'Landing pricing and motion polish',
+    changes: [
+      {
+        type: 'changed' as const,
+        items: [
+          'Landing page pricing now shows the current USD Basic, Pro, Business, and Enterprise tiers from Stripe',
+          'Landing page pricing cards now use the same plan images as Billing for a more consistent upgrade path',
+          'Landing page decorative circles now drift with a more noticeable, still gentle motion',
+          'Footer credit now links Clickstudio.ai from the Made with care by line',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.23.5',
     date: '2026-04-28',
     title: 'Launch polish for onboarding, AI credits, and billing',
@@ -27,6 +43,7 @@ const changelog = [
         type: 'changed' as const,
         items: [
           'Onboarding and trial plan selection now feel more polished with smooth transitions, restaurant menu imagery, and image-backed pricing cards',
+          'Login now opens with a smoother page transition and a soft fade-in on the restaurant menu image',
           'Billing plan cards now use individual restaurant menu images for each plan so plan selection feels more visual inside the dashboard',
           'Dashboard and admin route changes now use smoother native view transitions while keeping persistent navigation steady',
           'Menu navigation now uses directional transitions for list-to-detail flows, and dashboard warning banners are gated server-side instead of shipping a client route check',
@@ -43,6 +60,7 @@ const changelog = [
       {
         type: 'fixed' as const,
         items: [
+          'Capped plans can now disable the current restaurant from the Add restaurant flow, then permanently delete restaurants from a typed-confirmation danger zone in Settings',
           'AI photo generation and enhancement now surface the real error message from the server, with a Buy credits action when credits run out',
           'Billing now separates total AI credits from monthly and bonus buckets instead of showing bonus credits as part of a misleading monthly fraction',
         ],

@@ -534,7 +534,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
         </div>
 
         <p className="text-muted-foreground mt-4 text-xs">
-          You're using {state.usage.restaurantCount} of{' '}
+          You're using {state.usage.restaurantCount} active of{' '}
           {state.plan.maxRestaurants === null ? '∞' : state.plan.maxRestaurants} restaurant
           {state.plan.maxRestaurants === 1 ? '' : 's'} on your current plan.
         </p>
