@@ -1,15 +1,13 @@
 import Link from 'next/link'
+import { Search, X } from 'lucide-react'
 import { getCachedSession } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { resolvePlan } from '@/lib/plans'
-import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
 import { AdminTable } from '../AdminTable'
 
-const PAGE_SIZE = 50
-
 interface PageProps {
-  searchParams: Promise<{ page?: string }>
+  searchParams: Promise<{ email?: string }>
 }
 
 export default async function AdminUsersPage({ searchParams }: PageProps) {
@@ -17,44 +15,47 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
   const session = await getCachedSession()
   if (!session) return null
 
-  const { page: pageParam } = await searchParams
-  const page = Math.max(1, Number.parseInt(pageParam ?? '1', 10) || 1)
-  const skip = (page - 1) * PAGE_SIZE
+  const { email: emailParam } = await searchParams
+  const emailQuery = (emailParam ?? '').trim()
+  const hasQuery = emailQuery.length > 0
 
-  const [users, totalUsers] = await Promise.all([
-    prisma.user.findMany({
-      orderBy: { createdAt: 'desc' },
-      skip,
-      take: PAGE_SIZE,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        banned: true,
-        banReason: true,
-        members: {
-          select: {
-            organization: {
-              select: {
-                id: true,
-                name: true,
-                compPlan: true,
-                compReason: true,
-                compGrantedAt: true,
-                maxRestaurantsOverride: true,
-                monthlyCreditsOverride: true,
-                monthlyCreditsRemaining: true,
-                bonusCreditsRemaining: true,
-                _count: { select: { restaurants: true, menus: true } },
+  const user = hasQuery
+    ? await prisma.user.findFirst({
+        where: {
+          email: {
+            equals: emailQuery,
+            mode: 'insensitive',
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          banned: true,
+          banReason: true,
+          members: {
+            select: {
+              organization: {
+                select: {
+                  id: true,
+                  name: true,
+                  compPlan: true,
+                  compReason: true,
+                  compGrantedAt: true,
+                  maxRestaurantsOverride: true,
+                  monthlyCreditsOverride: true,
+                  monthlyCreditsRemaining: true,
+                  bonusCreditsRemaining: true,
+                  _count: { select: { restaurants: true, menus: true } },
+                },
               },
             },
           },
         },
-      },
-    }),
-    prisma.user.count(),
-  ])
+      })
+    : null
+  const users = user ? [user] : []
 
   const orgIds = Array.from(
     new Set(users.flatMap((user) => user.members.map((member) => member.organization.id))),
@@ -87,97 +88,108 @@ export default async function AdminUsersPage({ searchParams }: PageProps) {
     }
   }
 
-  const totalPages = Math.max(1, Math.ceil(totalUsers / PAGE_SIZE))
-  const hasPrev = page > 1
-  const hasNext = page < totalPages
-  const rangeStart = totalUsers === 0 ? 0 : skip + 1
-  const rangeEnd = Math.min(skip + users.length, totalUsers)
-
   return (
-    <section>
+    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
       <h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-      <p className="text-muted-foreground mt-1 mb-5 text-sm">
-        {totalUsers} total · showing {rangeStart}–{rangeEnd} · impersonate to see what a user sees,
-        ban to block sign-in.
+      <p className="text-muted-foreground mt-1 text-sm">
+        Search by email to impersonate users, review organizations, and manage access.
       </p>
 
-      <AdminTable
-        viewerId={session.user.id}
-        users={users.map((u) => ({
-          id: u.id,
-          name: u.name,
-          email: u.email,
-          role: u.role,
-          banned: u.banned,
-          banReason: u.banReason,
-          organizations: u.members.map((member) => {
-            const organization = member.organization
-            const activeSubscription = activeSubscriptionByOrg.get(organization.id) ?? null
-            const latestSubscription = latestSubscriptionByOrg.get(organization.id) ?? null
-            const plan = resolvePlan(activeSubscription, organization)
-            return {
-              id: organization.id,
-              name: organization.name,
-              compPlan: organization.compPlan,
-              compReason: organization.compReason,
-              compGrantedAt: organization.compGrantedAt,
-              monthlyCreditsRemaining: organization.monthlyCreditsRemaining,
-              bonusCreditsRemaining: organization.bonusCreditsRemaining,
-              restaurantCount: organization._count.restaurants,
-              menuCount: organization._count.menus,
-              planName: plan.name,
-              subscriptionStatus: latestSubscription?.status ?? null,
-              subscriptionPlan: latestSubscription?.plan ?? null,
-              billingInterval: latestSubscription?.billingInterval ?? null,
-            }
-          }),
-        }))}
-      />
-
-      {totalPages > 1 ? (
-        <div className="mt-6 flex items-center justify-between">
-          <span className="text-muted-foreground text-xs">
-            Page {page} of {totalPages}
-          </span>
-          <div className="flex gap-2">
-            <PageLink href={`/admin/users?page=${page - 1}`} enabled={hasPrev}>
-              Previous
-            </PageLink>
-            <PageLink href={`/admin/users?page=${page + 1}`} enabled={hasNext}>
-              Next
-            </PageLink>
-          </div>
+      <form
+        action="/admin/users"
+        className="border-cream-line bg-card mt-5 mb-5 flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-center"
+      >
+        <label className="sr-only" htmlFor="admin-user-email-search">
+          Search users by email
+        </label>
+        <div className="border-cream-line bg-background focus-within:ring-ring/20 flex min-w-0 flex-1 items-center gap-2 rounded-full border px-3 py-2 focus-within:ring-2">
+          <Search className="text-muted-foreground size-4 shrink-0" aria-hidden="true" />
+          <input
+            id="admin-user-email-search"
+            name="email"
+            type="search"
+            inputMode="email"
+            autoComplete="email"
+            defaultValue={emailQuery}
+            placeholder="user@example.com"
+            className="placeholder:text-muted-foreground min-w-0 flex-1 bg-transparent text-sm outline-none"
+          />
         </div>
-      ) : null}
-    </section>
-  )
-}
+        <div className="flex gap-2">
+          <button type="submit" className={buttonVariants({ size: 'sm' })}>
+            Search
+          </button>
+          {hasQuery ? (
+            <Link
+              href="/admin/users"
+              className={buttonVariants({ variant: 'outline', size: 'sm' })}
+            >
+              <X className="size-3.5" aria-hidden="true" />
+              Clear
+            </Link>
+          ) : null}
+        </div>
+      </form>
 
-// Renders an enabled <Link> or a disabled-looking span. Avoids the asChild +
-// disabled foot-gun where the Link inside a disabled Button is still clickable.
-function PageLink({
-  href,
-  enabled,
-  children,
-}: {
-  href: string
-  enabled: boolean
-  children: React.ReactNode
-}) {
-  const className = cn(
-    buttonVariants({ variant: 'outline', size: 'sm' }),
-    !enabled && 'pointer-events-none opacity-50',
-  )
-  if (!enabled) {
-    return (
-      <span className={className} aria-disabled="true">
-        {children}
-      </span>
-    )
-  }
-  return (
-    <Link href={href} className={className}>
-      {children}
-    </Link>
+      {hasQuery ? (
+        <>
+          <p className="text-muted-foreground mb-5 text-sm">
+            {user
+              ? `Showing the account for "${user.email}".`
+              : `No account found for "${emailQuery}".`}
+            {user ? ' Impersonate to see what the user sees, ban to block sign-in.' : ''}
+          </p>
+
+          {users.length > 0 ? (
+            <AdminTable
+              viewerId={session.user.id}
+              users={users.map((u) => ({
+                id: u.id,
+                name: u.name,
+                email: u.email,
+                role: u.role,
+                banned: u.banned,
+                banReason: u.banReason,
+                organizations: u.members.map((member) => {
+                  const organization = member.organization
+                  const activeSubscription = activeSubscriptionByOrg.get(organization.id) ?? null
+                  const latestSubscription = latestSubscriptionByOrg.get(organization.id) ?? null
+                  const plan = resolvePlan(activeSubscription, organization)
+                  return {
+                    id: organization.id,
+                    name: organization.name,
+                    compPlan: organization.compPlan,
+                    compReason: organization.compReason,
+                    compGrantedAt: organization.compGrantedAt,
+                    monthlyCreditsRemaining: organization.monthlyCreditsRemaining,
+                    bonusCreditsRemaining: organization.bonusCreditsRemaining,
+                    restaurantCount: organization._count.restaurants,
+                    menuCount: organization._count.menus,
+                    planName: plan.name,
+                    subscriptionStatus: latestSubscription?.status ?? null,
+                    subscriptionPlan: latestSubscription?.plan ?? null,
+                    billingInterval: latestSubscription?.billingInterval ?? null,
+                  }
+                }),
+              }))}
+            />
+          ) : (
+            <div className="border-cream-line bg-card rounded-2xl border p-8 text-center">
+              <h2 className="font-semibold tracking-tight">No matching users</h2>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Check the spelling and search the full email address.
+              </p>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="border-cream-line bg-card rounded-2xl border p-8 text-center">
+          <h2 className="font-semibold tracking-tight">Search for a user</h2>
+          <p className="text-muted-foreground mt-1 text-sm">
+            Enter the full email address to load one account.
+          </p>
+        </div>
+      )}
+    </main>
   )
 }

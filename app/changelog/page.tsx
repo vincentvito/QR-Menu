@@ -26,8 +26,18 @@ const changelog = [
       {
         type: 'changed' as const,
         items: [
+          'Onboarding and trial plan selection now feel more polished with smooth transitions, restaurant menu imagery, and image-backed pricing cards',
+          'Billing plan cards now use individual restaurant menu images for each plan so plan selection feels more visual inside the dashboard',
+          'Dashboard and admin route changes now use smoother native view transitions while keeping persistent navigation steady',
+          'Menu navigation now uses directional transitions for list-to-detail flows, and dashboard warning banners are gated server-side instead of shipping a client route check',
+          'Admin pages now use the same dashboard sidebar and top navigation shell as the rest of the app',
+          'Admin navigation is back to one sidebar section, with Overview and Users handled inside the Admin page',
+          'Admin Users now loads one account from an email search instead of opening as a large user directory',
+          'Dashboard pages now share the Analytics page width, while Admin overview keeps its full-width stats with proper page padding',
+          'Dashboard warning banners no longer double up on menu editor and new-menu pages that already show a contextual editing message',
           'Expired or canceled subscriptions now become dashboard read-only: public menus keep serving guests, but editing, new menus, uploads, staff changes, and AI actions pause until a plan is selected',
           'Billing now labels owner-granted complimentary plans clearly instead of showing them as unsubscribed accounts',
+          'Billing no longer repeats the subscription-ended top banner when the page already shows the larger plan recovery message',
         ],
       },
       {

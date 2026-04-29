@@ -1,8 +1,10 @@
+import { cookies } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
-import Link from 'next/link'
 import { getCachedSession } from '@/lib/auth'
-import { BrandMark } from '@/components/brand/BrandMark'
-import { SignOutButton } from '@/components/dashboard/SignOutButton'
+import { getDashboardContext } from '@/lib/dashboard/context'
+import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
+import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
+import { RouteViewTransition } from '@/components/navigation/RouteViewTransition'
 import { AdminTabs } from './AdminTabs'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -11,33 +13,41 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   // Don't leak admin's existence to non-admins.
   if (session.user.role !== 'admin') notFound()
 
+  const [{ restaurant, restaurants, scope }, cookieStore] = await Promise.all([
+    getDashboardContext(),
+    cookies(),
+  ])
+  const defaultOpen = cookieStore.get('sidebar_state')?.value !== 'false'
+
   return (
-    <div className="min-h-screen">
-      <header className="border-cream-line bg-background/80 sticky top-0 z-40 border-b backdrop-blur-md">
-        <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-6 px-[clamp(20px,5vw,80px)] py-4">
-          <div className="flex items-center gap-4">
-            <Link href="/" aria-label="Qtable home">
-              <BrandMark size="md" />
-            </Link>
-            <span className="text-muted-foreground text-xs tracking-[0.14em] uppercase">
-              Platform admin
-            </span>
+    <SidebarProvider defaultOpen={defaultOpen}>
+      <DashboardSidebar
+        restaurant={{
+          id: restaurant.id,
+          name: restaurant.name,
+          logo: restaurant.logo,
+        }}
+        restaurants={restaurants}
+        scope={scope}
+        viewer={{
+          name: session.user.name,
+          email: session.user.email,
+          image: session.user.image ?? null,
+          role: session.user.role ?? 'user',
+        }}
+      />
+      <SidebarInset>
+        <header className="border-cream-line bg-background/80 sticky top-0 z-40 flex h-14 items-center gap-3 border-b px-4 backdrop-blur-md [view-transition-name:admin-header] md:px-6">
+          <SidebarTrigger />
+          <div className="text-muted-foreground text-xs font-medium tracking-[0.14em] uppercase">
+            Platform admin
           </div>
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="text-muted-foreground hover:text-foreground text-sm">
-              Your dashboard
-            </Link>
-            <SignOutButton />
-          </div>
-        </div>
-        <div className="mx-auto max-w-[1240px] px-[clamp(20px,5vw,80px)]">
+        </header>
+        <div className="border-cream-line border-b px-4 md:px-6">
           <AdminTabs />
         </div>
-      </header>
-
-      <main className="mx-auto max-w-[1240px] space-y-10 px-[clamp(20px,5vw,80px)] py-6">
-        {children}
-      </main>
-    </div>
+        <RouteViewTransition>{children}</RouteViewTransition>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }

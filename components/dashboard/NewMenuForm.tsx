@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useRef, useState, useTransition } from 'react'
+import { addTransitionType, useRef, useState, useTransition } from 'react'
 import { useTranslations } from 'next-intl'
 import { FileText, Image as ImageIcon, LinkIcon, Loader2, Sparkles, Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -83,7 +83,10 @@ export function NewMenuForm() {
       }
       // Route straight to the editor so the owner can review/tweak items
       // before sharing. The public menu is one click away via "View public".
-      startTransition(() => router.push(`/dashboard/menus/${data.slug}/edit`))
+      startTransition(() => {
+        addTransitionType('nav-forward')
+        router.push(`/dashboard/menus/${data.slug}/edit`)
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Network error')
       setIsLoading(false)

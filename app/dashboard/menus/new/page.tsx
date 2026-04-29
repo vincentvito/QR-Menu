@@ -3,6 +3,7 @@ import { ArrowLeft, Lock } from 'lucide-react'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import { getSubscriptionAccessState } from '@/lib/plans/subscription-access'
 import { NewMenuForm } from '@/components/dashboard/NewMenuForm'
+import { TransitionLink } from '@/components/navigation/TransitionLink'
 
 export default async function NewMenuPage() {
   const { restaurant } = await getDashboardContext()
@@ -14,14 +15,15 @@ export default async function NewMenuPage() {
       : null
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-      <Link
+    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+      <TransitionLink
         href="/dashboard/menus"
+        transitionType="nav-back"
         className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1 text-xs transition-colors"
       >
         <ArrowLeft className="size-3" aria-hidden="true" />
         Back to menus
-      </Link>
+      </TransitionLink>
 
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">New menu</h1>

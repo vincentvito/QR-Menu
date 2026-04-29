@@ -1,14 +1,18 @@
 {
+  "env": {
+    "BRAVE_SEARCH_API_KEY": "BSA4HXk5eHbf2diZ2ZlvJxPKf9H4HNp"
+  },
   "permissions": {
     "allow": [
       "Bash(npx tsc *)",
       "Read(//mnt/e/downloads/infographs/**)",
       "Bash(awk 'NR>=50 && NR<=193 {print NR\": \"length\\($0\\)\" chars\"}' \"/mnt/e/downloads/infographs/QRmenucrafter-Landing.html\")",
       "Bash(awk NR>=50 && length\\($0\\)>1000 {print NR\": \"length\\($0\\)\" chars\"} *)",
-      "Bash(awk NR>=175 && NR<=193 && NR!=183 {print NR\": \"$0} *)"
+      "Bash(awk NR>=175 && NR<=193 && NR!=183 {print NR\": \"$0} *)",
+      "Bash(git -C /mnt/e/projects/QR-Menu diff HEAD -- app/dashboard/layout.tsx)",
+      "Bash(git -C /mnt/e/projects/QR-Menu diff HEAD -- app/globals.css)",
+      "Bash(git -C /mnt/e/projects/QR-Menu diff HEAD -- app/onboarding/OnboardingFlow.tsx)",
+      "Bash(git -C /mnt/e/projects/QR-Menu diff HEAD -- app/onboarding/page.tsx)"
     ]
-  },
-  "env": {
-    "BRAVE_SEARCH_API_KEY": "BSA4HXk5eHbf2diZ2ZlvJxPKf9H4HNp"
   }
 }

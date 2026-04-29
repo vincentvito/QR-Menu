@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { Check, CreditCard, Gift, Lock, Loader2, Sparkles, Zap } from 'lucide-react'
@@ -14,6 +15,47 @@ interface BillingPanelProps {
   canManage: boolean
   state: BillingState
   planCatalog: PlanDefinition[]
+}
+
+const PLAN_VISUALS: Record<
+  PlanDefinition['id'],
+  {
+    imageSrc: string
+    label: string
+    objectPosition: string
+    overlay: string
+  }
+> = {
+  trial: {
+    imageSrc: '/images/pricing-pro-plan.png',
+    label: 'Trial preview',
+    objectPosition: '50% 50%',
+    overlay: 'from-[#1a1e17]/92 via-[#1a1e17]/46 to-[#1a1e17]/4',
+  },
+  basic: {
+    imageSrc: '/images/pricing-basic-plan.png',
+    label: 'Solo menu',
+    objectPosition: '50% 50%',
+    overlay: 'from-[#1a1e17]/92 via-[#1a1e17]/50 to-[#1a1e17]/4',
+  },
+  pro: {
+    imageSrc: '/images/pricing-pro-plan.png',
+    label: 'Guest ready',
+    objectPosition: '50% 50%',
+    overlay: 'from-[#1a1e17]/94 via-[#1a1e17]/42 to-[#1a1e17]/4',
+  },
+  business: {
+    imageSrc: '/images/pricing-business-plan.png',
+    label: 'Multi-location',
+    objectPosition: '50% 50%',
+    overlay: 'from-[#1a1e17]/92 via-[#1a1e17]/48 to-[#1a1e17]/4',
+  },
+  enterprise: {
+    imageSrc: '/images/pricing-enterprise-plan.png',
+    label: 'Scaled service',
+    objectPosition: '50% 50%',
+    overlay: 'from-[#1a1e17]/94 via-[#1a1e17]/52 to-[#1a1e17]/4',
+  },
 }
 
 const SUBSCRIBABLE_PLANS: Array<PlanDefinition['id']> = ['basic', 'pro', 'business', 'enterprise']
@@ -399,68 +441,93 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
               const priceCents = interval === 'year' ? p.priceYearlyCents : p.priceMonthlyCents
               const isCurrent = p.id === currentPlanId
               const isEnterprise = p.id === 'enterprise'
+              const visual = PLAN_VISUALS[p.id]
               return (
                 <div
                   key={p.id}
-                  className={`relative rounded-xl border p-4 ${
+                  className={`group bg-background relative flex min-h-[310px] flex-col overflow-hidden rounded-[20px] border shadow-[0_14px_36px_-32px_rgba(26,30,23,0.5)] transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 ${
                     isCurrent ? 'border-foreground' : 'border-cream-line'
                   }`}
                 >
                   {isCurrent ? (
-                    <span className="bg-foreground text-background absolute -top-2 left-3 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
+                    <span className="bg-foreground text-background absolute top-3 left-3 z-20 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
                       Current
                     </span>
                   ) : null}
-                  <h3 className="text-sm font-semibold">{p.name}</h3>
-                  <p className="mt-2 text-2xl font-semibold tracking-tight tabular-nums">
-                    {isEnterprise && interval === 'year' ? (
-                      <span className="text-muted-foreground text-base font-normal">Custom</span>
-                    ) : (
-                      <>
-                        {formatPrice(priceCents)}
-                        <span className="text-muted-foreground text-xs font-normal">
-                          {' '}
-                          /{interval === 'year' ? 'yr' : 'mo'}
-                        </span>
-                      </>
-                    )}
-                  </p>
-                  <ul className="text-muted-foreground mt-3 space-y-1 text-xs">
-                    <li className="flex items-center gap-1.5">
-                      <Check className="size-3" aria-hidden="true" />
-                      {p.maxRestaurants === null
-                        ? '6+ restaurants'
-                        : `${p.maxRestaurants} restaurant${p.maxRestaurants === 1 ? '' : 's'}`}
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                      <Check className="size-3" aria-hidden="true" />
-                      {p.maxMenusPerRestaurant} menus each
-                    </li>
-                    <li className="flex items-center gap-1.5">
-                      <Check className="size-3" aria-hidden="true" />
-                      {p.monthlyCredits === null
-                        ? 'Custom AI allowance'
-                        : `${p.monthlyCredits} AI credits/mo`}
-                    </li>
-                  </ul>
-                  {canManage && !isCurrent && !isComped ? (
-                    <Button
-                      size="sm"
-                      className="mt-4 w-full"
-                      onClick={() => startUpgrade(p.id)}
-                      disabled={pendingPlan !== null || (isEnterprise && interval === 'year')}
-                    >
-                      {pendingPlan === p.id ? (
-                        <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-                      ) : isEnterprise ? (
-                        'Contact sales'
-                      ) : state.subscription ? (
-                        'Switch to this plan'
+                  <div className="relative h-24 overflow-hidden">
+                    <Image
+                      src={visual.imageSrc}
+                      alt=""
+                      fill
+                      sizes="(max-width: 768px) 50vw, 220px"
+                      className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-105"
+                      style={{ objectPosition: visual.objectPosition }}
+                    />
+                    <div className={`absolute inset-0 bg-gradient-to-t ${visual.overlay}`} />
+                    <div className="text-background absolute right-3 bottom-3 left-3 flex items-end justify-between gap-2">
+                      <div>
+                        <div className="text-background/70 text-[10px] font-semibold tracking-[0.1em] uppercase">
+                          {visual.label}
+                        </div>
+                        <h3 className="mt-0.5 text-base leading-none font-semibold">{p.name}</h3>
+                      </div>
+                      <div className="bg-background/14 border-background/20 grid size-8 place-items-center rounded-full border backdrop-blur">
+                        <Sparkles className="size-3.5" aria-hidden="true" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-1 flex-col p-4">
+                    <p className="text-2xl font-semibold tracking-tight tabular-nums">
+                      {isEnterprise && interval === 'year' ? (
+                        <span className="text-muted-foreground text-base font-normal">Custom</span>
                       ) : (
-                        'Start 14-day trial'
+                        <>
+                          {formatPrice(priceCents)}
+                          <span className="text-muted-foreground text-xs font-normal">
+                            {' '}
+                            /{interval === 'year' ? 'yr' : 'mo'}
+                          </span>
+                        </>
                       )}
-                    </Button>
-                  ) : null}
+                    </p>
+                    <ul className="text-muted-foreground mt-3 space-y-1 text-xs">
+                      <li className="flex items-center gap-1.5">
+                        <Check className="text-accent-deep size-3" aria-hidden="true" />
+                        {p.maxRestaurants === null
+                          ? '6+ restaurants'
+                          : `${p.maxRestaurants} restaurant${p.maxRestaurants === 1 ? '' : 's'}`}
+                      </li>
+                      <li className="flex items-center gap-1.5">
+                        <Check className="text-accent-deep size-3" aria-hidden="true" />
+                        {p.maxMenusPerRestaurant} menus each
+                      </li>
+                      <li className="flex items-center gap-1.5">
+                        <Check className="text-accent-deep size-3" aria-hidden="true" />
+                        {p.monthlyCredits === null
+                          ? 'Custom AI allowance'
+                          : `${p.monthlyCredits} AI credits/mo`}
+                      </li>
+                    </ul>
+                    {canManage && !isCurrent && !isComped ? (
+                      <Button
+                        size="sm"
+                        className="mt-auto w-full"
+                        onClick={() => startUpgrade(p.id)}
+                        disabled={pendingPlan !== null || (isEnterprise && interval === 'year')}
+                      >
+                        {pendingPlan === p.id ? (
+                          <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                        ) : isEnterprise ? (
+                          'Contact sales'
+                        ) : state.subscription ? (
+                          'Switch to this plan'
+                        ) : (
+                          'Start 14-day trial'
+                        )}
+                      </Button>
+                    ) : null}
+                  </div>
                 </div>
               )
             })}

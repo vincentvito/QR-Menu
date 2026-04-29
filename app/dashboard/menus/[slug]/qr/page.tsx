@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import prisma from '@/lib/prisma'
 import { getDashboardContext } from '@/lib/dashboard/context'
+import { TransitionLink } from '@/components/navigation/TransitionLink'
 import { MenuQRPanel } from './MenuQRPanel'
 
 interface PageProps {
@@ -26,14 +27,15 @@ export default async function MenuQRPage({ params }: PageProps) {
   const publicUrl = `${baseUrl}/m/${menu.slug}`
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
-      <Link
+    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+      <TransitionLink
         href="/dashboard/menus"
+        transitionType="nav-back"
         className="text-muted-foreground hover:text-foreground mb-4 inline-flex items-center gap-1 text-xs transition-colors"
       >
         <ArrowLeft className="size-3" aria-hidden="true" />
         Back to menus
-      </Link>
+      </TransitionLink>
 
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">QR code · {menu.name}</h1>

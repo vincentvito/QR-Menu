@@ -1,10 +1,10 @@
-import Link from 'next/link'
 import { Plus, QrCode } from 'lucide-react'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import { getMenusForRestaurant } from '@/lib/menus/get'
 import { getSubscriptionAccessState } from '@/lib/plans/subscription-access'
 import { Button } from '@/components/ui/button'
 import { MenuList } from '@/components/dashboard/MenuList'
+import { TransitionLink } from '@/components/navigation/TransitionLink'
 
 export default async function MenusPage() {
   // Cached in getDashboardContext — the layout already resolved this, so
@@ -18,15 +18,15 @@ export default async function MenusPage() {
   const canCreateMenu = !restaurant.readOnly && !subscriptionAccess.isLapsed
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">Menus</h1>
         {canCreateMenu ? (
           <Button asChild size="sm">
-            <Link href="/dashboard/menus/new">
+            <TransitionLink href="/dashboard/menus/new" transitionType="nav-forward">
               <Plus className="size-4" aria-hidden="true" />
               <span>New menu</span>
-            </Link>
+            </TransitionLink>
           </Button>
         ) : (
           <Button size="sm" disabled>
@@ -47,10 +47,10 @@ export default async function MenusPage() {
           </p>
           {canCreateMenu ? (
             <Button asChild className="mt-5" size="sm">
-              <Link href="/dashboard/menus/new">
+              <TransitionLink href="/dashboard/menus/new" transitionType="nav-forward">
                 <Plus className="size-4" aria-hidden="true" />
                 <span>New menu</span>
-              </Link>
+              </TransitionLink>
             </Button>
           ) : (
             <Button className="mt-5" size="sm" disabled>

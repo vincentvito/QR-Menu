@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Check, Copy, ExternalLink, Pencil, QrCode } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { PillButton } from '@/components/ui/pill-button'
+import { TransitionLink } from '@/components/navigation/TransitionLink'
 
 interface MenuListItem {
   id: string
@@ -54,16 +55,19 @@ export function MenuList({ menus, publicBaseUrl }: MenuListProps) {
             </div>
             <div className="flex shrink-0 flex-wrap gap-2">
               <Button asChild size="sm" variant="outline">
-                <Link href={`/dashboard/menus/${m.slug}/edit`}>
+                <TransitionLink
+                  href={`/dashboard/menus/${m.slug}/edit`}
+                  transitionType="nav-forward"
+                >
                   <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
                   {t('edit')}
-                </Link>
+                </TransitionLink>
               </Button>
               <Button asChild size="sm" variant="outline">
-                <Link href={`/dashboard/menus/${m.slug}/qr`}>
+                <TransitionLink href={`/dashboard/menus/${m.slug}/qr`} transitionType="nav-forward">
                   <QrCode className="h-3.5 w-3.5" aria-hidden="true" />
                   QR
-                </Link>
+                </TransitionLink>
               </Button>
               <Button
                 type="button"

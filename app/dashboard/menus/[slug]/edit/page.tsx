@@ -8,6 +8,7 @@ import { getDashboardContext } from '@/lib/dashboard/context'
 import { getBillingState } from '@/lib/plans/billing-state'
 import { Button } from '@/components/ui/button'
 import { MenuEditor } from '@/components/editor/MenuEditor'
+import { TransitionLink } from '@/components/navigation/TransitionLink'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -50,15 +51,16 @@ export default async function EditMenuPage({ params }: PageProps) {
   if (menu.restaurantId !== restaurant.id) redirect('/dashboard/menus')
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <Link
+        <TransitionLink
           href="/dashboard/menus"
+          transitionType="nav-back"
           className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs transition-colors"
         >
           <ArrowLeft className="size-3" aria-hidden="true" />
           {t('back')}
-        </Link>
+        </TransitionLink>
         <Button asChild variant="outline" size="sm">
           <Link href={`/m/${slug}`} target="_blank" rel="noopener">
             {t('viewPublic')}

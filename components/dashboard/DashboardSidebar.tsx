@@ -41,6 +41,8 @@ const NAV = [
   { href: '/dashboard/billing', label: 'Billing', icon: CreditCard, orgOnly: true },
 ] as const
 
+const ADMIN_NAV = { href: '/admin', label: 'Admin', icon: Shield } as const
+
 interface DashboardSidebarProps {
   restaurant: { id: string; name: string; logo: string | null }
   restaurants: Array<{ id: string; slug: string; name: string }>
@@ -48,7 +50,12 @@ interface DashboardSidebarProps {
   scope: 'org' | 'restaurant'
 }
 
-export function DashboardSidebar({ restaurant, restaurants, viewer, scope }: DashboardSidebarProps) {
+export function DashboardSidebar({
+  restaurant,
+  restaurants,
+  viewer,
+  scope,
+}: DashboardSidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const collapsedButtonClass = 'group-data-[collapsible=icon]:mx-auto'
@@ -68,7 +75,7 @@ export function DashboardSidebar({ restaurant, restaurants, viewer, scope }: Das
   }
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" className="[view-transition-name:dashboard-sidebar]">
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-1 group-data-[collapsible=icon]:hidden">
           <Link href="/" aria-label="Qtable home" className="shrink-0">
@@ -104,13 +111,13 @@ export function DashboardSidebar({ restaurant, restaurants, viewer, scope }: Das
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname.startsWith('/admin')}
-                    tooltip="Admin"
+                    isActive={pathname.startsWith(ADMIN_NAV.href)}
+                    tooltip={ADMIN_NAV.label}
                     className={collapsedButtonClass}
                   >
-                    <Link href="/admin">
-                      <Shield />
-                      <span>Admin</span>
+                    <Link href={ADMIN_NAV.href}>
+                      <ADMIN_NAV.icon />
+                      <span>{ADMIN_NAV.label}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

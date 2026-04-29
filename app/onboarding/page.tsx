@@ -25,8 +25,8 @@ export default async function OnboardingPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl px-[clamp(20px,5vw,80px)] py-10">
-        <div className="mb-8 space-y-2 text-center">
+      <main className="mx-auto max-w-[1120px] px-[clamp(20px,5vw,80px)] py-10">
+        <div className="mx-auto mb-8 max-w-2xl space-y-2 text-center">
           <h1 className="text-3xl font-semibold tracking-tight">Set up your restaurant</h1>
           <p className="text-muted-foreground text-sm">
             Drop in your website and we&apos;ll pull the name, description, logo, and brand colors.

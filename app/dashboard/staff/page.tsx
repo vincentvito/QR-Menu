@@ -30,11 +30,12 @@ export default async function StaffPage() {
   ])
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+    <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">Staff</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          Invite managers and waiters who should be able to view and edit this restaurant&apos;s menus.
+          Invite managers and waiters who should be able to view and edit this restaurant&apos;s
+          menus.
         </p>
       </div>
 
