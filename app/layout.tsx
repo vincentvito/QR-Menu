@@ -3,19 +3,14 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from '@/components/ui/sonner'
+import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, OG_IMAGE, SITE_NAME, SITE_URL } from '@/lib/site'
 import './globals.css'
-
-const SITE_NAME = 'Qtable'
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'https://qtable.ai'
-const DEFAULT_TITLE = 'Qtable — Digital menus & QR codes for restaurants'
-const DEFAULT_DESCRIPTION =
-  'Turn your printed menu into a beautiful mobile page and a QR code for your tables — edit a dish and it updates everywhere, instantly.'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: DEFAULT_TITLE,
-    template: `%s — ${SITE_NAME}`,
+    template: `%s - ${SITE_NAME}`,
   },
   description: DEFAULT_DESCRIPTION,
   applicationName: SITE_NAME,
@@ -31,6 +26,11 @@ export const metadata: Metadata = {
   authors: [{ name: SITE_NAME }],
   creator: SITE_NAME,
   publisher: SITE_NAME,
+  category: 'Restaurant software',
+  manifest: '/manifest.webmanifest',
+  alternates: {
+    canonical: '/',
+  },
   formatDetection: {
     telephone: false,
     email: false,
@@ -41,13 +41,15 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
-    url: SITE_URL,
+    url: '/',
     locale: 'en_US',
+    images: [OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
+    images: [OG_IMAGE.url],
   },
   robots: {
     index: true,
@@ -59,6 +61,11 @@ export const metadata: Metadata = {
       'max-snippet': -1,
       'max-video-preview': -1,
     },
+  },
+  appleWebApp: {
+    capable: true,
+    title: SITE_NAME,
+    statusBarStyle: 'default',
   },
 }
 

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { notFound, redirect } from 'next/navigation'
 import { getCachedSession } from '@/lib/auth'
@@ -6,6 +7,11 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/s
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
 import { RouteViewTransition } from '@/components/navigation/RouteViewTransition'
 import { AdminTabs } from './AdminTabs'
+
+export const metadata: Metadata = {
+  title: 'Admin',
+  robots: { index: false, follow: false },
+}
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getCachedSession()

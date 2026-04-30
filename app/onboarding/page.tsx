@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import Link from 'next/link'
@@ -6,6 +7,11 @@ import { getActiveMembership } from '@/lib/organizations/get-active'
 import { BrandMark } from '@/components/brand/BrandMark'
 import { SignOutButton } from '@/components/dashboard/SignOutButton'
 import { OnboardingFlow } from './OnboardingFlow'
+
+export const metadata: Metadata = {
+  title: 'Set up your restaurant',
+  robots: { index: false, follow: false },
+}
 
 export default async function OnboardingPage() {
   const session = await auth.api.getSession({ headers: await headers() })

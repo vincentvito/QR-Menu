@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { cookies, headers } from 'next/headers'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import { getTrialState } from '@/lib/plans/billing-state'
@@ -9,6 +10,11 @@ import { ReadOnlyBanner } from '@/components/dashboard/ReadOnlyBanner'
 import { SubscriptionLapsedBanner } from '@/components/dashboard/SubscriptionLapsedBanner'
 import { TrialBanner } from '@/components/dashboard/TrialBanner'
 import { RouteViewTransition } from '@/components/navigation/RouteViewTransition'
+
+export const metadata: Metadata = {
+  title: 'Dashboard',
+  robots: { index: false, follow: false },
+}
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Context first (cached, cheap — sets up the redirect story). Then fan

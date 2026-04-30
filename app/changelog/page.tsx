@@ -6,6 +6,26 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.24.1',
+    date: '2026-04-30',
+    title: 'Launch SEO and social preview polish',
+    changes: [
+      {
+        type: 'changed' as const,
+        items: [
+          'Qtable links now render a richer branded social preview with the product colors, AI menu benefits, a real qtable.ai QR code, and a restaurant menu image',
+          'Public pages now include stronger canonical, Open Graph, Twitter, sitemap, robots, and structured-data signals for launch',
+        ],
+      },
+      {
+        type: 'fixed' as const,
+        items: [
+          'Private app screens now explicitly tell search engines not to index invite, onboarding, auth, dashboard, and admin pages',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.24.0',
     date: '2026-04-30',
     title: 'Menu category editing and append imports',

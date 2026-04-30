@@ -1,17 +1,23 @@
 import type { MetadataRoute } from 'next'
+import { SITE_URL } from '@/lib/site'
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-
-// Private surfaces stay un-indexed. The landing, changelog, and public
-// menu routes (/m/[slug]) are free-for-all — we want every restaurant's
-// menu discoverable.
+// Public: landing, changelog, and restaurant menus.
+// Private: app surfaces, auth, admin, onboarding, invitations, and APIs.
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       {
         userAgent: '*',
         allow: ['/', '/m/', '/changelog'],
-        disallow: ['/api/', '/auth/', '/dashboard/', '/admin/', '/onboarding', '/accept-invite'],
+        disallow: [
+          '/api/',
+          '/admin/',
+          '/auth/',
+          '/dashboard/',
+          '/onboarding/',
+          '/accept-invite',
+          '/accept-restaurant-invite',
+        ],
       },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,

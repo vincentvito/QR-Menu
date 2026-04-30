@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import Link from 'next/link'
@@ -9,6 +10,11 @@ import { AcceptRestaurantInviteButton } from './AcceptRestaurantInviteButton'
 
 interface PageProps {
   searchParams: Promise<{ token?: string }>
+}
+
+export const metadata: Metadata = {
+  title: 'Accept restaurant invite',
+  robots: { index: false, follow: false },
 }
 
 export default async function AcceptRestaurantInvitePage({ searchParams }: PageProps) {

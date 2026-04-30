@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
 import Link from 'next/link'
@@ -8,6 +9,11 @@ import { PLANS } from '@/lib/plans'
 import { BrandMark } from '@/components/brand/BrandMark'
 import { SignOutButton } from '@/components/dashboard/SignOutButton'
 import { StartTrialPanel } from './StartTrialPanel'
+
+export const metadata: Metadata = {
+  title: 'Start your trial',
+  robots: { index: false, follow: false },
+}
 
 export default async function StartTrialPage() {
   const session = await auth.api.getSession({ headers: await headers() })

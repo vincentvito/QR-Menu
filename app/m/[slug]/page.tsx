@@ -13,6 +13,7 @@ import { FacebookIcon, GoogleIcon, InstagramIcon, TikTokIcon } from '@/component
 import { socialUrl } from '@/lib/socials'
 import { MenuAnalyticsBootstrap } from '@/components/menu/MenuAnalyticsBootstrap'
 import { TrackedExternalLink } from '@/components/menu/TrackedExternalLink'
+import { SITE_URL } from '@/lib/site'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -30,6 +31,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     restaurant.description?.trim() ||
     `${menu.name} at ${venueName}. Browse every dish — photos, prices, specials, and dietary info.`
   const canonical = `/m/${slug}`
+  const image = `${canonical}/opengraph-image`
   return {
     title: `${venueName} — ${menu.name}`,
     description,
@@ -39,11 +41,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: `${venueName} — ${menu.name}`,
       description,
       url: canonical,
+      images: [{ url: image, width: 1200, height: 630, alt: `${venueName} menu` }],
     },
     twitter: {
       card: 'summary_large_image',
       title: `${venueName} — ${menu.name}`,
       description,
+      images: [image],
     },
   }
 }
@@ -113,6 +117,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
   const tiktokHref = restaurant.tiktokUrl ? socialUrl('tiktok', restaurant.tiktokUrl) : null
   const facebookHref = restaurant.facebookUrl ? socialUrl('facebook', restaurant.facebookUrl) : null
   const hasSocials = Boolean(instaHref || tiktokHref || facebookHref)
+  const sameAs = [restaurant.sourceUrl, instaHref, tiktokHref, facebookHref].filter(Boolean)
 
   // Group items by category for the schema.org hasMenuSection nesting.
   const sectionMap = new Map<string, typeof menu.items>()
@@ -132,7 +137,8 @@ export default async function PublicMenuPage({ params }: PageProps) {
     name: restaurant.name,
     description: restaurant.description ?? undefined,
     image: logo ?? undefined,
-    url: restaurant.sourceUrl ?? undefined,
+    url: `${SITE_URL}/m/${slug}`,
+    sameAs: sameAs.length ? sameAs : undefined,
     hasMenu: {
       '@type': 'Menu',
       name: menu.name,

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
@@ -13,6 +14,11 @@ type LoginPageProps = {
 }
 
 const HERO_IMAGE = '/images/auth-mobile-menu-hero.png'
+
+export const metadata: Metadata = {
+  title: 'Sign in',
+  robots: { index: false, follow: false },
+}
 
 function normalizeCallbackUrl(raw: string | string[] | undefined) {
   const value = Array.isArray(raw) ? raw[0] : raw

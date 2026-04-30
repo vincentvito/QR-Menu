@@ -1,33 +1,47 @@
 import type { MetadataRoute } from 'next'
-import prisma from '@/lib/prisma'
+import { SITE_URL } from '@/lib/site'
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+export const revalidate = 3600
 
-export const revalidate = 3600 // regenerate at most once an hour
+const now = () => new Date()
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const menus = await prisma.menu.findMany({
-    select: { slug: true, updatedAt: true },
-  })
-
+function staticRoutes(): MetadataRoute.Sitemap {
   return [
     {
       url: SITE_URL,
-      lastModified: new Date(),
+      lastModified: now(),
       changeFrequency: 'monthly',
       priority: 1,
     },
     {
       url: `${SITE_URL}/changelog`,
-      lastModified: new Date(),
+      lastModified: now(),
       changeFrequency: 'weekly',
       priority: 0.4,
     },
-    ...menus.map((m) => ({
-      url: `${SITE_URL}/m/${m.slug}`,
-      lastModified: m.updatedAt,
-      changeFrequency: 'weekly' as const,
-      priority: 0.8,
-    })),
   ]
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const routes = staticRoutes()
+
+  try {
+    const { default: prisma } = await import('@/lib/prisma')
+    const menus = await prisma.menu.findMany({
+      select: { slug: true, updatedAt: true },
+    })
+
+    return [
+      ...routes,
+      ...menus.map((menu) => ({
+        url: `${SITE_URL}/m/${menu.slug}`,
+        lastModified: menu.updatedAt,
+        changeFrequency: 'weekly' as const,
+        priority: 0.8,
+      })),
+    ]
+  } catch (error) {
+    console.error('Failed to build menu sitemap entries', error)
+    return routes
+  }
 }
