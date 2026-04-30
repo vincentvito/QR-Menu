@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { requireMenuAccess } from '@/lib/menus/get'
 import { canWriteRestaurant } from '@/lib/plans/subscription-access'
+import type { DietaryTag } from '@/lib/ai/gemini'
 
 export const runtime = 'nodejs'
 
@@ -23,6 +24,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     name?: unknown
     description?: unknown
     price?: unknown
+    tags?: unknown
   }
   try {
     body = await request.json()
@@ -44,15 +46,21 @@ export async function POST(request: Request, { params }: RouteContext) {
     }
     price = Math.round(p * 100) / 100
   }
+  const tags = Array.isArray(body.tags)
+    ? Array.from(
+        new Set(
+          body.tags.filter((tag): tag is DietaryTag =>
+            ['V', 'VG', 'GF', 'DF', 'NF'].includes(String(tag)),
+          ),
+        ),
+      )
+    : []
 
   try {
     const access = await requireMenuAccess(slug, session.user.id)
     const writeGate = await canWriteRestaurant(access.organizationId, access.restaurantId)
     if (!writeGate.allowed) {
-      return NextResponse.json(
-        { error: writeGate.reason, gate: writeGate.gate },
-        { status: 402 },
-      )
+      return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
     }
     // New items go to the end of the full menu so they don't disrupt
     // existing ordering inside their category until the user reorders.
@@ -68,7 +76,7 @@ export async function POST(request: Request, { params }: RouteContext) {
         name: name.slice(0, 200),
         description,
         price,
-        tags: [],
+        tags,
         order: (last?.order ?? -1) + 1,
       },
     })

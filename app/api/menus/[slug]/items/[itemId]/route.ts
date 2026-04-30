@@ -6,6 +6,7 @@ import { requireMenuAccess } from '@/lib/menus/get'
 import { isBadgeKey } from '@/lib/menus/badges'
 import { deleteByUrl } from '@/lib/storage/r2'
 import { canWriteRestaurant } from '@/lib/plans/subscription-access'
+import type { DietaryTag } from '@/lib/ai/gemini'
 
 export const runtime = 'nodejs'
 
@@ -42,6 +43,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     description?: unknown
     price?: unknown
     category?: unknown
+    tags?: unknown
     badges?: unknown
     specialUntil?: unknown
     imageUrl?: unknown
@@ -57,6 +59,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     description?: string
     price?: number
     category?: string
+    tags?: string[]
     badges?: string[]
     specialUntil?: Date | null
     imageUrl?: string | null
@@ -86,6 +89,18 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       return NextResponse.json({ error: 'category must be a non-empty string' }, { status: 400 })
     }
     updates.category = body.category.trim().slice(0, 80)
+  }
+  if (body.tags !== undefined) {
+    if (!Array.isArray(body.tags)) {
+      return NextResponse.json({ error: 'tags must be an array' }, { status: 400 })
+    }
+    updates.tags = Array.from(
+      new Set(
+        body.tags.filter((tag): tag is DietaryTag =>
+          ['V', 'VG', 'GF', 'DF', 'NF'].includes(String(tag)),
+        ),
+      ),
+    )
   }
   if (body.badges !== undefined) {
     if (!Array.isArray(body.badges)) {
@@ -133,27 +148,29 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     const ownership = await ensureOwnership(slug, itemId, session.user.id)
     const writeGate = await canWriteRestaurant(ownership.organizationId, ownership.restaurantId)
     if (!writeGate.allowed) {
-      return NextResponse.json(
-        { error: writeGate.reason, gate: writeGate.gate },
-        { status: 402 },
-      )
+      return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
     }
 
-    // If imageUrl is changing, look up the previous value so we can clean
-    // up its R2 object after the DB update succeeds.
-    let previousImageUrl: string | null = null
-    if ('imageUrl' in updates) {
-      const prev = await prisma.menuItem.findUnique({
-        where: { id: itemId },
-        select: { imageUrl: true },
-      })
-      previousImageUrl = prev?.imageUrl ?? null
-    }
-
-    const item = await prisma.menuItem.update({
-      where: { id: itemId },
-      data: updates,
-    })
+    const [prev, item] =
+      'imageUrl' in updates
+        ? await prisma.$transaction([
+            prisma.menuItem.findUnique({
+              where: { id: itemId },
+              select: { imageUrl: true },
+            }),
+            prisma.menuItem.update({
+              where: { id: itemId },
+              data: updates,
+            }),
+          ])
+        : ([
+            null,
+            await prisma.menuItem.update({
+              where: { id: itemId },
+              data: updates,
+            }),
+          ] as const)
+    const previousImageUrl = prev?.imageUrl ?? null
 
     if (
       previousImageUrl &&
@@ -185,10 +202,7 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     const ownership = await ensureOwnership(slug, itemId, session.user.id)
     const writeGate = await canWriteRestaurant(ownership.organizationId, ownership.restaurantId)
     if (!writeGate.allowed) {
-      return NextResponse.json(
-        { error: writeGate.reason, gate: writeGate.gate },
-        { status: 402 },
-      )
+      return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
     }
     // Look up the image before deleting so we can clean up R2 afterwards.
     const existing = await prisma.menuItem.findUnique({

@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { ImagePlus, Loader2, X } from 'lucide-react'
 import { toast } from 'sonner'
+import { ImageLightbox } from '@/components/menu/ImageLightbox'
 import { cn } from '@/lib/utils'
 
 const ACCEPT = 'image/jpeg,image/png,image/webp'
@@ -27,6 +28,7 @@ export function DishPhotoUploader({
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [uploading, setUploading] = useState(false)
   const [dragging, setDragging] = useState(false)
+  const [previewSrc, setPreviewSrc] = useState<string | null>(null)
 
   async function uploadFile(file: File) {
     if (!file.type.startsWith('image/')) {
@@ -53,7 +55,7 @@ export function DishPhotoUploader({
       }
       onChange(data.url)
     } catch {
-      toast.error('Network error — please try again')
+      toast.error('Network error - please try again')
     } finally {
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ''
@@ -69,28 +71,38 @@ export function DishPhotoUploader({
 
   if (value) {
     return (
-      <div className="border-cream-line bg-background relative size-20 shrink-0 overflow-hidden rounded-lg border">
-        {/* Raw <img>: planned to swap in a Cloudflare Images transform layer later;
-            next/image optimizer isn't wired for this surface. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={value}
-          alt=""
-          loading="lazy"
-          decoding="async"
-          className="h-full w-full object-cover"
-          onError={() => onChange(null)}
-        />
-        <button
-          type="button"
-          aria-label="Remove photo"
-          disabled={busy}
-          onClick={() => onChange(null)}
-          className="bg-foreground/70 text-background hover:bg-foreground absolute top-1 right-1 grid size-5 place-items-center rounded-full backdrop-blur-sm transition-opacity disabled:opacity-50"
-        >
-          <X className="size-3" aria-hidden="true" />
-        </button>
-      </div>
+      <>
+        <div className="border-cream-line bg-background relative size-20 shrink-0 overflow-hidden rounded-lg border">
+          <button
+            type="button"
+            aria-label="Open dish photo"
+            onClick={() => setPreviewSrc(value)}
+            className="focus-visible:ring-ring block h-full w-full cursor-zoom-in focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          >
+            {/* Raw <img>: planned to swap in a Cloudflare Images transform layer later;
+                next/image optimizer isn't wired for this surface. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={value}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="h-full w-full object-cover"
+              onError={() => onChange(null)}
+            />
+          </button>
+          <button
+            type="button"
+            aria-label="Remove photo"
+            disabled={busy}
+            onClick={() => onChange(null)}
+            className="bg-foreground/70 text-background hover:bg-foreground absolute top-1 right-1 grid size-5 place-items-center rounded-full backdrop-blur-sm transition-opacity disabled:opacity-50"
+          >
+            <X className="size-3" aria-hidden="true" />
+          </button>
+        </div>
+        <ImageLightbox src={previewSrc} onClose={() => setPreviewSrc(null)} />
+      </>
     )
   }
 

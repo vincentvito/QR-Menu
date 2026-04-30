@@ -6,6 +6,27 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.24.0',
+    date: '2026-04-30',
+    title: 'Menu category editing and append imports',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'The menu editor now lets you add new categories after import, rename existing categories, and add dishes into empty categories',
+          'Existing menus can now import more PDF, photo, or pasted-text items without changing dishes that are already on the menu',
+          'Importing from inside a category now adds extracted items to that category only, with a preview before adding them',
+          'Manual dish entry now includes dietary tags and AI description enhancement for draft or existing dishes',
+          'Dish thumbnails in the editor now open in a full-screen photo viewer before you make more edits',
+        ],
+      },
+      {
+        type: 'changed' as const,
+        items: ['Dish edit actions now stay aligned at the bottom-right of each row'],
+      },
+    ],
+  },
+  {
     version: '0.23.7',
     date: '2026-04-30',
     title: 'Menu header visibility and renaming',

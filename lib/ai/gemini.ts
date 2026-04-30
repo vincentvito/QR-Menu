@@ -31,6 +31,12 @@ export interface ExtractedBrandFallback {
   description?: string
 }
 
+export interface DescriptionInput {
+  name: string
+  category?: string
+  notes?: string
+}
+
 export type ExtractInput = { text: string } | { fileBase64: string; mimeType: string }
 
 const BASE_PROMPT = `You are a menu data extraction assistant.
@@ -125,7 +131,8 @@ export async function extractBrandingFallback(markdown: string): Promise<Extract
   if (!source) return {}
 
   const model = getGenAI().getGenerativeModel({ model: MODEL })
-  const result = await model.generateContent(`You are extracting restaurant branding from webpage text.
+  const result =
+    await model.generateContent(`You are extracting restaurant branding from webpage text.
 
 Return ONLY a raw JSON object with this exact shape:
 {
@@ -157,4 +164,37 @@ ${source}`)
     name: name || undefined,
     description: description || undefined,
   }
+}
+
+export async function generateMenuItemDescription({
+  name,
+  category,
+  notes,
+}: DescriptionInput): Promise<string> {
+  const dishName = name.trim().slice(0, 160)
+  if (!dishName) throw new Error('Dish name is required')
+
+  const model = getGenAI().getGenerativeModel({ model: MODEL })
+  const result =
+    await model.generateContent(`You are helping a restaurant owner write concise menu copy.
+
+Return ONLY one polished menu description. No markdown, no quotes, no price, no item name prefix.
+
+Rules:
+- One sentence
+- 8 to 22 words
+- Professional, appetizing, and specific
+- Use only evidence from the dish name and owner notes
+- Do not invent premium ingredients, allergens, cooking methods, origins, or dietary claims
+- If notes are sparse, write a clean generic description without making risky claims
+
+Dish name: ${dishName}
+Category: ${category?.trim().slice(0, 80) || 'Menu'}
+Owner notes: ${notes?.trim().slice(0, 500) || 'None'}`)
+
+  return result.response
+    .text()
+    .trim()
+    .replace(/^["'“”]+|["'“”]+$/g, '')
+    .slice(0, 240)
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useTranslations } from 'next-intl'
 import {
@@ -34,6 +34,10 @@ import { DishPhotoUploader } from '@/components/editor/DishPhotoUploader'
 // follows anyway.
 const AIPhotoPanel = dynamic(
   () => import('@/components/editor/AIPhotoPanel').then((m) => m.AIPhotoPanel),
+  { ssr: false },
+)
+const ImportItemsPanel = dynamic(
+  () => import('@/components/editor/ImportItemsPanel').then((m) => m.ImportItemsPanel),
   { ssr: false },
 )
 import type { AIPhotoMode } from '@/components/editor/AIPhotoPanel'
@@ -70,6 +74,20 @@ type Saves = Record<string, SaveStatus>
 
 const ALL = '__all__'
 const MENU_KEY = '__menu__'
+const MENU_IMPORT = '__menu_import__'
+const CATEGORY_KEY_PREFIX = '__category__:'
+const ENABLED_BADGE_KEYS: BadgeKey[] = [...BADGE_KEYS]
+const DIETARY_TAGS = [
+  { key: 'V', label: 'V' },
+  { key: 'VG', label: 'VG' },
+  { key: 'GF', label: 'GF' },
+  { key: 'DF', label: 'DF' },
+  { key: 'NF', label: 'NF' },
+] as const
+
+function categorySaveKey(category: string) {
+  return `${CATEGORY_KEY_PREFIX}${category}`
+}
 
 export function MenuEditor({ slug, initial }: MenuEditorProps) {
   const t = useTranslations('Editor')
@@ -83,13 +101,13 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
   // The symbol drives price rendering; if we ever add per-menu overrides,
   // this becomes state again.
   const symbol = currencySymbol(initial.currency)
-  // All badges always available in the per-dish picker. The old per-org
-  // enable/disable list was a step without payoff — owners either use a
-  // badge or they don't, and that choice lives naturally on the dish chip.
-  const enabledBadgeKeys: BadgeKey[] = [...BADGE_KEYS]
   const [selectedCategory, setSelectedCategory] = useState<string>(ALL)
   const [query, setQuery] = useState('')
+  const deferredQuery = useDeferredValue(query)
   const [addingToCategory, setAddingToCategory] = useState<string | null>(null)
+  const [addingCategory, setAddingCategory] = useState(false)
+  const [manualCategories, setManualCategories] = useState<string[]>([])
+  const [importingCategory, setImportingCategory] = useState<string | null>(null)
   // Per-target save state so indicators live next to the thing that's
   // actually saving (the edited row, or the menu-name field) instead of a
   // single global badge that had to be re-homed in the toolbar.
@@ -114,12 +132,18 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
       if (!counts.has(key)) order.push(key)
       counts.set(key, (counts.get(key) ?? 0) + 1)
     }
+    for (const name of manualCategories) {
+      if (!counts.has(name)) {
+        order.push(name)
+        counts.set(name, 0)
+      }
+    }
     return order.map((name) => ({ name, count: counts.get(name) ?? 0 }))
-  }, [items])
+  }, [items, manualCategories])
 
   // Visible items = category filter ∩ search query.
   const visibleGroups = useMemo(() => {
-    const q = query.trim().toLowerCase()
+    const q = deferredQuery.trim().toLowerCase()
     const filtered = items.filter((it) => {
       if (selectedCategory !== ALL && (it.category || 'Other') !== selectedCategory) {
         return false
@@ -146,10 +170,26 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
       }
       groups.get(key)!.push(item)
     }
-    return order.map((name) => ({ name, items: groups.get(name)! }))
-  }, [items, selectedCategory, query])
 
-  const hasQuery = query.trim().length > 0
+    if (!q) {
+      if (selectedCategory === ALL) {
+        for (const category of categories) {
+          if (!groups.has(category.name)) {
+            groups.set(category.name, [])
+            order.push(category.name)
+          }
+        }
+      } else if (categories.some((category) => category.name === selectedCategory)) {
+        if (!groups.has(selectedCategory)) {
+          groups.set(selectedCategory, [])
+          order.push(selectedCategory)
+        }
+      }
+    }
+
+    return order.map((name) => ({ name, items: groups.get(name)! }))
+  }, [items, selectedCategory, deferredQuery, categories])
+
   const hasAICredits = aiCreditsTotal > 0
 
   useEffect(() => {
@@ -230,6 +270,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
         description?: string
         price?: number
         category?: string
+        tags?: string[]
         badges?: string[]
         specialUntil?: string | null
         imageUrl?: string | null
@@ -257,7 +298,10 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
   )
 
   const addItem = useCallback(
-    async (category: string, fields: { name: string; description?: string; price?: number }) => {
+    async (
+      category: string,
+      fields: { name: string; description?: string; price?: number; tags?: string[] },
+    ) => {
       // Adds have no row to anchor to until the server returns an id, so the
       // DraftItemForm's own submitting state handles the progress UI and we
       // surface failures via a toast instead.
@@ -270,6 +314,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
             name: fields.name,
             description: fields.description ?? '',
             price: fields.price ?? 0,
+            tags: fields.tags ?? [],
           }),
         })
         const data = await res.json()
@@ -298,6 +343,99 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
     },
     [slug, t],
   )
+
+  const addCategory = useCallback(
+    (name: string) => {
+      const trimmed = name.trim().slice(0, 80)
+      if (!trimmed) return false
+
+      const existing = categories.find(
+        (category) => category.name.toLowerCase() === trimmed.toLowerCase(),
+      )
+      const nextCategory = existing?.name ?? trimmed
+      if (!existing) {
+        setManualCategories((cur) => (cur.includes(trimmed) ? cur : [...cur, trimmed]))
+      }
+      setSelectedCategory(nextCategory)
+      setQuery('')
+      setAddingToCategory(nextCategory)
+      setAddingCategory(false)
+      return true
+    },
+    [categories],
+  )
+
+  const renameCategory = useCallback(
+    async (from: string, to: string) => {
+      const trimmed = to.trim().slice(0, 80)
+      if (!trimmed) return false
+      if (trimmed === from) {
+        return true
+      }
+      const duplicate = categories.some(
+        (category) =>
+          category.name !== from && category.name.toLowerCase() === trimmed.toLowerCase(),
+      )
+      if (duplicate) {
+        toast.error('A category with that name already exists.')
+        return false
+      }
+
+      const previousItems = itemsRef.current
+      const previousManualCategories = manualCategories
+      const hasPersistedItems = previousItems.some((item) => (item.category || 'Other') === from)
+
+      setItems((cur) =>
+        cur.map((item) =>
+          (item.category || 'Other') === from ? { ...item, category: trimmed } : item,
+        ),
+      )
+      setManualCategories((cur) => {
+        return cur.map((category) => (category === from ? trimmed : category))
+      })
+      setSelectedCategory((cur) => (cur === from ? trimmed : cur))
+      setAddingToCategory((cur) => (cur === from ? trimmed : cur))
+      setImportingCategory((cur) => (cur === from ? trimmed : cur))
+      if (!hasPersistedItems) {
+        flashSavedFor(categorySaveKey(trimmed))
+        return true
+      }
+
+      setSaveFor(categorySaveKey(trimmed), { state: 'saving' })
+      try {
+        const res = await fetch(`/api/menus/${slug}/categories`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from, to: trimmed }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data.error ?? t('saveError'))
+        flashSavedFor(categorySaveKey(trimmed))
+        return true
+      } catch (err) {
+        setItems(previousItems)
+        setManualCategories(previousManualCategories)
+        setSelectedCategory((cur) => (cur === trimmed ? from : cur))
+        setAddingToCategory((cur) => (cur === trimmed ? from : cur))
+        setImportingCategory((cur) => (cur === trimmed ? from : cur))
+        handleErrorFor(categorySaveKey(from), err, t('saveError'))
+        return false
+      }
+    },
+    [categories, flashSavedFor, handleErrorFor, manualCategories, setSaveFor, slug, t],
+  )
+
+  const appendImportedItems = useCallback((nextItems: EditorItem[], category: string | null) => {
+    setItems((cur) => [...cur, ...nextItems])
+    if (category) {
+      setSelectedCategory(category)
+      setAddingToCategory(null)
+    } else if (nextItems[0]?.category) {
+      setSelectedCategory(nextItems[0].category)
+    }
+    setQuery('')
+    setImportingCategory(null)
+  }, [])
 
   const deleteItem = useCallback(
     async (id: string) => {
@@ -539,8 +677,57 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
                 <Zap className="size-3.5" aria-hidden="true" />
                 {aiCreditsTotal} AI credit{aiCreditsTotal === 1 ? '' : 's'}
               </div>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={importingCategory === MENU_IMPORT ? 'ghost' : 'outline'}
+                  onClick={() =>
+                    setImportingCategory(importingCategory === MENU_IMPORT ? null : MENU_IMPORT)
+                  }
+                  disabled={isReadOnly}
+                >
+                  {importingCategory === MENU_IMPORT ? (
+                    <X className="h-3.5 w-3.5" aria-hidden="true" />
+                  ) : (
+                    <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                  )}
+                  Import more
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={addingCategory ? 'ghost' : 'outline'}
+                  onClick={() => setAddingCategory((cur) => !cur)}
+                  disabled={isReadOnly}
+                >
+                  {addingCategory ? (
+                    <X className="h-3.5 w-3.5" aria-hidden="true" />
+                  ) : (
+                    <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                  )}
+                  Category
+                </Button>
+              </div>
             </div>
           </div>
+
+          {addingCategory ? (
+            <div className="mb-6">
+              <NewCategoryForm onSubmit={addCategory} onCancel={() => setAddingCategory(false)} />
+            </div>
+          ) : null}
+
+          {importingCategory === MENU_IMPORT ? (
+            <div className="mb-6">
+              <ImportItemsPanel
+                slug={slug}
+                category={null}
+                onCancel={() => setImportingCategory(null)}
+                onApplied={(nextItems) => appendImportedItems(nextItems, null)}
+              />
+            </div>
+          ) : null}
 
           {/* Items */}
           {visibleGroups.length === 0 ? (
@@ -550,44 +737,75 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
               {visibleGroups.map(({ name: cat, items: rows }) => {
                 const CatIcon = categoryIcon(cat)
                 const isAdding = addingToCategory === cat
+                const isImporting = importingCategory === cat
                 return (
                   <section key={cat}>
-                    <div className="mb-3 flex items-center gap-3">
+                    <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                       <div className="flex min-w-0 flex-1 items-center gap-2">
                         <CatIcon
                           className="text-muted-foreground h-4 w-4 shrink-0"
                           aria-hidden="true"
                         />
-                        <h2 className="text-muted-foreground truncate text-[11px] font-semibold tracking-[0.18em] uppercase">
-                          {cat}
-                        </h2>
+                        <InlineCategoryName
+                          category={cat}
+                          save={saves[categorySaveKey(cat)]}
+                          onSubmit={(nextName) => renameCategory(cat, nextName)}
+                          readOnly={isReadOnly}
+                        />
                         <span className="text-muted-foreground shrink-0 text-xs">
                           · {t('dishesCount', { count: rows.length })}
                         </span>
                       </div>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={isAdding ? 'ghost' : 'outline'}
-                        onClick={() => setAddingToCategory(isAdding ? null : cat)}
-                        disabled={isReadOnly}
-                      >
-                        {isAdding ? (
-                          <>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={isImporting ? 'ghost' : 'outline'}
+                          onClick={() => setImportingCategory(isImporting ? null : cat)}
+                          disabled={isReadOnly}
+                        >
+                          {isImporting ? (
                             <X className="h-3.5 w-3.5" aria-hidden="true" />
-                            {t('newDishCancel')}
-                          </>
-                        ) : (
-                          <>
-                            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-                            {t('addDish')}
-                          </>
-                        )}
-                      </Button>
+                          ) : (
+                            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                          )}
+                          Import items
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant={isAdding ? 'ghost' : 'outline'}
+                          onClick={() => setAddingToCategory(isAdding ? null : cat)}
+                          disabled={isReadOnly}
+                        >
+                          {isAdding ? (
+                            <>
+                              <X className="h-3.5 w-3.5" aria-hidden="true" />
+                              {t('newDishCancel')}
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+                              {t('addDish')}
+                            </>
+                          )}
+                        </Button>
+                      </div>
                     </div>
+                    {isImporting ? (
+                      <div className="mb-3">
+                        <ImportItemsPanel
+                          slug={slug}
+                          category={cat}
+                          onCancel={() => setImportingCategory(null)}
+                          onApplied={(nextItems) => appendImportedItems(nextItems, cat)}
+                        />
+                      </div>
+                    ) : null}
                     <ul className="border-cream-line overflow-hidden rounded-[20px] border">
                       {isAdding && (
                         <DraftItemForm
+                          slug={slug}
                           category={cat}
                           symbol={symbol}
                           onSubmit={async (fields) => {
@@ -599,6 +817,14 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
                           t={t}
                         />
                       )}
+                      {!isAdding && rows.length === 0 ? (
+                        <EmptyCategoryPrompt
+                          category={cat}
+                          onAddDish={() => setAddingToCategory(cat)}
+                          onImport={() => setImportingCategory(cat)}
+                          readOnly={isReadOnly}
+                        />
+                      ) : null}
                       {rows.map((item, i) => (
                         <ItemRow
                           key={item.id}
@@ -607,7 +833,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
                           isFirst={i === 0 && !isAdding}
                           symbol={symbol}
                           save={saves[item.id]}
-                          enabledBadges={enabledBadgeKeys}
+                          enabledBadges={ENABLED_BADGE_KEYS}
                           onChange={saveItem}
                           onDelete={deleteItem}
                           onCreditSpent={handleCreditSpent}
@@ -623,6 +849,197 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
         </div>
       </div>
     </div>
+  )
+}
+
+function NewCategoryForm({
+  onSubmit,
+  onCancel,
+}: {
+  onSubmit: (name: string) => boolean
+  onCancel: () => void
+}) {
+  const [name, setName] = useState('')
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (onSubmit(name)) setName('')
+  }
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="border-cream-line bg-card flex flex-col gap-3 rounded-[18px] border p-4 sm:flex-row sm:items-center"
+    >
+      <div className="min-w-0 flex-1">
+        <label
+          htmlFor="new-category-name"
+          className="text-muted-foreground block text-[11px] font-semibold tracking-[0.14em] uppercase"
+        >
+          New category
+        </label>
+        <Input
+          id="new-category-name"
+          autoFocus
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Beer"
+          maxLength={80}
+          className="mt-1"
+        />
+      </div>
+      <div className="flex gap-2 sm:pt-5">
+        <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
+          Cancel
+        </Button>
+        <PillButton type="submit" variant="primary" size="sm" disabled={!name.trim()}>
+          <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+          Add category
+        </PillButton>
+      </div>
+    </form>
+  )
+}
+
+function InlineCategoryName({
+  category,
+  save,
+  onSubmit,
+  readOnly,
+}: {
+  category: string
+  save: SaveStatus | undefined
+  onSubmit: (name: string) => Promise<boolean>
+  readOnly: boolean
+}) {
+  const [name, setName] = useState(category)
+  const [submitting, setSubmitting] = useState(false)
+
+  async function commit() {
+    if (submitting || readOnly) return
+    const trimmed = name.trim()
+    if (!trimmed) {
+      setName(category)
+      return
+    }
+    if (trimmed === category) return
+    setSubmitting(true)
+    const ok = await onSubmit(trimmed)
+    if (!ok) setSubmitting(false)
+  }
+
+  return (
+    <div className="flex min-w-0 flex-1 items-center gap-2">
+      <h2 className="min-w-0 flex-1">
+        <label htmlFor={`category-name-${category}`} className="sr-only">
+          Category name
+        </label>
+        <Input
+          id={`category-name-${category}`}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              e.currentTarget.blur()
+            } else if (e.key === 'Escape') {
+              e.preventDefault()
+              setName(category)
+              e.currentTarget.blur()
+            }
+          }}
+          maxLength={80}
+          disabled={readOnly || submitting}
+          className="text-muted-foreground focus:text-foreground hover:border-cream-line focus-visible:border-foreground/30 focus-visible:bg-card h-8 min-w-0 border-transparent bg-transparent px-2 py-1 text-[11px] font-semibold tracking-[0.18em] uppercase shadow-none"
+        />
+      </h2>
+      {submitting ? (
+        <Loader2 className="text-muted-foreground h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+      ) : (
+        <SaveIndicator save={save} />
+      )}
+    </div>
+  )
+}
+
+function DietaryTagPicker({
+  selected,
+  onChange,
+  disabled = false,
+  compact = false,
+}: {
+  selected: string[]
+  onChange: (next: string[]) => void
+  disabled?: boolean
+  compact?: boolean
+}) {
+  const selectedSet = new Set(selected)
+  return (
+    <div className={cn('flex flex-wrap items-center gap-1.5', compact ? '' : 'gap-y-2')}>
+      <span className="text-muted-foreground mr-1 text-xs font-semibold">Dietary</span>
+      {DIETARY_TAGS.map((tag) => {
+        const active = selectedSet.has(tag.key)
+        return (
+          <button
+            key={tag.key}
+            type="button"
+            aria-pressed={active}
+            onClick={() => {
+              onChange(active ? selected.filter((key) => key !== tag.key) : [...selected, tag.key])
+            }}
+            disabled={disabled}
+            className={cn(
+              'rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50',
+              active
+                ? 'border-accent bg-accent text-accent-foreground'
+                : 'border-cream-line bg-card text-muted-foreground hover:border-foreground/30 hover:text-foreground',
+            )}
+          >
+            {tag.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function EmptyCategoryPrompt({
+  category,
+  onAddDish,
+  onImport,
+  readOnly,
+}: {
+  category: string
+  onAddDish: () => void
+  onImport: () => void
+  readOnly: boolean
+}) {
+  return (
+    <li className="bg-card px-4 py-6">
+      <div className="mx-auto max-w-md text-center">
+        <p className="text-sm font-semibold tracking-tight">{category} is empty</p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Add dishes manually, or import a PDF, photo, or pasted text into this category.
+        </p>
+        <div className="mt-4 flex flex-wrap justify-center gap-2">
+          <Button type="button" size="sm" variant="outline" onClick={onImport} disabled={readOnly}>
+            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+            Import items
+          </Button>
+          <PillButton
+            type="button"
+            size="sm"
+            variant="primary"
+            onClick={onAddDish}
+            disabled={readOnly}
+          >
+            <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+            Add dish
+          </PillButton>
+        </div>
+      </div>
+    </li>
   )
 }
 
@@ -749,23 +1166,91 @@ function CategoryChip({
   )
 }
 
+function useDescriptionEnhancer(slug: string) {
+  const [generatingDescription, setGeneratingDescription] = useState(false)
+  const [descriptionError, setDescriptionError] = useState('')
+
+  const enhanceDescription = useCallback(
+    async ({
+      name,
+      category,
+      notes,
+      onDescription,
+    }: {
+      name: string
+      category: string
+      notes: string
+      onDescription: (description: string) => void
+    }) => {
+      const trimmed = name.trim()
+      if (!trimmed) return
+      setDescriptionError('')
+      setGeneratingDescription(true)
+      try {
+        const res = await fetch(`/api/menus/${slug}/items/description`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: trimmed,
+            category,
+            notes: notes.trim(),
+          }),
+        })
+        const data = (await res.json().catch(() => ({}))) as {
+          description?: string
+          error?: string
+        }
+        if (!res.ok || !data.description) {
+          setDescriptionError(data.error ?? 'Could not generate a description.')
+          return
+        }
+        onDescription(data.description)
+      } catch (err) {
+        setDescriptionError(
+          err instanceof Error ? err.message : 'Could not generate a description.',
+        )
+      } finally {
+        setGeneratingDescription(false)
+      }
+    },
+    [slug],
+  )
+
+  return {
+    generatingDescription,
+    descriptionError,
+    setDescriptionError,
+    enhanceDescription,
+  }
+}
+
 function DraftItemForm({
+  slug,
   category,
   symbol,
   onSubmit,
   onCancel,
   t,
 }: {
+  slug: string
   category: string
   symbol: string
-  onSubmit: (fields: { name: string; description?: string; price?: number }) => Promise<boolean>
+  onSubmit: (fields: {
+    name: string
+    description?: string
+    price?: number
+    tags?: string[]
+  }) => Promise<boolean>
   onCancel: () => void
   t: ReturnType<typeof useTranslations<'Editor'>>
 }) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [priceInput, setPriceInput] = useState('')
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
+  const { generatingDescription, descriptionError, setDescriptionError, enhanceDescription } =
+    useDescriptionEnhancer(slug)
 
   async function handleSubmit() {
     const trimmed = name.trim()
@@ -776,6 +1261,7 @@ function DraftItemForm({
       name: trimmed,
       description: description.trim(),
       price,
+      tags: selectedTags,
     })
     if (!ok) setSubmitting(false)
     // On success, parent dismisses — no need to reset state here.
@@ -824,14 +1310,56 @@ function DraftItemForm({
         </div>
       </div>
 
-      <Textarea
-        aria-label={t('newDishDescription')}
-        placeholder={t('newDishDescriptionPlaceholder')}
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        disabled={submitting}
-        className="min-h-[60px] text-[14px]"
-      />
+      <div className="space-y-2">
+        <div className="flex items-center justify-between gap-2">
+          <label
+            className="text-muted-foreground text-xs font-semibold"
+            htmlFor="new-dish-description"
+          >
+            {t('newDishDescription')}
+          </label>
+          <Button
+            type="button"
+            size="sm"
+            variant="ghost"
+            onClick={() =>
+              enhanceDescription({
+                name,
+                category,
+                notes: description,
+                onDescription: setDescription,
+              })
+            }
+            disabled={submitting || generatingDescription || !name.trim()}
+          >
+            {generatingDescription ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+            ) : (
+              <Wand2 className="h-3.5 w-3.5" aria-hidden="true" />
+            )}
+            AI enhance
+          </Button>
+        </div>
+        <Textarea
+          id="new-dish-description"
+          aria-label={t('newDishDescription')}
+          placeholder={t('newDishDescriptionPlaceholder')}
+          value={description}
+          onChange={(e) => {
+            setDescription(e.target.value)
+            setDescriptionError('')
+          }}
+          disabled={submitting || generatingDescription}
+          className="min-h-[60px] text-[14px]"
+        />
+        {descriptionError ? (
+          <p role="alert" className="text-destructive text-xs">
+            {descriptionError}
+          </p>
+        ) : null}
+      </div>
+
+      <DietaryTagPicker selected={selectedTags} onChange={setSelectedTags} disabled={submitting} />
 
       <div className="flex items-center justify-between gap-3">
         <p className="text-muted-foreground text-xs">{t('newDishHint')}</p>
@@ -883,6 +1411,7 @@ const ItemRow = memo(function ItemRow({
       name?: string
       description?: string
       price?: number
+      tags?: string[]
       badges?: string[]
       specialUntil?: string | null
       imageUrl?: string | null
@@ -893,13 +1422,71 @@ const ItemRow = memo(function ItemRow({
   readOnly: boolean
 }) {
   const t = useTranslations('Editor')
-  const [localName, setLocalName] = useState(item.name)
-  const [localDesc, setLocalDesc] = useState(item.description)
-  const [localPrice, setLocalPrice] = useState(formatPriceInput(item.price))
+  const [isEditing, setIsEditing] = useState(false)
+  const [draftName, setDraftName] = useState(item.name)
+  const [draftDesc, setDraftDesc] = useState(item.description)
+  const [draftPrice, setDraftPrice] = useState(formatPriceInput(item.price))
+  const [draftTags, setDraftTags] = useState<string[]>(item.tags)
+  const [draftBadges, setDraftBadges] = useState<string[]>(item.badges)
+  const [draftSpecialUntil, setDraftSpecialUntil] = useState<string | null>(item.specialUntil)
   const [confirming, setConfirming] = useState(false)
-  // Local per-row panel state — each row manages its own AI flow, so the
-  // parent never re-renders when panels open/close.
+  const { generatingDescription, descriptionError, setDescriptionError, enhanceDescription } =
+    useDescriptionEnhancer(slug)
   const [aiMode, setAIMode] = useState<AIPhotoMode | null>(null)
+
+  function resetDrafts() {
+    setDraftName(item.name)
+    setDraftDesc(item.description)
+    setDraftPrice(formatPriceInput(item.price))
+    setDraftTags(item.tags)
+    setDraftBadges(item.badges)
+    setDraftSpecialUntil(item.specialUntil)
+    setDescriptionError('')
+  }
+
+  function beginEdit() {
+    resetDrafts()
+    setConfirming(false)
+    setIsEditing(true)
+  }
+
+  function cancelEdit() {
+    resetDrafts()
+    setIsEditing(false)
+  }
+
+  function saveEdit() {
+    const name = draftName.trim()
+    if (!name) {
+      toast.error('Dish name is required')
+      return
+    }
+    const price = parsePriceInput(draftPrice)
+    if (price === null) {
+      toast.error('Price must be a non-negative number')
+      return
+    }
+
+    const description = draftDesc.trim()
+    const patch: {
+      name?: string
+      description?: string
+      price?: number
+      tags?: string[]
+      badges?: string[]
+      specialUntil?: string | null
+    } = {}
+
+    if (name !== item.name) patch.name = name
+    if (description !== item.description) patch.description = description
+    if (price !== item.price) patch.price = price
+    if (!sameStringArray(draftTags, item.tags)) patch.tags = draftTags
+    if (!sameStringArray(draftBadges, item.badges)) patch.badges = draftBadges
+    if (draftSpecialUntil !== item.specialUntil) patch.specialUntil = draftSpecialUntil
+
+    if (Object.keys(patch).length > 0) onChange(item.id, patch)
+    setIsEditing(false)
+  }
 
   return (
     <li
@@ -907,49 +1494,11 @@ const ItemRow = memo(function ItemRow({
       className={cn(
         'bg-background scroll-mt-24 transition-colors',
         isFirst ? '' : 'border-cream-line border-t',
+        isEditing && 'bg-card',
         confirming && 'bg-destructive/5',
       )}
     >
-      {/* Delete lives on its own top row — keeps the price chip from
-          competing visually with a button at the right edge of the name row. */}
-      <div className="flex justify-end px-4 pt-2">
-        {confirming ? (
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              aria-label={t('cancelDelete')}
-              onClick={() => setConfirming(false)}
-              disabled={readOnly}
-              className="text-muted-foreground hover:text-foreground grid size-7 place-items-center rounded-full transition-colors"
-            >
-              <X className="size-3.5" aria-hidden="true" />
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setConfirming(false)
-                onDelete(item.id)
-              }}
-              disabled={readOnly}
-              className="bg-destructive hover:bg-destructive/90 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-semibold text-white transition-colors"
-            >
-              <Trash2 className="size-3" aria-hidden="true" />
-              {t('confirmDeleteShort')}
-            </button>
-          </div>
-        ) : (
-          <button
-            type="button"
-            aria-label={t('deleteDish')}
-            onClick={() => setConfirming(true)}
-            disabled={readOnly}
-            className="text-muted-foreground hover:text-destructive grid size-7 place-items-center rounded-full transition-colors"
-          >
-            <Trash2 className="size-3.5" aria-hidden="true" />
-          </button>
-        )}
-      </div>
-      <div className="flex items-start gap-3 px-4 pt-1 pb-4">
+      <div className="flex items-start gap-3 px-4 py-4">
         <div className="flex shrink-0 flex-col items-stretch gap-1.5">
           <DishPhotoUploader
             itemId={item.id}
@@ -981,119 +1530,252 @@ const ItemRow = memo(function ItemRow({
             />
           )}
         </div>
-        <div className="min-w-0 flex-1 space-y-1.5">
-          <div className="flex items-start gap-2">
-            <input
-              type="text"
-              aria-label={t('itemName')}
-              value={localName}
-              onChange={(e) => setLocalName(e.target.value)}
-              onBlur={() => {
-                if (readOnly) return
-                const trimmed = localName.trim()
-                if (!trimmed) {
-                  setLocalName(item.name)
-                  return
-                }
-                if (trimmed !== item.name) onChange(item.id, { name: trimmed })
-              }}
-              disabled={readOnly}
-              className="focus:border-foreground/30 focus:bg-card flex-1 rounded-md border border-transparent bg-transparent px-2 py-1 text-[17px] font-semibold tracking-[-0.01em] outline-none"
-            />
-            <div className="bg-pop text-pop-foreground flex shrink-0 items-center rounded-full pr-1 pl-3 text-[13px] font-semibold">
-              <span>{symbol}</span>
-              <input
-                type="text"
-                inputMode="decimal"
-                aria-label={t('itemPrice')}
-                value={localPrice}
-                onChange={(e) => setLocalPrice(e.target.value)}
-                onBlur={() => {
-                  if (readOnly) return
-                  const parsed = parsePriceInput(localPrice)
-                  if (parsed === null) {
-                    setLocalPrice(formatPriceInput(item.price))
-                    return
-                  }
-                  if (parsed !== item.price) {
-                    onChange(item.id, { price: parsed })
-                    setLocalPrice(formatPriceInput(parsed))
-                  }
-                }}
-                disabled={readOnly}
-                className="placeholder:text-pop-foreground/70 focus:bg-background/15 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none"
-              />
-            </div>
-          </div>
-          <Textarea
-            aria-label={t('itemDescription')}
-            value={localDesc}
-            onChange={(e) => setLocalDesc(e.target.value)}
-            onBlur={() => {
-              if (readOnly) return
-              if (localDesc !== item.description) onChange(item.id, { description: localDesc })
-            }}
-            disabled={readOnly}
-            placeholder={t('itemDescription')}
-            // Override shadcn defaults to look inline (transparent, no border
-            // at rest) while keeping field-sizing-content auto-growth.
-            className="text-muted-foreground focus-visible:bg-card focus-visible:text-foreground placeholder:text-muted-foreground/50 min-h-0 resize-none rounded-md border-transparent bg-transparent px-2 py-1 text-[14px] leading-[1.55] shadow-none md:text-[14px]"
-          />
-          {item.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 px-2">
-              {item.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="bg-accent/30 text-foreground rounded-[6px] px-2 py-0.5 text-[10px] font-semibold tracking-[0.1em] uppercase"
-                >
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
-          {(enabledBadges.length > 0 || item.specialUntil !== undefined) && (
-            <div className="flex flex-wrap gap-1.5 px-2 pt-0.5">
-              <SpecialToggle
-                specialUntil={item.specialUntil}
-                onChange={(next) => onChange(item.id, { specialUntil: next })}
-                disabled={readOnly}
-              />
-              {enabledBadges.map((key) => {
-                const def = BADGES[key]
-                const Icon = def.icon
-                const selected = item.badges.includes(key)
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    role="switch"
-                    aria-checked={selected}
-                    onClick={() => {
-                      const next = selected
-                        ? item.badges.filter((b) => b !== key)
-                        : [...item.badges, key]
-                      onChange(item.id, { badges: next })
-                    }}
-                    disabled={readOnly}
-                    className={cn(
-                      'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors',
-                      selected
-                        ? def.selectedChipClassName
-                        : 'border-cream-line bg-card text-muted-foreground hover:border-foreground/30',
+
+        <div className="min-w-0 flex-1">
+          {!isEditing ? (
+            <div className="space-y-2">
+              <div className="space-y-2">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-[17px] font-semibold tracking-[-0.01em]">{item.name}</h3>
+                    {item.description ? (
+                      <p className="text-muted-foreground mt-1 text-[14px] leading-[1.55]">
+                        {item.description}
+                      </p>
+                    ) : (
+                      <p className="text-muted-foreground/70 mt-1 text-[14px] italic">
+                        No description yet
+                      </p>
                     )}
+                  </div>
+                  <span className="bg-pop text-pop-foreground shrink-0 rounded-full px-3 py-1 text-[13px] font-semibold tabular-nums">
+                    {symbol}
+                    {formatPriceInput(item.price) || '0'}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {item.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="border-cream-line bg-card text-muted-foreground rounded-full border px-2 py-0.5 text-[11px] font-semibold"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                  {item.specialUntil && new Date(item.specialUntil).getTime() > Date.now() ? (
+                    <span className="border-pop bg-pop/10 text-pop rounded-full border px-2 py-0.5 text-[11px] font-semibold">
+                      Today's Special
+                    </span>
+                  ) : null}
+                  {item.badges.map((key) => {
+                    const def = BADGES[key as BadgeKey]
+                    if (!def) return null
+                    return (
+                      <span
+                        key={key}
+                        className="border-cream-line bg-card text-muted-foreground rounded-full border px-2 py-0.5 text-[11px] font-semibold"
+                      >
+                        {def.label}
+                      </span>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="flex min-h-[32px] w-full items-center justify-end gap-3 pt-2">
+                <SaveIndicator save={save} />
+                <div className="flex items-center gap-2">
+                  {confirming ? (
+                    <>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setConfirming(false)}
+                        disabled={readOnly}
+                      >
+                        <X className="h-3.5 w-3.5" aria-hidden="true" />
+                        Cancel
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                          setConfirming(false)
+                          onDelete(item.id)
+                        }}
+                        disabled={readOnly}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                        {t('confirmDeleteShort')}
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setConfirming(true)}
+                        disabled={readOnly}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                        Delete
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={beginEdit}
+                        disabled={readOnly}
+                      >
+                        Edit
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <div className="flex items-start gap-2">
+                <Input
+                  autoFocus
+                  aria-label={t('itemName')}
+                  value={draftName}
+                  onChange={(e) => setDraftName(e.target.value)}
+                  disabled={generatingDescription}
+                  className="flex-1 text-[17px] font-semibold tracking-[-0.01em]"
+                />
+                <div className="bg-pop text-pop-foreground flex shrink-0 items-center rounded-full pr-1 pl-3 text-[13px] font-semibold">
+                  <span>{symbol}</span>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    aria-label={t('itemPrice')}
+                    value={draftPrice}
+                    onChange={(e) => setDraftPrice(e.target.value)}
+                    disabled={generatingDescription}
+                    className="placeholder:text-pop-foreground/70 focus:bg-background/15 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <label
+                    className="text-muted-foreground text-xs font-semibold"
+                    htmlFor={`dish-description-${item.id}`}
                   >
-                    <Icon className="size-3" aria-hidden="true" />
-                    {def.label}
-                  </button>
-                )
-              })}
+                    {t('itemDescription')}
+                  </label>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={() =>
+                      enhanceDescription({
+                        name: draftName,
+                        category: item.category,
+                        notes: draftDesc,
+                        onDescription: setDraftDesc,
+                      })
+                    }
+                    disabled={generatingDescription || !draftName.trim()}
+                  >
+                    {generatingDescription ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <Wand2 className="h-3.5 w-3.5" aria-hidden="true" />
+                    )}
+                    AI enhance
+                  </Button>
+                </div>
+                <Textarea
+                  id={`dish-description-${item.id}`}
+                  aria-label={t('itemDescription')}
+                  value={draftDesc}
+                  onChange={(e) => {
+                    setDraftDesc(e.target.value)
+                    setDescriptionError('')
+                  }}
+                  disabled={generatingDescription}
+                  placeholder={t('itemDescription')}
+                  className="min-h-[72px] text-[14px]"
+                />
+                {descriptionError ? (
+                  <p role="alert" className="text-destructive text-xs">
+                    {descriptionError}
+                  </p>
+                ) : null}
+              </div>
+
+              <DietaryTagPicker selected={draftTags} onChange={setDraftTags} />
+
+              <div className="flex flex-wrap gap-1.5 pt-0.5">
+                <SpecialToggle
+                  specialUntil={draftSpecialUntil}
+                  onChange={setDraftSpecialUntil}
+                  disabled={generatingDescription}
+                />
+                {enabledBadges.map((key) => {
+                  const def = BADGES[key]
+                  const Icon = def.icon
+                  const selected = draftBadges.includes(key)
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      role="switch"
+                      aria-checked={selected}
+                      onClick={() => {
+                        setDraftBadges((cur) =>
+                          selected ? cur.filter((b) => b !== key) : [...cur, key],
+                        )
+                      }}
+                      disabled={generatingDescription}
+                      className={cn(
+                        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors',
+                        selected
+                          ? def.selectedChipClassName
+                          : 'border-cream-line bg-card text-muted-foreground hover:border-foreground/30',
+                      )}
+                    >
+                      <Icon className="size-3" aria-hidden="true" />
+                      {def.label}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <div className="flex min-h-[32px] w-full items-center justify-end gap-3 pt-1">
+                <SaveIndicator save={save} />
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="ghost"
+                    onClick={cancelEdit}
+                    disabled={generatingDescription}
+                  >
+                    {t('newDishCancel')}
+                  </Button>
+                  <PillButton
+                    type="button"
+                    size="sm"
+                    variant="primary"
+                    onClick={saveEdit}
+                    disabled={generatingDescription || !draftName.trim()}
+                  >
+                    <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                    Save
+                  </PillButton>
+                </div>
+              </div>
             </div>
           )}
-          {/* Reserved slot so showing/hiding the pill doesn't push the row's
-            height around. Height matches the pill (px-2.5 py-1 + 1px border). */}
-          <div className="flex min-h-[28px] items-center justify-end px-2 pt-0.5">
-            <SaveIndicator save={save} />
-          </div>
         </div>
       </div>
 
@@ -1263,4 +1945,9 @@ function parsePriceInput(s: string): number | null {
   const n = parseFloat(trimmed.replace(',', '.'))
   if (!Number.isFinite(n) || n < 0) return null
   return Math.round(n * 100) / 100
+}
+
+function sameStringArray(a: string[], b: string[]) {
+  if (a.length !== b.length) return false
+  return a.every((value, index) => value === b[index])
 }
