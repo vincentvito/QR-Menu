@@ -60,7 +60,17 @@ function normalizeCenterType(value: string): QRCenterType {
 
 const RESTAURANT_FIELDS = ['name', 'description', 'sourceUrl', 'currency'] as const
 const LINKS_FIELDS = ['googleReviewUrl', 'instagramUrl', 'tiktokUrl', 'facebookUrl'] as const
-const MENU_DESIGN_FIELDS = ['templateId', 'theme', 'seasonalOverlay', 'headerTextColor'] as const
+const MENU_DESIGN_FIELDS = [
+  'templateId',
+  'theme',
+  'seasonalOverlay',
+  'headerTextColor',
+  'menuNameColor',
+  'showLogo',
+  'showRestaurantName',
+  'showMenuName',
+  'showDishCount',
+] as const
 const BRAND_FIELDS = ['logo', 'headerImage', 'primaryColor', 'secondaryColor'] as const
 const QR_FIELDS = [
   'qrDotStyle',
@@ -106,6 +116,11 @@ interface SettingsDraft {
   templateId: string
   theme: string
   seasonalOverlay: string
+  menuNameColor: string
+  showLogo: boolean
+  showRestaurantName: boolean
+  showMenuName: boolean
+  showDishCount: boolean
 }
 
 interface SettingsFormProps {
@@ -138,6 +153,11 @@ interface SettingsFormProps {
     templateId: string
     theme: string
     seasonalOverlay: string
+    menuNameColor: string
+    showLogo: boolean
+    showRestaurantName: boolean
+    showMenuName: boolean
+    showDishCount: boolean
   }
   /** R2 URL of the iPhone mockup used by the template picker previews. */
   templatePreviewMockupUrl: string
@@ -198,6 +218,11 @@ function createDraftFromInitial(initial: SettingsFormProps['initial']): Settings
     seasonalOverlay: SEASONAL_OVERLAYS.some((o) => o.id === initial.seasonalOverlay)
       ? initial.seasonalOverlay
       : DEFAULT_SEASONAL_OVERLAY_ID,
+    menuNameColor: initial.menuNameColor,
+    showLogo: initial.showLogo,
+    showRestaurantName: initial.showRestaurantName,
+    showMenuName: initial.showMenuName,
+    showDishCount: initial.showDishCount,
   }
 }
 
@@ -640,18 +665,72 @@ export function SettingsForm({
               </div>
             </div>
 
-            <div className="space-y-2">
-              <ColorField
-                id="header-text-color"
-                label="Restaurant name color"
-                value={draft.headerTextColor}
-                disabled={disabled}
-                onChange={(v) => setDraft((prev) => ({ ...prev, headerTextColor: v }))}
-              />
-              <p className="text-muted-foreground text-[11px] leading-snug">
-                Overrides the restaurant name color on the public menu — useful when a header image
-                makes the default hard to read. Leave empty to use the theme default.
-              </p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-2">
+                <ColorField
+                  id="header-text-color"
+                  label="Restaurant name color"
+                  value={draft.headerTextColor}
+                  disabled={disabled}
+                  onChange={(v) => setDraft((prev) => ({ ...prev, headerTextColor: v }))}
+                />
+                <p className="text-muted-foreground text-[11px] leading-snug">
+                  Overrides the restaurant name color on the public menu. Leave empty to use the
+                  theme default.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <ColorField
+                  id="menu-name-color"
+                  label="Menu name color"
+                  value={draft.menuNameColor}
+                  disabled={disabled}
+                  onChange={(v) => setDraft((prev) => ({ ...prev, menuNameColor: v }))}
+                />
+                <p className="text-muted-foreground text-[11px] leading-snug">
+                  Overrides the small menu label color, so it stays readable on any header image or
+                  theme.
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
+                Header visibility
+              </div>
+              <div className="grid gap-2 sm:grid-cols-2">
+                <VisibilityToggle
+                  label="Logo"
+                  description="Show your restaurant logo in the public menu header."
+                  checked={draft.showLogo}
+                  disabled={disabled}
+                  onChange={(checked) => setDraft((prev) => ({ ...prev, showLogo: checked }))}
+                />
+                <VisibilityToggle
+                  label="Restaurant name"
+                  description="Show the restaurant name at the top of the public menu."
+                  checked={draft.showRestaurantName}
+                  disabled={disabled}
+                  onChange={(checked) =>
+                    setDraft((prev) => ({ ...prev, showRestaurantName: checked }))
+                  }
+                />
+                <VisibilityToggle
+                  label="Menu name"
+                  description="Show labels like Dinner, Brunch, or Cocktails above the restaurant name."
+                  checked={draft.showMenuName}
+                  disabled={disabled}
+                  onChange={(checked) => setDraft((prev) => ({ ...prev, showMenuName: checked }))}
+                />
+                <VisibilityToggle
+                  label="Dish count"
+                  description="Show the total number of dishes under the header names."
+                  checked={draft.showDishCount}
+                  disabled={disabled}
+                  onChange={(checked) => setDraft((prev) => ({ ...prev, showDishCount: checked }))}
+                />
+              </div>
             </div>
           </div>
 
@@ -672,6 +751,11 @@ export function SettingsForm({
                 logoUrl={draft.logo || null}
                 headerImageUrl={draft.headerImage || null}
                 headerTextColor={draft.headerTextColor || null}
+                menuNameColor={draft.menuNameColor || null}
+                showLogo={draft.showLogo}
+                showRestaurantName={draft.showRestaurantName}
+                showMenuName={draft.showMenuName}
+                showDishCount={draft.showDishCount}
                 wifiSsid={draft.wifiSsid || null}
                 liveUrl={previewMenu.name ? previewMenu.url : null}
               />
@@ -1367,5 +1451,57 @@ function CenterPicker({
         </>
       )}
     </div>
+  )
+}
+
+function VisibilityToggle({
+  label,
+  description,
+  checked,
+  disabled,
+  onChange,
+}: {
+  label: string
+  description: string
+  checked: boolean
+  disabled: boolean
+  onChange: (checked: boolean) => void
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={() => onChange(!checked)}
+      className={cn(
+        'flex h-full min-h-[128px] flex-col rounded-[14px] border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+        checked
+          ? 'border-pop bg-pop/5 ring-pop/20 ring-2'
+          : 'border-cream-line hover:border-foreground/30 hover:bg-card/60',
+      )}
+    >
+      <span className="flex items-center justify-between gap-3">
+        <span className="text-foreground text-sm font-semibold tracking-tight">{label}</span>
+        <span
+          aria-hidden="true"
+          className={cn(
+            'relative h-6 w-11 rounded-full border transition-colors',
+            checked ? 'border-pop bg-pop' : 'border-cream-line bg-background',
+          )}
+        >
+          <span
+            className={cn(
+              'bg-card absolute top-1/2 size-4 -translate-y-1/2 rounded-full shadow-sm transition-transform',
+              checked ? 'translate-x-5' : 'translate-x-1',
+            )}
+          />
+        </span>
+      </span>
+      <span className="text-muted-foreground mt-1 block text-xs leading-snug">{description}</span>
+      <span className="text-muted-foreground mt-auto block pt-3 text-[11px] font-semibold">
+        {checked ? 'Visible' : 'Hidden'}
+      </span>
+    </button>
   )
 }

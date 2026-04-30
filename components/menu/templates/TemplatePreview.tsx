@@ -58,6 +58,11 @@ interface TemplatePreviewProps {
   // Override for the restaurant name color in the mockup header.
   // Empty/null falls through to the theme's `--background` color.
   headerTextColor?: string | null
+  menuNameColor?: string | null
+  showLogo?: boolean
+  showRestaurantName?: boolean
+  showMenuName?: boolean
+  showDishCount?: boolean
   wifiSsid?: string | null
   // When set, clicking the mockup opens this URL (the live public menu)
   // in a new tab. Also flips the cursor to pointer on hover so the
@@ -82,6 +87,11 @@ export function TemplatePreview({
   logoUrl,
   headerImageUrl,
   headerTextColor,
+  menuNameColor,
+  showLogo = true,
+  showRestaurantName = true,
+  showMenuName = true,
+  showDishCount = true,
   wifiSsid,
   liveUrl,
 }: TemplatePreviewProps) {
@@ -165,7 +175,17 @@ export function TemplatePreview({
 
     observer.observe(element)
     return () => observer.disconnect()
-  }, [bodyData.groups, bodyData.specials, templateId, displayMenuName, displayRestaurantName])
+  }, [
+    bodyData.groups,
+    bodyData.specials,
+    templateId,
+    displayMenuName,
+    displayRestaurantName,
+    showLogo,
+    showMenuName,
+    showRestaurantName,
+    showDishCount,
+  ])
 
   // Theme provides the full palette + heading font. Brand color overrides
   // (if the restaurant has set primary/secondary) replace the theme's
@@ -261,7 +281,7 @@ export function TemplatePreview({
                     </>
                   )}
 
-                  <div className="relative mx-auto flex max-w-[720px] flex-col px-5 pt-6 pb-8">
+                  <div className="relative mx-auto flex min-h-[220px] max-w-[720px] flex-col px-5 pt-6 pb-8">
                     {hasWifi ? (
                       <div className="mb-6 flex justify-end">
                         <span className="bg-background text-foreground ring-foreground/10 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-[0_4px_14px_-4px_rgba(0,0,0,0.35)] ring-1">
@@ -271,8 +291,8 @@ export function TemplatePreview({
                       </div>
                     ) : null}
 
-                    <div className="flex items-start gap-3">
-                      {logoUrl ? (
+                    <div className="my-auto flex items-start gap-3">
+                      {showLogo && logoUrl ? (
                         <div className="bg-background/10 relative size-12 shrink-0 overflow-hidden rounded-xl backdrop-blur-sm">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img
@@ -286,18 +306,27 @@ export function TemplatePreview({
                       ) : null}
 
                       <div className="min-w-0">
-                        <p className="text-accent text-[11px] font-medium tracking-[0.18em] uppercase">
-                          {displayMenuName}
-                        </p>
-                        <h1
-                          className="mt-1.5 text-[28px] leading-[1.08] font-semibold tracking-[-0.03em]"
-                          style={headerTextColor ? { color: headerTextColor } : undefined}
-                        >
-                          {displayRestaurantName}
-                        </h1>
-                        <p className="text-background/70 mt-2 text-xs">
-                          {bodyData.totalItems} {bodyData.totalItems === 1 ? 'dish' : 'dishes'}
-                        </p>
+                        {showMenuName ? (
+                          <p
+                            className="text-accent text-[11px] font-medium tracking-[0.18em] uppercase"
+                            style={menuNameColor ? { color: menuNameColor } : undefined}
+                          >
+                            {displayMenuName}
+                          </p>
+                        ) : null}
+                        {showRestaurantName ? (
+                          <h1
+                            className="mt-1.5 text-[28px] leading-[1.08] font-semibold tracking-[-0.03em]"
+                            style={headerTextColor ? { color: headerTextColor } : undefined}
+                          >
+                            {displayRestaurantName}
+                          </h1>
+                        ) : null}
+                        {showDishCount ? (
+                          <p className="text-background/70 mt-2 text-xs">
+                            {bodyData.totalItems} {bodyData.totalItems === 1 ? 'dish' : 'dishes'}
+                          </p>
+                        ) : null}
                       </div>
                     </div>
                   </div>

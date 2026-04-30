@@ -105,6 +105,11 @@ export default async function SettingsPage() {
             templateId: restaurant.templateId,
             theme: restaurant.theme,
             seasonalOverlay: restaurant.seasonalOverlay,
+            menuNameColor: restaurant.menuNameColor ?? '',
+            showLogo: restaurant.showLogo,
+            showRestaurantName: restaurant.showRestaurantName,
+            showMenuName: restaurant.showMenuName,
+            showDishCount: restaurant.showDishCount,
           }}
         />
       </div>

@@ -74,6 +74,7 @@ const MENU_KEY = '__menu__'
 export function MenuEditor({ slug, initial }: MenuEditorProps) {
   const t = useTranslations('Editor')
   const [menuName, setMenuName] = useState(initial.name)
+  const [savedMenuName, setSavedMenuName] = useState(initial.name)
   const [items, setItems] = useState<EditorItem[]>(initial.items)
   const [aiCreditsTotal, setAiCreditsTotal] = useState(initial.aiCreditsTotal)
   const [isBuyingCredits, setIsBuyingCredits] = useState(false)
@@ -206,6 +207,11 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
         })
         const data = await res.json().catch(() => ({}))
         if (!res.ok) throw new Error(data.error ?? t('saveError'))
+        if (patch.name) {
+          const savedName = data.name ?? patch.name
+          setSavedMenuName(savedName)
+          setMenuName(savedName)
+        }
         flashSavedFor(MENU_KEY)
       } catch (err) {
         handleErrorFor(MENU_KEY, err, t('saveError'))
@@ -374,22 +380,14 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <Zap className="text-accent-deep size-4" aria-hidden="true" />
-                  <h2 className="text-sm font-semibold tracking-tight">
-                    You're out of AI credits
-                  </h2>
+                  <h2 className="text-sm font-semibold tracking-tight">You're out of AI credits</h2>
                 </div>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  Top up to keep generating and enhancing dish photos, or switch plans from
-                  Billing.
+                  Top up to keep generating and enhancing dish photos, or switch plans from Billing.
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  onClick={buyCreditPack}
-                  disabled={isBuyingCredits}
-                >
+                <Button type="button" size="sm" onClick={buyCreditPack} disabled={isBuyingCredits}>
                   {isBuyingCredits ? (
                     <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
                   ) : (
@@ -433,7 +431,11 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
               onNameBlur={() => {
                 if (isReadOnly) return
                 const trimmed = menuName.trim()
-                if (trimmed && trimmed !== initial.name) {
+                if (!trimmed) {
+                  setMenuName(savedMenuName)
+                  return
+                }
+                if (trimmed !== savedMenuName) {
                   saveMenu({ name: trimmed })
                 }
               }}
@@ -656,9 +658,15 @@ function MenuSettingsCard({
           onBlur={onNameBlur}
           data-initial={initialName}
           disabled={readOnly}
-          className="focus:border-foreground/30 focus:bg-background w-full rounded-md border border-transparent bg-transparent px-2 py-1.5 text-lg font-semibold tracking-[-0.01em] outline-none"
+          maxLength={120}
+          className="border-cream-line bg-background focus:border-foreground/40 w-full rounded-xl border px-3 py-2 text-base font-semibold tracking-[-0.01em] outline-none disabled:cursor-not-allowed disabled:opacity-60"
         />
       </label>
+      {!readOnly ? (
+        <p className="text-muted-foreground mt-2 text-xs">
+          Rename it here; changes save when you click away.
+        </p>
+      ) : null}
     </div>
   )
 }

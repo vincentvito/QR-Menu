@@ -6,6 +6,21 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.23.7',
+    date: '2026-04-30',
+    title: 'Menu header visibility and renaming',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Menu design now lets you hide or show the logo, restaurant name, menu name, and dish count on the public menu header',
+          'Menu design now includes a menu name color picker so the small header label stays readable',
+          'The menu editor now lets you update the menu name directly from the edit screen',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.23.6',
     date: '2026-04-29',
     title: 'Landing pricing and motion polish',

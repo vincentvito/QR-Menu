@@ -1,0 +1,3 @@
+ALTER TABLE "restaurant"
+ADD COLUMN "showRestaurantName" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN "showMenuName" BOOLEAN NOT NULL DEFAULT true;

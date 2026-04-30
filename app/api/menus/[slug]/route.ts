@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { requireMenuAccess } from '@/lib/menus/get'
@@ -46,16 +47,15 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     const access = await requireMenuAccess(slug, session.user.id)
     const writeGate = await canWriteRestaurant(access.organizationId, access.restaurantId)
     if (!writeGate.allowed) {
-      return NextResponse.json(
-        { error: writeGate.reason, gate: writeGate.gate },
-        { status: 402 },
-      )
+      return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
     }
     const menu = await prisma.menu.update({
       where: { id: access.id },
       data: updates,
       select: { id: true, slug: true, name: true },
     })
+    revalidatePath(`/m/${menu.slug}`)
+    revalidatePath('/dashboard/menus')
     return NextResponse.json(menu)
   } catch (err) {
     const status = (err as { status?: number })?.status ?? 500

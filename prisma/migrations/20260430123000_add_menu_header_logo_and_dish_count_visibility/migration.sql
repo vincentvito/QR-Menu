@@ -1,0 +1,3 @@
+ALTER TABLE "restaurant"
+ADD COLUMN "showLogo" BOOLEAN NOT NULL DEFAULT true,
+ADD COLUMN "showDishCount" BOOLEAN NOT NULL DEFAULT true;

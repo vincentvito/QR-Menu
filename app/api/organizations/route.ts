@@ -109,7 +109,7 @@ export async function PATCH(request: Request) {
   // Prisma. Splitting up front keeps the two writes independent — either
   // can be empty and that's fine.
   const orgUpdates: Record<string, string> = {}
-  const restaurantUpdates: Record<string, string | null> = {}
+  const restaurantUpdates: Record<string, string | boolean | null> = {}
 
   if ('name' in body) {
     const cleaned = cleanString(body.name, MAX_NAME)
@@ -183,6 +183,42 @@ export async function PATCH(request: Request) {
       return NextResponse.json({ error: 'Invalid header text color' }, { status: 400 })
     }
     restaurantUpdates.headerTextColor = cleaned
+  }
+
+  if ('menuNameColor' in body) {
+    const cleaned = cleanHex(body.menuNameColor)
+    if (cleaned === undefined) {
+      return NextResponse.json({ error: 'Invalid menu name color' }, { status: 400 })
+    }
+    restaurantUpdates.menuNameColor = cleaned
+  }
+
+  if ('showLogo' in body) {
+    if (typeof body.showLogo !== 'boolean') {
+      return NextResponse.json({ error: 'Invalid logo visibility' }, { status: 400 })
+    }
+    restaurantUpdates.showLogo = body.showLogo
+  }
+
+  if ('showRestaurantName' in body) {
+    if (typeof body.showRestaurantName !== 'boolean') {
+      return NextResponse.json({ error: 'Invalid restaurant name visibility' }, { status: 400 })
+    }
+    restaurantUpdates.showRestaurantName = body.showRestaurantName
+  }
+
+  if ('showMenuName' in body) {
+    if (typeof body.showMenuName !== 'boolean') {
+      return NextResponse.json({ error: 'Invalid menu name visibility' }, { status: 400 })
+    }
+    restaurantUpdates.showMenuName = body.showMenuName
+  }
+
+  if ('showDishCount' in body) {
+    if (typeof body.showDishCount !== 'boolean') {
+      return NextResponse.json({ error: 'Invalid dish count visibility' }, { status: 400 })
+    }
+    restaurantUpdates.showDishCount = body.showDishCount
   }
 
   if ('currency' in body) {
@@ -361,11 +397,7 @@ export async function PATCH(request: Request) {
     }
   }
 
-  if (
-    Object.keys(restaurantUpdates).length > 0 &&
-    activeRestaurant &&
-    !activeRestaurant.readOnly
-  ) {
+  if (Object.keys(restaurantUpdates).length > 0 && activeRestaurant && !activeRestaurant.readOnly) {
     await prisma.restaurant.update({
       where: { id: activeRestaurant.id },
       data: restaurantUpdates,

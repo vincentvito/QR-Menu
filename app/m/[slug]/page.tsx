@@ -210,7 +210,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
             />
           </>
         )}
-        <div className="relative mx-auto flex max-w-[720px] flex-col px-5 pt-6 pb-8 sm:px-8 sm:pt-10 sm:pb-12">
+        <div className="relative mx-auto flex min-h-[220px] max-w-[720px] flex-col px-5 pt-6 pb-8 sm:min-h-[280px] sm:px-8 sm:pt-10 sm:pb-12">
           {restaurant.wifiSsid ? (
             <div className="mb-6 flex justify-end">
               <WifiReveal
@@ -221,25 +221,36 @@ export default async function PublicMenuPage({ params }: PageProps) {
               />
             </div>
           ) : null}
-          <div className="flex items-start gap-3">
-            {logo ? (
+          <div className="my-auto flex items-start gap-3">
+            {restaurant.showLogo && logo ? (
               <div className="bg-background/10 relative size-12 shrink-0 overflow-hidden rounded-xl backdrop-blur-sm sm:size-16">
                 <Image src={logo} alt="" fill unoptimized className="object-cover" />
               </div>
             ) : null}
             <div className="min-w-0">
-              <p className="text-accent text-[11px] font-medium tracking-[0.18em] uppercase">
-                {menu.name}
-              </p>
-              <h1
-                className="mt-1.5 text-[28px] leading-[1.08] font-semibold tracking-[-0.03em] sm:text-[40px]"
-                style={restaurant.headerTextColor ? { color: restaurant.headerTextColor } : undefined}
-              >
-                {restaurant.name}
-              </h1>
-              <p className="text-background/70 mt-2 text-xs sm:text-sm">
-                {menu.items.length} {menu.items.length === 1 ? 'dish' : 'dishes'}
-              </p>
+              {restaurant.showMenuName ? (
+                <p
+                  className="text-accent text-[11px] font-medium tracking-[0.18em] uppercase"
+                  style={restaurant.menuNameColor ? { color: restaurant.menuNameColor } : undefined}
+                >
+                  {menu.name}
+                </p>
+              ) : null}
+              {restaurant.showRestaurantName ? (
+                <h1
+                  className="mt-1.5 text-[28px] leading-[1.08] font-semibold tracking-[-0.03em] sm:text-[40px]"
+                  style={
+                    restaurant.headerTextColor ? { color: restaurant.headerTextColor } : undefined
+                  }
+                >
+                  {restaurant.name}
+                </h1>
+              ) : null}
+              {restaurant.showDishCount ? (
+                <p className="text-background/70 mt-2 text-xs sm:text-sm">
+                  {menu.items.length} {menu.items.length === 1 ? 'dish' : 'dishes'}
+                </p>
+              ) : null}
             </div>
           </div>
         </div>
@@ -264,9 +275,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
       <footer className="mx-auto mt-8 max-w-[720px] px-5 pb-12 sm:px-8">
         {restaurant.googleReviewUrl ? (
           <div className="mb-8 flex flex-col items-center gap-2 text-center">
-            <p className="text-muted-foreground text-xs">
-              Enjoyed your meal?
-            </p>
+            <p className="text-muted-foreground text-xs">Enjoyed your meal?</p>
             <TrackedExternalLink
               menuSlug={slug}
               trackType="google_review_click"
@@ -285,32 +294,17 @@ export default async function PublicMenuPage({ params }: PageProps) {
         {hasSocials && (
           <div className="mb-6 flex justify-center gap-3">
             {instaHref ? (
-              <SocialLink
-                href={instaHref}
-                label="Instagram"
-                platform="instagram"
-                menuSlug={slug}
-              >
+              <SocialLink href={instaHref} label="Instagram" platform="instagram" menuSlug={slug}>
                 <InstagramIcon className="size-4" aria-hidden={true} />
               </SocialLink>
             ) : null}
             {tiktokHref ? (
-              <SocialLink
-                href={tiktokHref}
-                label="TikTok"
-                platform="tiktok"
-                menuSlug={slug}
-              >
+              <SocialLink href={tiktokHref} label="TikTok" platform="tiktok" menuSlug={slug}>
                 <TikTokIcon className="size-4" aria-hidden={true} />
               </SocialLink>
             ) : null}
             {facebookHref ? (
-              <SocialLink
-                href={facebookHref}
-                label="Facebook"
-                platform="facebook"
-                menuSlug={slug}
-              >
+              <SocialLink href={facebookHref} label="Facebook" platform="facebook" menuSlug={slug}>
                 <FacebookIcon className="size-4" aria-hidden={true} />
               </SocialLink>
             ) : null}

@@ -231,11 +231,16 @@ model Restaurant {
   tiktokUrl       String?
   facebookUrl     String?
 
-  templateId      String  @default("default")
-  theme           String  @default("editorial")
-  seasonalOverlay String  @default("none")
-  headerImage     String?
-  headerTextColor String?
+  templateId         String  @default("default")
+  theme              String  @default("editorial")
+  seasonalOverlay    String  @default("none")
+  headerImage        String?
+  headerTextColor    String?
+  menuNameColor      String?
+  showLogo           Boolean @default(true)
+  showRestaurantName Boolean @default(true)
+  showMenuName       Boolean @default(true)
+  showDishCount      Boolean @default(true)
 
   // Flipped to true when plan downgrade leaves this restaurant above the limit.
   // Public menu pages keep working; dashboard becomes view-only until upgrade or delete.
