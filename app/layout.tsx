@@ -67,6 +67,9 @@ export const metadata: Metadata = {
     title: SITE_NAME,
     statusBarStyle: 'default',
   },
+  verification: {
+    google: 'N0Lq34i0U9RjD0gF7CiBTzZAjZD9Mqs2jlKIPLp2Mks',
+  },
 }
 
 export const viewport: Viewport = {
