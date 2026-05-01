@@ -93,6 +93,32 @@ function getSubscriptionSummary(subscription: BillingState['subscription']): str
   return subscription.status
 }
 
+function getCreditCycleLabel({
+  subscription,
+  lastResetAt,
+  scheduledCancellationDate,
+  isComped,
+}: {
+  subscription: BillingState['subscription']
+  lastResetAt: Date | null
+  scheduledCancellationDate: Date | null
+  isComped: boolean
+}): string | null {
+  if (scheduledCancellationDate) {
+    return `Monthly credits available until ${formatDate(scheduledCancellationDate)}`
+  }
+
+  if (!isComped && subscription?.periodEnd) {
+    return `Next monthly reset ${formatDate(subscription.periodEnd)}`
+  }
+
+  if (lastResetAt) {
+    return `Last monthly reset ${formatDate(lastResetAt)}`
+  }
+
+  return null
+}
+
 export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPanelProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -132,6 +158,12 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
   const scheduledCancellationDate =
     state.subscription?.cancelAt ??
     (state.subscription?.cancelAtPeriodEnd ? state.subscription.periodEnd : null)
+  const creditCycleLabel = getCreditCycleLabel({
+    subscription: state.subscription,
+    lastResetAt: state.credits.resetsAt,
+    scheduledCancellationDate,
+    isComped,
+  })
   const displayPlanName = isComped
     ? `Complimentary ${state.plan.name}`
     : isLapsed && state.subscriptionAccess.latestPlan
@@ -397,7 +429,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
             <div>
               Bonus (never expire): <span className="tabular-nums">{state.credits.bonus}</span>
             </div>
-            {state.credits.resetsAt ? <div>Resets {formatDate(state.credits.resetsAt)}</div> : null}
+            {creditCycleLabel ? <div>{creditCycleLabel}</div> : null}
           </div>
           {canManage && !isLapsed ? (
             <div className="mt-auto pt-4">

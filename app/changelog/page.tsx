@@ -15,6 +15,7 @@ const changelog = [
         items: [
           'Billing summary actions now align at the bottom of their cards',
           'Billing now clearly shows when a subscription is canceled but remains active until the paid-through date',
+          'AI credits now show whether the monthly bucket resets again or stays available until canceled access ends',
         ],
       },
     ],
