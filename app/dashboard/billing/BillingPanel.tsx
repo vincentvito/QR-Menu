@@ -311,7 +311,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
 
       {/* Current plan + credits */}
       <div className="grid gap-4 md:grid-cols-2">
-        <section className="border-cream-line bg-card rounded-2xl border p-5">
+        <section className="border-cream-line bg-card flex flex-col rounded-2xl border p-5">
           <div className="flex items-center gap-2">
             <CreditCard className="text-muted-foreground size-4" aria-hidden="true" />
             <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
@@ -347,20 +347,24 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
             </div>
           ) : null}
           {canManage && state.subscription && !isComped ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-4 w-full"
-              onClick={openBillingPortal}
-              disabled={isPending}
-            >
-              {isPending ? <Loader2 className="size-3.5 animate-spin" aria-hidden="true" /> : null}
-              Manage billing
-            </Button>
+            <div className="mt-auto pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={openBillingPortal}
+                disabled={isPending}
+              >
+                {isPending ? (
+                  <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                ) : null}
+                Manage billing
+              </Button>
+            </div>
           ) : null}
         </section>
 
-        <section className="border-cream-line bg-card rounded-2xl border p-5">
+        <section className="border-cream-line bg-card flex flex-col rounded-2xl border p-5">
           <div className="flex items-center gap-2">
             <Zap className="text-muted-foreground size-4" aria-hidden="true" />
             <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
@@ -383,18 +387,20 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
             {state.credits.resetsAt ? <div>Resets {formatDate(state.credits.resetsAt)}</div> : null}
           </div>
           {canManage && !isLapsed ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-4 w-full"
-              onClick={buyCreditPack}
-              disabled={isBuyingCredits}
-            >
-              {isBuyingCredits ? (
-                <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-              ) : null}
-              Buy {CREDIT_PACK_LABEL}
-            </Button>
+            <div className="mt-auto pt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full"
+                onClick={buyCreditPack}
+                disabled={isBuyingCredits}
+              >
+                {isBuyingCredits ? (
+                  <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                ) : null}
+                Buy {CREDIT_PACK_LABEL}
+              </Button>
+            </div>
           ) : null}
         </section>
       </div>

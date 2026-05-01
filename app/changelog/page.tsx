@@ -6,6 +6,17 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.25.1',
+    date: '2026-05-01',
+    title: 'Billing card alignment polish',
+    changes: [
+      {
+        type: 'fixed' as const,
+        items: ['Billing summary actions now align at the bottom of their cards'],
+      },
+    ],
+  },
+  {
     version: '0.25.0',
     date: '2026-05-01',
     title: 'Editable category icons',
