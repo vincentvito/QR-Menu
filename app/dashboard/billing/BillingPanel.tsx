@@ -77,6 +77,22 @@ function formatDate(date: Date | null): string {
   })
 }
 
+function getSubscriptionSummary(subscription: BillingState['subscription']): string {
+  if (!subscription) return 'Not subscribed yet'
+
+  const scheduledEnd =
+    subscription.cancelAt ?? (subscription.cancelAtPeriodEnd ? subscription.periodEnd : null)
+  if (scheduledEnd) {
+    return `Cancellation scheduled · access ends ${formatDate(scheduledEnd)}`
+  }
+
+  if (subscription.periodEnd) {
+    return `${subscription.status} · renews ${formatDate(subscription.periodEnd)}`
+  }
+
+  return subscription.status
+}
+
 export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPanelProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -113,6 +129,9 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
   const isTrialing = state.subscription?.status === 'trialing'
   const isLapsed = state.subscriptionAccess.isLapsed
   const isComped = Boolean(state.comp.plan)
+  const scheduledCancellationDate =
+    state.subscription?.cancelAt ??
+    (state.subscription?.cancelAtPeriodEnd ? state.subscription.periodEnd : null)
   const displayPlanName = isComped
     ? `Complimentary ${state.plan.name}`
     : isLapsed && state.subscriptionAccess.latestPlan
@@ -320,20 +339,14 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
           </div>
           <p className="mt-3 text-2xl font-semibold tracking-tight">{displayPlanName}</p>
           <p className="text-muted-foreground mt-1 text-sm">
-            {state.subscription ? (
-              <>
-                {state.subscription.status}
-                {state.subscription.cancelAtPeriodEnd ? ' · cancels at period end' : ''}
-                {state.subscription.periodEnd
-                  ? ` · renews ${formatDate(state.subscription.periodEnd)}`
-                  : ''}
-              </>
-            ) : isLapsed ? (
-              'Subscription ended'
-            ) : (
-              'Not subscribed yet'
-            )}
+            {isLapsed ? 'Subscription ended' : getSubscriptionSummary(state.subscription)}
           </p>
+          {scheduledCancellationDate && !isLapsed && !isComped ? (
+            <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
+              Your subscription has been canceled. Your plan stays active until{' '}
+              {formatDate(scheduledCancellationDate)}.
+            </div>
+          ) : null}
           {isTrialing && state.subscription?.trialEnd ? (
             <div className="bg-accent/10 mt-4 rounded-lg px-3 py-2 text-xs">
               <Sparkles className="mr-1 inline size-3" aria-hidden="true" />

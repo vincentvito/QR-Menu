@@ -8,11 +8,14 @@ const changelog = [
   {
     version: '0.25.1',
     date: '2026-05-01',
-    title: 'Billing card alignment polish',
+    title: 'Billing card polish',
     changes: [
       {
         type: 'fixed' as const,
-        items: ['Billing summary actions now align at the bottom of their cards'],
+        items: [
+          'Billing summary actions now align at the bottom of their cards',
+          'Billing now clearly shows when a subscription is canceled but remains active until the paid-through date',
+        ],
       },
     ],
   },

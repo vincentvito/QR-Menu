@@ -46,6 +46,7 @@ export interface BillingState {
     periodEnd: Date | null
     trialEnd: Date | null
     cancelAtPeriodEnd: boolean
+    cancelAt: Date | null
   } | null
   subscriptionAccess: {
     isLapsed: boolean
@@ -99,6 +100,7 @@ export const getBillingState = cache(async function getBillingState(
         periodEnd: true,
         trialEnd: true,
         cancelAtPeriodEnd: true,
+        cancelAt: true,
       },
     }),
     getSubscriptionAccessState(organizationId),
