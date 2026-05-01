@@ -1,6 +1,6 @@
 'use client'
 
-import { Search, Wifi } from 'lucide-react'
+import { Search, Sparkles, Wifi } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { getTemplate } from '@/components/menu/templates'
 import { CategoryTilesPreviewChrome } from '@/components/menu/templates/category-tiles/CategoryTilesBody'
@@ -13,11 +13,13 @@ import {
 import { buildInlineStyle } from '@/components/menu/ThemeStyles'
 import { getTheme } from '@/lib/menus/themes'
 import { SeasonalOverlay } from '@/components/menu/SeasonalOverlay'
+import { categoryIcon, type CategoryIconId } from '@/lib/menus/category-icon'
 
 export interface TemplatePreviewRealData {
   items: TemplateItem[]
   specialIds: string[]
   symbol: string
+  categoryIcons: Record<string, CategoryIconId>
 }
 
 const PREVIEW_VIEWPORT_WIDTH = 390
@@ -63,6 +65,7 @@ interface TemplatePreviewProps {
   showRestaurantName?: boolean
   showMenuName?: boolean
   showDishCount?: boolean
+  showCategoryIcons?: boolean
   wifiSsid?: string | null
   // When set, clicking the mockup opens this URL (the live public menu)
   // in a new tab. Also flips the cursor to pointer on hover so the
@@ -92,6 +95,7 @@ export function TemplatePreview({
   showRestaurantName = true,
   showMenuName = true,
   showDishCount = true,
+  showCategoryIcons = true,
   wifiSsid,
   liveUrl,
 }: TemplatePreviewProps) {
@@ -127,6 +131,7 @@ export function TemplatePreview({
     const groups: TemplateCategoryGroup[] = order.map((category, i) => ({
       id: `preview-cat-${i}`,
       category,
+      iconId: realData.categoryIcons[category],
       items: map.get(category)!,
     }))
 
@@ -139,6 +144,13 @@ export function TemplatePreview({
       totalItems: realData.items.length,
     }
   }, [realData])
+
+  const navIcons = useMemo(() => {
+    if (!showCategoryIcons) return null
+    return new Map(
+      bodyData.groups.map((g) => [g.id, categoryIcon(g.category, g.iconId)]),
+    )
+  }, [bodyData.groups, showCategoryIcons])
 
   useEffect(() => {
     const element = screenRef.current
@@ -185,6 +197,7 @@ export function TemplatePreview({
     showMenuName,
     showRestaurantName,
     showDishCount,
+    showCategoryIcons,
   ])
 
   // Theme provides the full palette + heading font. Brand color overrides
@@ -353,17 +366,24 @@ export function TemplatePreview({
                       >
                         {bodyData.specials.length > 0 && (
                           <span className="bg-pop text-pop-foreground shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap">
+                            {showCategoryIcons ? (
+                              <Sparkles className="mr-1.5 inline size-3.5" aria-hidden="true" />
+                            ) : null}
                             Today&apos;s Specials
                           </span>
                         )}
-                        {bodyData.groups.map((group) => (
-                          <span
-                            key={group.id}
-                            className="bg-card text-foreground shrink-0 rounded-full px-4 py-2 text-[13px] font-medium whitespace-nowrap"
-                          >
-                            {group.category}
-                          </span>
-                        ))}
+                        {bodyData.groups.map((group) => {
+                          const Icon = navIcons?.get(group.id)
+                          return (
+                            <span
+                              key={group.id}
+                              className="bg-card text-foreground inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium whitespace-nowrap"
+                            >
+                              {Icon ? <Icon className="size-3.5" aria-hidden="true" /> : null}
+                              {group.category}
+                            </span>
+                          )
+                        })}
                       </nav>
                     ) : (
                       <div className="h-3" aria-hidden="true" />

@@ -1,0 +1,1 @@
+ALTER TABLE "menu" ADD COLUMN "categoryIcons" JSONB NOT NULL DEFAULT '{}';

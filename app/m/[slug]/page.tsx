@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { getMenuBySlug } from '@/lib/menus/get'
+import { parseCategoryIconOverrides } from '@/lib/menus/category-icon'
 import { currencySymbol } from '@/lib/menus/currency'
 import { PublicMenuBody } from '@/components/menu/PublicMenuBody'
 import { WifiReveal } from '@/components/menu/WifiReveal'
@@ -94,6 +95,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
   const restaurant = menu.restaurant
   const org = menu.organization
   const symbol = currencySymbol(restaurant.currency)
+  const categoryIcons = parseCategoryIconOverrides(menu.categoryIcons)
 
   // Compose the page style: theme palette + heading font + the restaurant's
   // brand color overrides (primaryColor/secondaryColor, if set, win over the
@@ -266,6 +268,8 @@ export default async function PublicMenuPage({ params }: PageProps) {
         symbol={symbol}
         specialIds={activeSpecialIds}
         templateId={restaurant.templateId}
+        categoryIcons={categoryIcons}
+        showCategoryIcons={restaurant.showCategoryIcons}
         items={menu.items.map((i) => ({
           id: i.id,
           category: i.category,

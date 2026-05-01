@@ -4,6 +4,7 @@ import { getDashboardContext } from '@/lib/dashboard/context'
 import { getSubscriptionAccessState } from '@/lib/plans/subscription-access'
 import { templatePreviewMockupUrl } from '@/lib/menus/template-assets'
 import { currencySymbol } from '@/lib/menus/currency'
+import { parseCategoryIconOverrides } from '@/lib/menus/category-icon'
 import type { TemplateItem } from '@/components/menu/templates/types'
 import { SettingsForm } from './SettingsForm'
 import { SettingsSideNav } from './SettingsSideNav'
@@ -50,6 +51,7 @@ export default async function SettingsPage() {
           .filter((i) => i.specialUntil && i.specialUntil.getTime() > now)
           .map((i) => i.id),
         symbol: currencySymbol(restaurant.currency),
+        categoryIcons: parseCategoryIconOverrides(latestMenu.categoryIcons),
       }
     : null
 
@@ -110,6 +112,7 @@ export default async function SettingsPage() {
             showRestaurantName: restaurant.showRestaurantName,
             showMenuName: restaurant.showMenuName,
             showDishCount: restaurant.showDishCount,
+            showCategoryIcons: restaurant.showCategoryIcons,
           }}
         />
       </div>

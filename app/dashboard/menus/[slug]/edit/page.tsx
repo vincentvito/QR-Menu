@@ -4,6 +4,7 @@ import { getTranslations } from 'next-intl/server'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
 import prisma from '@/lib/prisma'
 import { getMenuBySlug } from '@/lib/menus/get'
+import { parseCategoryIconOverrides } from '@/lib/menus/category-icon'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import { getBillingState } from '@/lib/plans/billing-state'
 import { Button } from '@/components/ui/button'
@@ -80,6 +81,7 @@ export default async function EditMenuPage({ params }: PageProps) {
             : menu.restaurant?.readOnly
               ? 'This restaurant is read-only under your current plan.'
               : null,
+          categoryIcons: parseCategoryIconOverrides(menu.categoryIcons),
           items: menu.items.map((i) => ({
             id: i.id,
             category: i.category,

@@ -1,9 +1,15 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { requireMenuAccess } from '@/lib/menus/get'
 import { canWriteRestaurant } from '@/lib/plans/subscription-access'
+import {
+  isCategoryIconId,
+  parseCategoryIconOverrides,
+  type CategoryIconId,
+} from '@/lib/menus/category-icon'
 
 export const runtime = 'nodejs'
 
@@ -18,7 +24,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   }
 
   const { slug } = await params
-  let body: { from?: unknown; to?: unknown }
+  let body: { from?: unknown; to?: unknown; category?: unknown; icon?: unknown }
   try {
     body = await request.json()
   } catch {
@@ -27,11 +33,20 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
   const from = typeof body.from === 'string' ? body.from.trim() : ''
   const to = typeof body.to === 'string' ? body.to.trim().slice(0, 80) : ''
-  if (!from || !to) {
+  const category = typeof body.category === 'string' ? body.category.trim().slice(0, 80) : ''
+  const hasRename = body.from !== undefined || body.to !== undefined
+  const hasIcon = body.icon !== undefined
+  if (hasRename && (!from || !to)) {
     return NextResponse.json({ error: 'Category names are required' }, { status: 400 })
   }
-  if (from === to) {
-    return NextResponse.json({ updatedCount: 0, category: to })
+  if (hasIcon && !isCategoryIconId(body.icon)) {
+    return NextResponse.json({ error: 'Choose a valid category icon' }, { status: 400 })
+  }
+  if (hasIcon && !category && !to) {
+    return NextResponse.json({ error: 'Category name is required' }, { status: 400 })
+  }
+  if (!hasRename && !hasIcon) {
+    return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
   }
 
   try {
@@ -41,12 +56,43 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
     }
 
-    const result = await prisma.menuItem.updateMany({
-      where: { menuId: access.id, category: from },
-      data: { category: to },
+    const menu = await prisma.menu.findUnique({
+      where: { id: access.id },
+      select: { slug: true, categoryIcons: true },
+    })
+    if (!menu) {
+      return NextResponse.json({ error: 'Menu not found' }, { status: 404 })
+    }
+
+    let updatedCount = 0
+    const categoryIcons = parseCategoryIconOverrides(menu.categoryIcons)
+    const responseCategory = to || category
+
+    if (hasRename && from !== to) {
+      const result = await prisma.menuItem.updateMany({
+        where: { menuId: access.id, category: from },
+        data: { category: to },
+      })
+      updatedCount = result.count
+      if (from in categoryIcons) {
+        categoryIcons[to] = categoryIcons[from]
+        delete categoryIcons[from]
+      }
+    }
+
+    if (hasIcon) {
+      categoryIcons[responseCategory] = body.icon as CategoryIconId
+    }
+
+    await prisma.menu.update({
+      where: { id: access.id },
+      data: { categoryIcons },
+      select: { id: true },
     })
 
-    return NextResponse.json({ updatedCount: result.count, category: to })
+    revalidatePath(`/m/${menu.slug}`)
+    revalidatePath(`/dashboard/menus/${menu.slug}/edit`)
+    return NextResponse.json({ updatedCount, category: responseCategory, categoryIcons })
   } catch (err) {
     const status = (err as { status?: number })?.status ?? 500
     const message = err instanceof Error ? err.message : 'Category update failed'

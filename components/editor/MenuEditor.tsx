@@ -6,6 +6,7 @@ import dynamic from 'next/dynamic'
 import { useTranslations } from 'next-intl'
 import {
   Check,
+  ChevronDown,
   CreditCard,
   LayoutGrid,
   Loader2,
@@ -23,9 +24,23 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { PillButton } from '@/components/ui/pill-button'
 import { Input } from '@/components/ui/input'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Textarea } from '@/components/ui/textarea'
 import { currencySymbol } from '@/lib/menus/currency'
-import { categoryIcon } from '@/lib/menus/category-icon'
+import {
+  CATEGORY_ICON_OPTIONS,
+  categoryIcon,
+  categoryIconById,
+  categoryIconId,
+  type CategoryIconId,
+} from '@/lib/menus/category-icon'
 import { BADGES, BADGE_KEYS, type BadgeKey } from '@/lib/menus/badges'
 import { DishPhotoUploader } from '@/components/editor/DishPhotoUploader'
 // AI panel is lazy: most editor sessions never open it, and it pulls in the
@@ -64,6 +79,7 @@ interface MenuEditorProps {
     currency: string
     aiCreditsTotal: number
     readOnlyReason: string | null
+    categoryIcons: Record<string, CategoryIconId>
     items: EditorItem[]
   }
 }
@@ -107,6 +123,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
   const [addingToCategory, setAddingToCategory] = useState<string | null>(null)
   const [addingCategory, setAddingCategory] = useState(false)
   const [manualCategories, setManualCategories] = useState<string[]>([])
+  const [categoryIconOverrides, setCategoryIconOverrides] = useState(initial.categoryIcons)
   const [importingCategory, setImportingCategory] = useState<string | null>(null)
   // Per-target save state so indicators live next to the thing that's
   // actually saving (the edited row, or the menu-name field) instead of a
@@ -138,8 +155,18 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
         counts.set(name, 0)
       }
     }
-    return order.map((name) => ({ name, count: counts.get(name) ?? 0 }))
-  }, [items, manualCategories])
+    for (const name of Object.keys(categoryIconOverrides)) {
+      if (!counts.has(name)) {
+        order.push(name)
+        counts.set(name, 0)
+      }
+    }
+    return order.map((name) => ({
+      name,
+      count: counts.get(name) ?? 0,
+      iconId: categoryIconId(name, categoryIconOverrides[name]),
+    }))
+  }, [items, manualCategories, categoryIconOverrides])
 
   // Visible items = category filter ∩ search query.
   const visibleGroups = useMemo(() => {
@@ -383,7 +410,9 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
 
       const previousItems = itemsRef.current
       const previousManualCategories = manualCategories
+      const previousCategoryIconOverrides = categoryIconOverrides
       const hasPersistedItems = previousItems.some((item) => (item.category || 'Other') === from)
+      const hasPersistedIcon = from in previousCategoryIconOverrides
 
       setItems((cur) =>
         cur.map((item) =>
@@ -396,7 +425,13 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
       setSelectedCategory((cur) => (cur === from ? trimmed : cur))
       setAddingToCategory((cur) => (cur === from ? trimmed : cur))
       setImportingCategory((cur) => (cur === from ? trimmed : cur))
-      if (!hasPersistedItems) {
+      setCategoryIconOverrides((cur) => {
+        if (!(from in cur)) return cur
+        const next = { ...cur, [trimmed]: cur[from] }
+        delete next[from]
+        return next
+      })
+      if (!hasPersistedItems && !hasPersistedIcon) {
         flashSavedFor(categorySaveKey(trimmed))
         return true
       }
@@ -415,6 +450,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
       } catch (err) {
         setItems(previousItems)
         setManualCategories(previousManualCategories)
+        setCategoryIconOverrides(previousCategoryIconOverrides)
         setSelectedCategory((cur) => (cur === trimmed ? from : cur))
         setAddingToCategory((cur) => (cur === trimmed ? from : cur))
         setImportingCategory((cur) => (cur === trimmed ? from : cur))
@@ -422,7 +458,43 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
         return false
       }
     },
-    [categories, flashSavedFor, handleErrorFor, manualCategories, setSaveFor, slug, t],
+    [
+      categories,
+      categoryIconOverrides,
+      flashSavedFor,
+      handleErrorFor,
+      manualCategories,
+      setSaveFor,
+      slug,
+      t,
+    ],
+  )
+
+  const saveCategoryIcon = useCallback(
+    async (category: string, iconId: CategoryIconId) => {
+      if (isReadOnly) return
+      const previousCategoryIconOverrides = categoryIconOverrides
+      setCategoryIconOverrides((cur) => ({ ...cur, [category]: iconId }))
+      setSaveFor(categorySaveKey(category), { state: 'saving' })
+
+      try {
+        const res = await fetch(`/api/menus/${slug}/categories`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ category, icon: iconId }),
+        })
+        const data = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(data.error ?? t('saveError'))
+        if (data.categoryIcons && typeof data.categoryIcons === 'object') {
+          setCategoryIconOverrides(data.categoryIcons)
+        }
+        flashSavedFor(categorySaveKey(category))
+      } catch (err) {
+        setCategoryIconOverrides(previousCategoryIconOverrides)
+        handleErrorFor(categorySaveKey(category), err, t('saveError'))
+      }
+    },
+    [categoryIconOverrides, flashSavedFor, handleErrorFor, isReadOnly, setSaveFor, slug, t],
   )
 
   const appendImportedItems = useCallback((nextItems: EditorItem[], category: string | null) => {
@@ -593,7 +665,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
                 t={t}
               />
               {categories.map((cat) => {
-                const Icon = categoryIcon(cat.name)
+                const Icon = categoryIcon(cat.name, cat.iconId)
                 return (
                   <RailButton
                     key={cat.name}
@@ -626,7 +698,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
               onClick={() => setSelectedCategory(ALL)}
             />
             {categories.map((cat) => {
-              const Icon = categoryIcon(cat.name)
+              const Icon = categoryIcon(cat.name, cat.iconId)
               return (
                 <CategoryChip
                   key={cat.name}
@@ -735,16 +807,18 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
           ) : (
             <div className="space-y-10">
               {visibleGroups.map(({ name: cat, items: rows }) => {
-                const CatIcon = categoryIcon(cat)
+                const iconId = categoryIconId(cat, categoryIconOverrides[cat])
                 const isAdding = addingToCategory === cat
                 const isImporting = importingCategory === cat
                 return (
                   <section key={cat}>
                     <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                       <div className="flex min-w-0 flex-1 items-center gap-2">
-                        <CatIcon
-                          className="text-muted-foreground h-4 w-4 shrink-0"
-                          aria-hidden="true"
+                        <CategoryIconSelect
+                          category={cat}
+                          iconId={iconId}
+                          onChange={(nextIconId) => saveCategoryIcon(cat, nextIconId)}
+                          readOnly={isReadOnly}
                         />
                         <InlineCategoryName
                           category={cat}
@@ -898,6 +972,65 @@ function NewCategoryForm({
         </PillButton>
       </div>
     </form>
+  )
+}
+
+function CategoryIconSelect({
+  category,
+  iconId,
+  onChange,
+  readOnly,
+}: {
+  category: string
+  iconId: CategoryIconId
+  onChange: (iconId: CategoryIconId) => void
+  readOnly: boolean
+}) {
+  const SelectedIcon = categoryIconById(iconId)
+
+  if (readOnly) {
+    return (
+      <span className="text-muted-foreground flex size-8 shrink-0 items-center justify-center">
+        <SelectedIcon className="size-4" aria-hidden="true" />
+      </span>
+    )
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          aria-label={`Change ${category} icon`}
+          title={`Change ${category} icon`}
+          className="h-8 w-12 shrink-0 rounded-full px-2"
+        >
+          <SelectedIcon data-icon="inline-start" aria-hidden="true" />
+          <ChevronDown data-icon="inline-end" aria-hidden="true" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="max-h-[320px] w-56 overflow-y-auto">
+        <DropdownMenuLabel>Food & beverage icons</DropdownMenuLabel>
+        <DropdownMenuRadioGroup
+          value={iconId}
+          onValueChange={(value) => {
+            if (value !== iconId) onChange(value as CategoryIconId)
+          }}
+        >
+          {CATEGORY_ICON_OPTIONS.map((option) => {
+            const Icon = option.icon
+            return (
+              <DropdownMenuRadioItem key={option.id} value={option.id}>
+                <Icon aria-hidden="true" />
+                {option.label}
+              </DropdownMenuRadioItem>
+            )
+          })}
+        </DropdownMenuRadioGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 

@@ -2,10 +2,11 @@
 
 import { useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { Search, X } from 'lucide-react'
+import { Search, Sparkles, X } from 'lucide-react'
 import { ImageLightbox } from '@/components/menu/ImageLightbox'
 import { getTemplate } from '@/components/menu/templates'
 import type { TemplateCategoryGroup, TemplateItem } from '@/components/menu/templates/types'
+import { categoryIcon, type CategoryIconId } from '@/lib/menus/category-icon'
 
 interface PublicMenuBodyProps {
   items: TemplateItem[]
@@ -15,6 +16,8 @@ interface PublicMenuBodyProps {
   symbol: string
   // Which template to render. Falls back to default if unknown.
   templateId: string
+  categoryIcons: Record<string, CategoryIconId>
+  showCategoryIcons: boolean
 }
 
 const SPECIALS_ANCHOR_ID = 'todays-specials'
@@ -23,7 +26,14 @@ const SPECIALS_ANCHOR_ID = 'todays-specials'
 // empty states. Item rendering is delegated to the selected template so
 // each layout (Editorial, Photo Grid, etc.) can diverge without
 // reimplementing search/scroll logic.
-export function PublicMenuBody({ items, specialIds, symbol, templateId }: PublicMenuBodyProps) {
+export function PublicMenuBody({
+  items,
+  specialIds,
+  symbol,
+  templateId,
+  categoryIcons,
+  showCategoryIcons,
+}: PublicMenuBodyProps) {
   const t = useTranslations('MenuView')
   const [query, setQuery] = useState('')
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
@@ -58,6 +68,7 @@ export function PublicMenuBody({ items, specialIds, symbol, templateId }: Public
     const groups: TemplateCategoryGroup[] = order.map((category, i) => ({
       id: `cat-${i}-${slugId(category)}`,
       category,
+      iconId: categoryIcons[category],
       items: groupsMap.get(category)!,
     }))
 
@@ -67,7 +78,12 @@ export function PublicMenuBody({ items, specialIds, symbol, templateId }: Public
       totalMatches: filtered.length,
       hasQuery: q.length > 0,
     }
-  }, [items, specialIds, query])
+  }, [items, specialIds, query, categoryIcons])
+
+  const navIcons = useMemo(() => {
+    if (!showCategoryIcons) return null
+    return new Map(visibleGroups.map((g) => [g.id, categoryIcon(g.category, g.iconId)]))
+  }, [visibleGroups, showCategoryIcons])
 
   const template = getTemplate(templateId)
   const bottomChrome = template.chrome === 'bottom'
@@ -122,20 +138,25 @@ export function PublicMenuBody({ items, specialIds, symbol, templateId }: Public
               {visibleSpecials.length > 0 && (
                 <a
                   href={`#${SPECIALS_ANCHOR_ID}`}
-                  className="bg-pop text-pop-foreground hover:bg-pop-deep shrink-0 rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap transition-colors"
+                  className="bg-pop text-pop-foreground hover:bg-pop-deep inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap transition-colors"
                 >
+                  {showCategoryIcons ? <Sparkles className="size-3.5" aria-hidden="true" /> : null}
                   Today&apos;s Specials
                 </a>
               )}
-              {visibleGroups.map((g) => (
-                <a
-                  key={g.id}
-                  href={`#${g.id}`}
-                  className="bg-card text-foreground hover:bg-foreground hover:text-background shrink-0 rounded-full px-4 py-2 text-[13px] font-medium whitespace-nowrap transition-colors"
-                >
-                  {g.category}
-                </a>
-              ))}
+              {visibleGroups.map((g) => {
+                const Icon = navIcons?.get(g.id)
+                return (
+                  <a
+                    key={g.id}
+                    href={`#${g.id}`}
+                    className="bg-card text-foreground hover:bg-foreground hover:text-background inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-medium whitespace-nowrap transition-colors"
+                  >
+                    {Icon ? <Icon className="size-3.5" aria-hidden="true" /> : null}
+                    {g.category}
+                  </a>
+                )
+              })}
             </nav>
           )}
           {!showCategoryNav && <div className="h-3" aria-hidden="true" />}

@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react'
+import type { CategoryIconId } from '@/lib/menus/category-icon'
 
 // Shape every template component receives. Matches what PublicMenuBody has
 // already filtered + grouped, so templates focus on rendering.
@@ -16,6 +17,7 @@ export interface TemplateItem {
 export interface TemplateCategoryGroup {
   category: string
   id: string
+  iconId?: CategoryIconId
   items: TemplateItem[]
 }
 

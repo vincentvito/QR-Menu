@@ -101,6 +101,7 @@ model Menu {
   name           String
   sourceUrl      String?
   sourceText     String?
+  categoryIcons  Json         @default("{}")
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
   items          MenuItem[]
@@ -241,6 +242,7 @@ model Restaurant {
   showRestaurantName Boolean @default(true)
   showMenuName       Boolean @default(true)
   showDishCount      Boolean @default(true)
+  showCategoryIcons  Boolean @default(true)
 
   // Flipped to true when plan downgrade leaves this restaurant above the limit.
   // Public menu pages keep working; dashboard becomes view-only until upgrade or delete.

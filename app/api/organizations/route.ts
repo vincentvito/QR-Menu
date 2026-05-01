@@ -221,6 +221,13 @@ export async function PATCH(request: Request) {
     restaurantUpdates.showDishCount = body.showDishCount
   }
 
+  if ('showCategoryIcons' in body) {
+    if (typeof body.showCategoryIcons !== 'boolean') {
+      return NextResponse.json({ error: 'Invalid category icon visibility' }, { status: 400 })
+    }
+    restaurantUpdates.showCategoryIcons = body.showCategoryIcons
+  }
+
   if ('currency' in body) {
     if (typeof body.currency !== 'string' || !isSupportedCurrency(body.currency)) {
       return NextResponse.json({ error: 'Unsupported currency' }, { status: 400 })

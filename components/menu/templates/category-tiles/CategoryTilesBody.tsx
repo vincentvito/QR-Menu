@@ -207,7 +207,7 @@ interface CategoryTileProps {
 }
 
 const CategoryTile = memo(function CategoryTile({ group, onClick, preview }: CategoryTileProps) {
-  const Icon = categoryIcon(group.category)
+  const Icon = categoryIcon(group.category, group.iconId)
   const bgImage = group.items.find((i) => i.imageUrl)?.imageUrl ?? null
   const className =
     'group border-cream-line bg-card relative aspect-square w-full overflow-hidden rounded-[20px] border text-left transition-transform hover:scale-[1.02] disabled:hover:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground'

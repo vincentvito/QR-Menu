@@ -6,6 +6,28 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.25.0',
+    date: '2026-05-01',
+    title: 'Editable category icons',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'The menu editor now lets you choose food and beverage icons for each category',
+          'Custom category icons now carry through to the public category tiles menu',
+          'Public menu category filters can now show category icons, with a Menu design toggle to hide them',
+        ],
+      },
+      {
+        type: 'fixed' as const,
+        items: [
+          'Category icon picking now opens from a compact icon button without duplicate labels',
+          'Cheese categories now use a clearer dedicated cheese wedge icon instead of a fruit icon',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.24.1',
     date: '2026-04-30',
     title: 'Launch SEO and social preview polish',
