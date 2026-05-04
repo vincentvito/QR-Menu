@@ -1,5 +1,4 @@
 import { GoogleGenAI } from '@google/genai'
-import { buildEnhancePrompt, buildGeneratePrompt, type DishContext } from './dish-image-prompts'
 
 const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY! })
 const MODEL = 'gemini-3.1-flash-image-preview'
@@ -27,10 +26,12 @@ function extractImage(response: unknown): GeneratedImage {
   throw new Error('Gemini returned no image')
 }
 
-export async function generateDishImage(dish: DishContext): Promise<GeneratedImage> {
+// Low-level: takes a fully-built prompt string. Composition lives in the
+// route handler so admins can override the default prompt for diagnostics.
+export async function generateDishImage(prompt: string): Promise<GeneratedImage> {
   const response = await ai.models.generateContent({
     model: MODEL,
-    contents: buildGeneratePrompt(dish),
+    contents: prompt,
   })
   return extractImage(response)
 }
@@ -38,13 +39,13 @@ export async function generateDishImage(dish: DishContext): Promise<GeneratedIma
 export async function enhanceDishImage(
   sourceBase64: string,
   sourceMimeType: string,
-  dish: DishContext,
+  prompt: string,
 ): Promise<GeneratedImage> {
   const response = await ai.models.generateContent({
     model: MODEL,
     contents: [
       { inlineData: { data: sourceBase64, mimeType: sourceMimeType } },
-      { text: buildEnhancePrompt(dish) },
+      { text: prompt },
     ],
   })
   return extractImage(response)

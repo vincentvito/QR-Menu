@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { enhanceDishImage } from '@/lib/ai/dish-image'
+import { buildEnhancePrompt } from '@/lib/ai/dish-image-prompts'
 import { keyForMenuItemImage, uploadBuffer } from '@/lib/storage/r2'
 import { hasCredits } from '@/lib/plans/gates'
 import { spendCredits, InsufficientCreditsError } from '@/lib/plans/credits'
@@ -31,7 +32,7 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   const { slug, itemId } = await params
 
-  let body: { extraContext?: unknown } = {}
+  let body: { extraContext?: unknown; overridePrompt?: unknown } = {}
   try {
     body = await request.json()
   } catch {
@@ -42,6 +43,14 @@ export async function POST(request: Request, { params }: RouteContext) {
   if (typeof body.extraContext === 'string') {
     const trimmed = body.extraContext.trim().slice(0, MAX_CONTEXT)
     if (trimmed) extraContext = trimmed
+  }
+
+  // Admin-only escape hatch — see the matching block in generate-image.
+  const isAdmin = session.user.role === 'admin'
+  let overridePrompt: string | undefined
+  if (isAdmin && typeof body.overridePrompt === 'string') {
+    const trimmed = body.overridePrompt.trim().slice(0, 20000)
+    if (trimmed) overridePrompt = trimmed
   }
 
   let access
@@ -95,12 +104,15 @@ export async function POST(request: Request, { params }: RouteContext) {
     const sourceBuffer = Buffer.from(await sourceRes.arrayBuffer())
     const sourceBase64 = sourceBuffer.toString('base64')
 
-    const image = await enhanceDishImage(sourceBase64, sourceMimeType, {
-      name: item.name,
-      category: item.category,
-      description: item.description,
-      extraContext,
-    })
+    const prompt =
+      overridePrompt ??
+      buildEnhancePrompt({
+        name: item.name,
+        category: item.category,
+        description: item.description,
+        extraContext,
+      })
+    const image = await enhanceDishImage(sourceBase64, sourceMimeType, prompt)
 
     const ext = image.mimeType.split('/')[1]?.replace('jpeg', 'jpg') ?? 'png'
     const stamp = randomBytes(4).toString('hex')

@@ -74,6 +74,7 @@ interface EditorItem {
 
 interface MenuEditorProps {
   slug: string
+  isAdmin?: boolean
   initial: {
     name: string
     currency: string
@@ -105,7 +106,7 @@ function categorySaveKey(category: string) {
   return `${CATEGORY_KEY_PREFIX}${category}`
 }
 
-export function MenuEditor({ slug, initial }: MenuEditorProps) {
+export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) {
   const t = useTranslations('Editor')
   const [menuName, setMenuName] = useState(initial.name)
   const [savedMenuName, setSavedMenuName] = useState(initial.name)
@@ -912,6 +913,7 @@ export function MenuEditor({ slug, initial }: MenuEditorProps) {
                           onDelete={deleteItem}
                           onCreditSpent={handleCreditSpent}
                           readOnly={isReadOnly}
+                          isAdmin={isAdmin}
                         />
                       ))}
                     </ul>
@@ -1531,6 +1533,7 @@ const ItemRow = memo(function ItemRow({
   onDelete,
   onCreditSpent,
   readOnly,
+  isAdmin,
 }: {
   slug: string
   item: EditorItem
@@ -1553,6 +1556,7 @@ const ItemRow = memo(function ItemRow({
   onDelete: (id: string) => void
   onCreditSpent: () => void
   readOnly: boolean
+  isAdmin: boolean
 }) {
   const t = useTranslations('Editor')
   const [isEditing, setIsEditing] = useState(false)
@@ -1927,6 +1931,7 @@ const ItemRow = memo(function ItemRow({
             onApply={(url) => onChange(item.id, { imageUrl: url })}
             onClose={() => setAIMode(null)}
             onCreditSpent={onCreditSpent}
+            isAdmin={isAdmin}
           />
         </div>
       ) : null}

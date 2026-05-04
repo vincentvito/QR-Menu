@@ -6,6 +6,26 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.26.0',
+    date: '2026-05-03',
+    title: 'Smarter AI photos for drinks, coffee, and desserts',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'AI photo generation now picks the right look automatically for cocktails, beer and wine, hot coffee drinks, iced and blended drinks, desserts, and bakery items — not just plated food',
+          'Extra direction you type now steers mood, props, and garnish more strongly while still respecting photography quality rules',
+        ],
+      },
+      {
+        type: 'changed' as const,
+        items: [
+          'AI photo panel is now cleaner — the internal prompt preview is gone for owners; just type the hint and let the model do the work',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.25.1',
     date: '2026-05-01',
     title: 'Billing card polish',

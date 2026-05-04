@@ -72,6 +72,7 @@ export default async function EditMenuPage({ params }: PageProps) {
 
       <MenuEditor
         slug={slug}
+        isAdmin={session.user.role === 'admin'}
         initial={{
           name: menu.name,
           currency: menu.restaurant?.currency ?? 'USD',

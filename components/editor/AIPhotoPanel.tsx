@@ -21,6 +21,9 @@ interface AIPhotoPanelProps {
   onApply: (url: string) => void
   onClose: () => void
   onCreditSpent?: () => void
+  // Admins get an editable prompt textarea for diagnostics; everyone else
+  // sees a read-only preview. Server enforces this independently.
+  isAdmin?: boolean
 }
 
 type Status = 'setup' | 'processing' | 'review'
@@ -48,18 +51,25 @@ export function AIPhotoPanel({
   onApply,
   onClose,
   onCreditSpent,
+  isAdmin = false,
 }: AIPhotoPanelProps) {
   const [status, setStatus] = useState<Status>('setup')
   const [extraContext, setExtraContext] = useState('')
   const [resultUrl, setResultUrl] = useState<string | null>(null)
   const abortRef = useRef<AbortController | null>(null)
 
-  // Live preview of the prompt we'd send right now — updates as the owner
-  // types extra context, so they can see exactly what's going to the model.
-  const promptPreview = useMemo(() => {
+  // Default prompt the composer would build right now. Re-derives whenever
+  // the dish or extra direction changes.
+  const defaultPrompt = useMemo(() => {
     const ctx = { ...dish, extraContext: extraContext.trim() || undefined }
     return mode === 'enhance' ? buildEnhancePrompt(ctx) : buildGeneratePrompt(ctx)
   }, [dish, mode, extraContext])
+
+  // Admin override: when non-null, the textarea is in edited state and we
+  // send this exact text to the server. `null` means "use the composer".
+  const [overridePrompt, setOverridePrompt] = useState<string | null>(null)
+  const isOverridden = overridePrompt !== null
+  const displayedPrompt = overridePrompt ?? defaultPrompt
 
   // Fire-and-forget cleanup of R2 orphans. Used when the owner discards a
   // generated image without applying it (Try again, Discard, or closing the
@@ -104,7 +114,11 @@ export function AIPhotoPanel({
       const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ extraContext: extraContext.trim() || undefined }),
+        body: JSON.stringify({
+          extraContext: extraContext.trim() || undefined,
+          // Admin-only — server ignores this for everyone else.
+          overridePrompt: isAdmin && isOverridden ? overridePrompt : undefined,
+        }),
         signal: controller.signal,
       })
       const data = await res.json().catch(() => ({}))
@@ -212,17 +226,38 @@ export function AIPhotoPanel({
             />
           </div>
 
-          <details className="group">
-            <summary className="text-muted-foreground hover:text-foreground cursor-pointer list-none text-[11px] font-semibold tracking-[0.08em] uppercase select-none">
-              <span className="inline-flex items-center gap-1">
-                <span className="transition-transform group-open:rotate-90">▸</span>
-                Preview the prompt we&apos;ll send
-              </span>
-            </summary>
-            <pre className="border-cream-line bg-background text-muted-foreground mt-2 max-h-60 overflow-auto rounded-md border p-3 font-mono text-[11px] leading-relaxed whitespace-pre-wrap">
-              {promptPreview}
-            </pre>
-          </details>
+          {isAdmin ? (
+            <details className="group">
+              <summary className="text-muted-foreground hover:text-foreground cursor-pointer list-none text-[11px] font-semibold tracking-[0.08em] uppercase select-none">
+                <span className="inline-flex items-center gap-1">
+                  <span className="transition-transform group-open:rotate-90">▸</span>
+                  Master prompt{isOverridden ? ' (edited)' : ''}
+                </span>
+              </summary>
+              <p className="text-muted-foreground/80 mt-2 text-[11px] italic">
+                Admin only. Edits override the composed prompt for the next
+                generation on this dish — useful for diagnosing weird outputs.
+              </p>
+              <textarea
+                value={displayedPrompt}
+                onChange={(e) => setOverridePrompt(e.target.value)}
+                spellCheck={false}
+                className="border-cream-line bg-background text-foreground mt-2 max-h-80 min-h-40 w-full resize-y overflow-auto rounded-md border p-3 font-mono text-[11px] leading-relaxed whitespace-pre-wrap"
+              />
+              {isOverridden ? (
+                <div className="mt-2 flex justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setOverridePrompt(null)}
+                  >
+                    Reset to default
+                  </Button>
+                </div>
+              ) : null}
+            </details>
+          ) : null}
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={onClose}>

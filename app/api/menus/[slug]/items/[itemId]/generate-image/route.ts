@@ -4,6 +4,7 @@ import { randomBytes } from 'node:crypto'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { generateDishImage } from '@/lib/ai/dish-image'
+import { buildGeneratePrompt } from '@/lib/ai/dish-image-prompts'
 import { keyForMenuItemImage, uploadBuffer } from '@/lib/storage/r2'
 import { hasCredits } from '@/lib/plans/gates'
 import { spendCredits, InsufficientCreditsError } from '@/lib/plans/credits'
@@ -32,7 +33,7 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   const { slug, itemId } = await params
 
-  let body: { extraContext?: unknown } = {}
+  let body: { extraContext?: unknown; overridePrompt?: unknown } = {}
   try {
     body = await request.json()
   } catch {
@@ -43,6 +44,16 @@ export async function POST(request: Request, { params }: RouteContext) {
   if (typeof body.extraContext === 'string') {
     const trimmed = body.extraContext.trim().slice(0, MAX_CONTEXT)
     if (trimmed) extraContext = trimmed
+  }
+
+  // Admin-only escape hatch for prompt diagnostics. Silently ignored for
+  // non-admins so a malicious client can't burn credits on adversarial
+  // prompts. Cap length to keep token costs sane.
+  const isAdmin = session.user.role === 'admin'
+  let overridePrompt: string | undefined
+  if (isAdmin && typeof body.overridePrompt === 'string') {
+    const trimmed = body.overridePrompt.trim().slice(0, 20000)
+    if (trimmed) overridePrompt = trimmed
   }
 
   // Access check (org member OR restaurant staff). Item query below is
@@ -77,12 +88,15 @@ export async function POST(request: Request, { params }: RouteContext) {
   }
 
   try {
-    const image = await generateDishImage({
-      name: item.name,
-      category: item.category,
-      description: item.description,
-      extraContext,
-    })
+    const prompt =
+      overridePrompt ??
+      buildGeneratePrompt({
+        name: item.name,
+        category: item.category,
+        description: item.description,
+        extraContext,
+      })
+    const image = await generateDishImage(prompt)
 
     const ext = image.mimeType.split('/')[1]?.replace('jpeg', 'jpg') ?? 'png'
     const stamp = randomBytes(4).toString('hex')
