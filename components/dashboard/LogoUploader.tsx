@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react'
 import Image from 'next/image'
+import { useTranslations } from 'next-intl'
 import { Loader2, Trash2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -37,17 +38,18 @@ export function LogoUploader({
   disabled = false,
   endpoint = '/api/upload/logo',
 }: LogoUploaderProps) {
+  const t = useTranslations('Settings.upload.logo')
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [uploading, setUploading] = useState(false)
   const [dragging, setDragging] = useState(false)
 
   async function uploadFile(file: File) {
     if (!file.type.startsWith('image/')) {
-      toast.error('Pick a PNG, JPG, WEBP, or SVG file')
+      toast.error(t('errors.badType'))
       return
     }
     if (file.size > MAX_BYTES) {
-      toast.error('Logo must be under 2 MB')
+      toast.error(t('errors.tooLarge'))
       return
     }
     setUploading(true)
@@ -57,13 +59,13 @@ export function LogoUploader({
       const res = await fetch(endpoint, { method: 'POST', body: form })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error ?? 'Upload failed')
+        toast.error(data.error ?? t('errors.uploadFailed'))
         return
       }
       onChange(data.url)
-      toast.success('Logo uploaded')
+      toast.success(t('toast.uploaded'))
     } catch {
-      toast.error('Network error — please try again')
+      toast.error(t('errors.network'))
     } finally {
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ''
@@ -125,14 +127,12 @@ export function LogoUploader({
             {uploading ? (
               <span className="text-muted-foreground inline-flex items-center gap-2">
                 <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-                Uploading…
+                {t('uploading')}
               </span>
             ) : (
               <span>
-                <span className="text-foreground font-medium">Drop your logo</span>{' '}
-                <span className="text-muted-foreground">
-                  or click to browse · PNG, JPG, WEBP, SVG up to 2 MB
-                </span>
+                <span className="text-foreground font-medium">{t('drop')}</span>{' '}
+                <span className="text-muted-foreground">{t('browseHint')}</span>
               </span>
             )}
           </label>
@@ -150,25 +150,22 @@ export function LogoUploader({
               className="text-destructive hover:text-destructive hover:bg-destructive/5 ml-auto flex"
             >
               <Trash2 className="size-3.5" aria-hidden="true" />
-              Remove logo
+              {t('remove')}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Remove logo?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Your restaurant and menu QR codes will stop showing the logo until you upload a new
-                one. The file stays in storage — nothing is permanently deleted.
-              </AlertDialogDescription>
+              <AlertDialogTitle>{t('dialog.title')}</AlertDialogTitle>
+              <AlertDialogDescription>{t('dialog.description')}</AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('dialog.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 variant="outline"
                 onClick={() => onChange('')}
                 className="text-destructive hover:text-destructive hover:bg-destructive/5"
               >
-                Remove logo
+                {t('remove')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

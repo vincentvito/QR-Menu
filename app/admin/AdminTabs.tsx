@@ -13,9 +13,10 @@ export function AdminTabs() {
   const pathname = usePathname()
 
   return (
-    <nav className="flex gap-1 -mb-px">
+    <nav className="-mb-px flex gap-1">
       {TABS.map((tab) => {
-        const isActive = tab.href === '/admin' ? pathname === '/admin' : pathname.startsWith(tab.href)
+        const isActive =
+          tab.href === '/admin' ? pathname === '/admin' : pathname.startsWith(tab.href)
         return (
           <Link
             key={tab.href}

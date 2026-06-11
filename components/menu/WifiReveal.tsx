@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Check, Copy, Eye, EyeOff, Wifi } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -30,6 +31,7 @@ const TRIGGER_CLASS =
   'bg-background text-foreground hover:bg-card ring-foreground/10 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold shadow-[0_4px_14px_-4px_rgba(0,0,0,0.35)] ring-1 transition-colors'
 
 export function WifiReveal({ ssid, password, hasPassword, menuSlug }: WifiRevealProps) {
+  const t = useTranslations('WifiReveal')
   const [open, setOpen] = useState(false)
   const [revealed, setRevealed] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -49,7 +51,7 @@ export function WifiReveal({ ssid, password, hasPassword, menuSlug }: WifiReveal
     return (
       <button type="button" className={TRIGGER_CLASS} aria-hidden="true" tabIndex={-1}>
         <Wifi className="size-3.5" aria-hidden="true" />
-        WiFi
+        {t('trigger')}
       </button>
     )
   }
@@ -59,10 +61,10 @@ export function WifiReveal({ ssid, password, hasPassword, menuSlug }: WifiReveal
     try {
       await navigator.clipboard.writeText(password)
       setCopied(true)
-      toast.success('Password copied')
+      toast.success(t('toast.copied'))
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      toast.error('Copy failed — tap the password to select it')
+      toast.error(t('toast.copyFailed'))
     }
   }
 
@@ -78,22 +80,22 @@ export function WifiReveal({ ssid, password, hasPassword, menuSlug }: WifiReveal
       <SheetTrigger asChild>
         <button type="button" className={TRIGGER_CLASS}>
           <Wifi className="size-3.5" aria-hidden="true" />
-          WiFi
+          {t('trigger')}
         </button>
       </SheetTrigger>
       <SheetContent side="bottom" className="rounded-t-3xl">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2 text-xl">
             <Wifi className="size-5" aria-hidden="true" />
-            WiFi access
+            {t('title')}
           </SheetTitle>
-          <SheetDescription>Tap to reveal and copy the password.</SheetDescription>
+          <SheetDescription>{t('description')}</SheetDescription>
         </SheetHeader>
 
         <div className="space-y-4 p-4 sm:p-6">
           <div className="border-cream-line bg-background/50 rounded-2xl border p-4">
             <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-              Network
+              {t('network')}
             </p>
             <p className="mt-1 font-mono text-base break-all">{ssid}</p>
           </div>
@@ -102,7 +104,7 @@ export function WifiReveal({ ssid, password, hasPassword, menuSlug }: WifiReveal
             <div className="border-cream-line bg-background/50 rounded-2xl border p-4">
               <div className="flex items-center justify-between gap-2">
                 <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-                  Password
+                  {t('password')}
                 </p>
                 <button
                   type="button"
@@ -113,19 +115,19 @@ export function WifiReveal({ ssid, password, hasPassword, menuSlug }: WifiReveal
                   {revealed ? (
                     <>
                       <EyeOff className="size-3.5" aria-hidden="true" />
-                      Hide
+                      {t('hide')}
                     </>
                   ) : (
                     <>
                       <Eye className="size-3.5" aria-hidden="true" />
-                      Show
+                      {t('show')}
                     </>
                   )}
                 </button>
               </div>
               <p
                 className="mt-2 font-mono text-base break-all select-all"
-                aria-label={revealed ? 'WiFi password' : 'WiFi password, hidden'}
+                aria-label={revealed ? t('passwordAria') : t('passwordHiddenAria')}
               >
                 {revealed ? (password ?? '') : '•'.repeat(Math.max(8, (password ?? '').length))}
               </p>
@@ -140,19 +142,19 @@ export function WifiReveal({ ssid, password, hasPassword, menuSlug }: WifiReveal
                 {copied ? (
                   <>
                     <Check className="size-3.5" aria-hidden="true" />
-                    Copied
+                    {t('copied')}
                   </>
                 ) : (
                   <>
                     <Copy className="size-3.5" aria-hidden="true" />
-                    Copy password
+                    {t('copyPassword')}
                   </>
                 )}
               </Button>
             </div>
           ) : (
             <p className="text-muted-foreground border-cream-line bg-background/50 rounded-2xl border p-4 text-sm">
-              This network is open — no password needed.
+              {t('openNetwork')}
             </p>
           )}
         </div>

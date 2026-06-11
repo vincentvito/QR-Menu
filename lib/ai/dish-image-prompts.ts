@@ -28,12 +28,30 @@ const CATEGORY_MAP: Array<[RegExp, Archetype]> = [
 
 const NAME_KEYWORDS: Array<[RegExp, Archetype]> = [
   // Iced/cold first — they often share words with hot drinks ("iced latte").
-  [/\b(iced|cold brew|frapp|frappuccino|smoothie|milkshake|shake|slushie?|frozen|granita|horchata)\b/i, 'iced-drink'],
-  [/\b(latte|cappuccino|espresso|macchiato|mocha|americano|flat white|cortado|chai|matcha latte|hot chocolate|cocoa|t[eé]|tea)\b/i, 'hot-coffee'],
-  [/\b(martini|negroni|old fashioned|margarita|mojito|manhattan|spritz|highball|whiskey sour|whisky sour|sour|daiquiri|caipirinha|paloma|cosmopolitan|bellini|mimosa|sangria|cocktail|gin( and)? tonic|g&t)\b/i, 'cocktail'],
-  [/\b(beer|ipa|lager|stout|ale|pilsner|porter|wine|ros[eé]|champagne|prosecco|cava|cider)\b/i, 'beer-wine'],
-  [/\b(croissant|danish|muffin|scone|donut|doughnut|bagel|brioche|focaccia|baguette|sourdough|empanada|concha)\b/i, 'pastry'],
-  [/\b(ice cream|gelato|sorbet|cake|pie|tart|brownie|tiramisu|cheesecake|pudding|mousse|flan|crepe|cr[eè]pe|waffle|pancake|churro|tres leches)\b/i, 'dessert'],
+  [
+    /\b(iced|cold brew|frapp|frappuccino|smoothie|milkshake|shake|slushie?|frozen|granita|horchata)\b/i,
+    'iced-drink',
+  ],
+  [
+    /\b(latte|cappuccino|espresso|macchiato|mocha|americano|flat white|cortado|chai|matcha latte|hot chocolate|cocoa|t[eé]|tea)\b/i,
+    'hot-coffee',
+  ],
+  [
+    /\b(martini|negroni|old fashioned|margarita|mojito|manhattan|spritz|highball|whiskey sour|whisky sour|sour|daiquiri|caipirinha|paloma|cosmopolitan|bellini|mimosa|sangria|cocktail|gin( and)? tonic|g&t)\b/i,
+    'cocktail',
+  ],
+  [
+    /\b(beer|ipa|lager|stout|ale|pilsner|porter|wine|ros[eé]|champagne|prosecco|cava|cider)\b/i,
+    'beer-wine',
+  ],
+  [
+    /\b(croissant|danish|muffin|scone|donut|doughnut|bagel|brioche|focaccia|baguette|sourdough|empanada|concha)\b/i,
+    'pastry',
+  ],
+  [
+    /\b(ice cream|gelato|sorbet|cake|pie|tart|brownie|tiramisu|cheesecake|pudding|mousse|flan|crepe|cr[eè]pe|waffle|pancake|churro|tres leches)\b/i,
+    'dessert',
+  ],
 ]
 
 function detectArchetype(name: string, category: string): Archetype {

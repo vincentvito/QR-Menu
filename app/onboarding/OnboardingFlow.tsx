@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { addTransitionType, startTransition, useState, ViewTransition } from 'react'
 import { ArrowLeft, Check, Globe2, Loader2, Palette, Sparkles, UserRound } from 'lucide-react'
 import { toast } from 'sonner'
@@ -44,31 +45,19 @@ const EMPTY_DRAFT: BrandDraft = {
 const ONBOARDING_VISUALS: Record<
   OnboardingStep,
   {
-    eyebrow: string
-    title: string
-    caption: string
     imageSrc: string
     imagePosition: string
   }
 > = {
   name: {
-    eyebrow: 'Service starts with a team',
-    title: 'Invite-ready profiles before the first menu goes live.',
-    caption: 'Your name appears across restaurant settings, staff actions, and owner updates.',
     imageSrc: '/images/onboarding-profile-menu.png',
     imagePosition: '50% 50%',
   },
   url: {
-    eyebrow: 'Brand extraction',
-    title: 'Turn a restaurant site into a polished starting point.',
-    caption: 'Pull colors, logo, description, and menu context before anything is saved.',
     imageSrc: '/images/onboarding-website-extract.png',
     imagePosition: '50% 50%',
   },
   details: {
-    eyebrow: 'Menu foundation',
-    title: 'Confirm the identity guests will see when they scan.',
-    caption: 'Logo, colors, description, and currency become the base for every QR menu.',
     imageSrc: '/images/onboarding-menu-details.png',
     imagePosition: '50% 50%',
   },
@@ -79,6 +68,7 @@ interface OnboardingFlowProps {
 }
 
 export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
+  const t = useTranslations('Onboarding')
   const router = useRouter()
   const hasInitialUserName = initialUserName.trim().length > 0
   const [step, setStep] = useState<OnboardingStep>(hasInitialUserName ? 'url' : 'name')
@@ -104,7 +94,7 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
       })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error ?? 'Could not extract brand from that URL')
+        toast.error(data.error ?? t('errors.extractFailed'))
         return
       }
       setDraft({
@@ -118,7 +108,7 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
       })
       goToStep('details')
     } catch {
-      toast.error('Network error - please try again')
+      toast.error(t('errors.network'))
     } finally {
       setExtracting(false)
     }
@@ -132,7 +122,7 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
   function continueFromName(e: React.FormEvent) {
     e.preventDefault()
     if (!userName.trim()) {
-      toast.error('Please enter your name')
+      toast.error(t('errors.nameRequired'))
       return
     }
     goToStep('url')
@@ -141,7 +131,7 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
   async function createOrganization(e: React.FormEvent) {
     e.preventDefault()
     if (!draft.name.trim()) {
-      toast.error('Restaurant name is required')
+      toast.error(t('errors.restaurantNameRequired'))
       return
     }
     setSubmitting(true)
@@ -153,7 +143,7 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
       })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error ?? 'Could not create restaurant')
+        toast.error(data.error ?? t('errors.createFailed'))
         return
       }
       startTransition(() => {
@@ -162,7 +152,7 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
         router.refresh()
       })
     } catch {
-      toast.error('Network error - please try again')
+      toast.error(t('errors.network'))
     } finally {
       setSubmitting(false)
     }
@@ -175,13 +165,13 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
         className="border-cream-line bg-card/90 space-y-5 rounded-[28px] border p-6 shadow-[0_22px_60px_-42px_rgba(26,30,23,0.45)] backdrop-blur sm:p-8"
       >
         <div className="space-y-2">
-          <Label htmlFor="user-name">Your name</Label>
+          <Label htmlFor="user-name">{t('fields.yourName')}</Label>
           <Input
             id="user-name"
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
             maxLength={120}
-            placeholder="How your teammates will see you"
+            placeholder={t('fields.yourNamePlaceholder')}
             autoComplete="name"
             autoFocus
           />
@@ -189,7 +179,7 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
 
         <Button type="submit" className="w-full" size="lg" disabled={!userName.trim()}>
           <UserRound className="size-4" aria-hidden="true" />
-          <span>Continue</span>
+          <span>{t('actions.continue')}</span>
         </Button>
       </form>
     ) : step === 'url' ? (
@@ -204,12 +194,12 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
             className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs transition-colors"
           >
             <ArrowLeft className="size-3" aria-hidden="true" />
-            Back
+            {t('actions.back')}
           </button>
         ) : null}
 
         <div className="space-y-2">
-          <Label htmlFor="onboarding-url">Restaurant website</Label>
+          <Label htmlFor="onboarding-url">{t('fields.website')}</Label>
           <Input
             id="onboarding-url"
             type="url"
@@ -220,21 +210,19 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
             onChange={(e) => setUrl(e.target.value)}
             autoFocus
           />
-          <p className="text-muted-foreground text-xs">
-            We&apos;ll pull brand details from the page. Nothing is saved yet.
-          </p>
+          <p className="text-muted-foreground text-xs">{t('websiteHint')}</p>
         </div>
 
         <Button type="submit" className="w-full" size="lg" disabled={extracting || !url.trim()}>
           {extracting ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-              <span>Extracting brand...</span>
+              <span>{t('actions.extracting')}</span>
             </>
           ) : (
             <>
               <Sparkles className="size-4" aria-hidden="true" />
-              <span>Extract brand</span>
+              <span>{t('actions.extract')}</span>
             </>
           )}
         </Button>
@@ -244,7 +232,7 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
           onClick={skipToManual}
           className="text-muted-foreground hover:text-foreground mx-auto block text-xs transition-colors"
         >
-          Skip - I&apos;ll fill it in by hand
+          {t('actions.skipManual')}
         </button>
       </form>
     ) : (
@@ -258,22 +246,22 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
           className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1 text-xs transition-colors"
         >
           <ArrowLeft className="size-3" aria-hidden="true" />
-          Back
+          {t('actions.back')}
         </button>
 
         <div className="space-y-2">
-          <Label htmlFor="user-name">Your name</Label>
+          <Label htmlFor="user-name">{t('fields.yourName')}</Label>
           <Input
             id="user-name"
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
             maxLength={120}
-            placeholder="How your teammates will see you"
+            placeholder={t('fields.yourNamePlaceholder')}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="org-name">Restaurant name *</Label>
+          <Label htmlFor="org-name">{t('fields.restaurantName')}</Label>
           <Input
             id="org-name"
             value={draft.name}
@@ -284,19 +272,19 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="org-description">Short description</Label>
+          <Label htmlFor="org-description">{t('fields.description')}</Label>
           <Textarea
             id="org-description"
             value={draft.description}
             onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-            placeholder="Neighborhood pizzeria serving wood-fired pies since 2012."
+            placeholder={t('fields.descriptionPlaceholder')}
             rows={3}
             maxLength={500}
           />
         </div>
 
         <div className="space-y-2">
-          <Label>Logo</Label>
+          <Label>{t('fields.logo')}</Label>
           <LogoUploader
             value={draft.logo}
             onChange={(nextLogo) => setDraft({ ...draft, logo: nextLogo })}
@@ -306,20 +294,20 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
         <div className="grid grid-cols-2 gap-4">
           <ColorField
             id="primary-color"
-            label="Main color"
+            label={t('fields.mainColor')}
             value={draft.primaryColor}
             onChange={(v) => setDraft({ ...draft, primaryColor: v })}
           />
           <ColorField
             id="secondary-color"
-            label="Accent color"
+            label={t('fields.accentColor')}
             value={draft.secondaryColor}
             onChange={(v) => setDraft({ ...draft, secondaryColor: v })}
           />
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="org-currency">Default currency</Label>
+          <Label htmlFor="org-currency">{t('fields.currency')}</Label>
           <Select
             value={draft.currency}
             onValueChange={(v) => setDraft({ ...draft, currency: v as CurrencyCode })}
@@ -341,10 +329,10 @@ export function OnboardingFlow({ initialUserName = '' }: OnboardingFlowProps) {
           {submitting ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-              <span>Creating...</span>
+              <span>{t('actions.creating')}</span>
             </>
           ) : (
-            <span>Create restaurant</span>
+            <span>{t('actions.create')}</span>
           )}
         </Button>
       </form>
@@ -371,17 +359,18 @@ function OnboardingVisual({
   url: string
   draft: BrandDraft
 }) {
+  const t = useTranslations('Onboarding')
   const visual = ONBOARDING_VISUALS[step]
-  const restaurantName = draft.name.trim() || 'Olive & Ember'
-  const displayUrl = url.trim().replace(/^https?:\/\//, '') || 'restaurant.com'
+  const restaurantName = draft.name.trim() || t('preview.sampleRestaurant')
+  const displayUrl = url.trim().replace(/^https?:\/\//, '') || t('preview.sampleUrl')
   const primaryColor = /^#[0-9A-Fa-f]{6}$/.test(draft.primaryColor) ? draft.primaryColor : '#C8E06A'
   const secondaryColor = /^#[0-9A-Fa-f]{6}$/.test(draft.secondaryColor)
     ? draft.secondaryColor
     : '#E8552B'
   const checkpoints = [
-    { label: 'Profile', active: step === 'name' },
-    { label: 'Website', active: step === 'url' },
-    { label: 'Menu', active: step === 'details' },
+    { label: t('preview.profile'), active: step === 'name' },
+    { label: t('preview.website'), active: step === 'url' },
+    { label: t('preview.menu'), active: step === 'details' },
   ]
 
   return (
@@ -415,19 +404,21 @@ function OnboardingVisual({
               ))}
             </div>
             <span className="bg-pop text-pop-foreground rounded-full px-3 py-1 text-[11px] font-semibold">
-              Live preview
+              {t('preview.live')}
             </span>
           </div>
 
           <div className="space-y-4">
             <div key={`${step}-copy`} className="motion-safe:animate-onboarding-copy max-w-[330px]">
               <p className="text-accent text-xs font-semibold tracking-[0.12em] uppercase">
-                {visual.eyebrow}
+                {t(`visuals.${step}.eyebrow`)}
               </p>
               <h2 className="mt-2 text-[clamp(26px,4vw,38px)] leading-[1.04] font-semibold tracking-tight">
-                {visual.title}
+                {t(`visuals.${step}.title`)}
               </h2>
-              <p className="text-background/72 mt-3 text-sm leading-6">{visual.caption}</p>
+              <p className="text-background/72 mt-3 text-sm leading-6">
+                {t(`visuals.${step}.caption`)}
+              </p>
             </div>
 
             <div
@@ -441,12 +432,12 @@ function OnboardingVisual({
                   </div>
                   <div className="min-w-0">
                     <div className="truncate text-sm font-semibold">
-                      {userName.trim() || 'Restaurant owner'}
+                      {userName.trim() || t('preview.owner')}
                     </div>
-                    <div className="text-muted-foreground text-xs">Owner profile</div>
+                    <div className="text-muted-foreground text-xs">{t('preview.ownerProfile')}</div>
                     <div className="mt-2 flex items-center gap-1 text-[11px] font-medium">
                       <Check className="text-accent-deep size-3.5" aria-hidden="true" />
-                      Ready for team actions
+                      {t('preview.ready')}
                     </div>
                   </div>
                 </div>
@@ -458,11 +449,13 @@ function OnboardingVisual({
                     </div>
                     <div className="min-w-0">
                       <div className="truncate text-sm font-semibold">{displayUrl}</div>
-                      <div className="text-muted-foreground text-xs">Brand source</div>
+                      <div className="text-muted-foreground text-xs">
+                        {t('preview.brandSource')}
+                      </div>
                     </div>
                   </div>
                   <div className="grid grid-cols-3 gap-2">
-                    {['Logo', 'Colors', 'Copy'].map((item) => (
+                    {[t('preview.logo'), t('preview.colors'), t('preview.copy')].map((item) => (
                       <div key={item} className="bg-card rounded-[14px] px-3 py-2 text-xs">
                         <div className="bg-foreground/15 mb-1 h-1.5 w-8 rounded-full" />
                         {item}
@@ -475,7 +468,9 @@ function OnboardingVisual({
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
                       <div className="truncate text-sm font-semibold">{restaurantName}</div>
-                      <div className="text-muted-foreground text-xs">Guest menu identity</div>
+                      <div className="text-muted-foreground text-xs">
+                        {t('preview.guestIdentity')}
+                      </div>
                     </div>
                     <Palette className="text-pop size-5" aria-hidden="true" />
                   </div>
@@ -490,7 +485,11 @@ function OnboardingVisual({
                     ))}
                   </div>
                   <div className="space-y-2">
-                    {['Chef special', 'Seasonal main', 'Dessert'].map((item, index) => (
+                    {[
+                      t('preview.chefSpecial'),
+                      t('preview.seasonalMain'),
+                      t('preview.dessert'),
+                    ].map((item, index) => (
                       <div
                         key={item}
                         className="border-cream-line bg-background flex items-center justify-between rounded-[14px] border px-3 py-2 text-xs"

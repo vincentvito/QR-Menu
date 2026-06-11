@@ -2,14 +2,19 @@ interface InviteTemplateParams {
   inviterName: string
   restaurantName: string
   acceptUrl: string
+  copy: InviteEmailCopy
 }
 
 export function inviteEmailTemplate({
   inviterName,
   restaurantName,
   acceptUrl,
+  copy,
 }: InviteTemplateParams) {
-  const subject = `${inviterName} invited you to ${restaurantName} on Qtable`
+  const safeInviterName = escapeHtml(inviterName)
+  const safeRestaurantName = escapeHtml(restaurantName)
+  const safeAcceptUrl = escapeHtml(acceptUrl)
+  const subject = copy.subject({ inviterName, restaurantName })
 
   const html = `
     <div style="font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background-color: #FDFCFB; padding: 0;">
@@ -18,32 +23,34 @@ export function inviteEmailTemplate({
           <h1 style="font-size: 22px; font-weight: 600; color: #1C1917; margin: 0 0 4px 0; letter-spacing: -0.015em;">
             Qtable
           </h1>
-          <p style="font-size: 13px; color: #78716C; margin: 0;">Digital QR menus for restaurants</p>
+          <p style="font-size: 13px; color: #78716C; margin: 0;">${copy.tagline}</p>
         </div>
 
         <p style="font-size: 14px; color: #57534E; line-height: 1.6; margin: 0 0 24px 0;">
-          <strong style="color: #1C1917;">${inviterName}</strong> invited you to join
-          <strong style="color: #1C1917;">${restaurantName}</strong> on Qtable so you can help manage menus.
+          ${copy.body({
+            inviterName: `<strong style="color: #1C1917;">${safeInviterName}</strong>`,
+            restaurantName: `<strong style="color: #1C1917;">${safeRestaurantName}</strong>`,
+          })}
         </p>
 
         <div style="text-align: center; margin-bottom: 24px;">
-          <a href="${acceptUrl}" style="display: inline-block; background-color: #1C1917; color: #FDFCFB; text-decoration: none; font-size: 14px; font-weight: 500; padding: 12px 28px; border-radius: 9999px; letter-spacing: -0.005em;">
-            Accept invitation
+          <a href="${safeAcceptUrl}" style="display: inline-block; background-color: #1C1917; color: #FDFCFB; text-decoration: none; font-size: 14px; font-weight: 500; padding: 12px 28px; border-radius: 9999px; letter-spacing: -0.005em;">
+            ${copy.button}
           </a>
         </div>
 
         <p style="font-size: 13px; color: #57534E; line-height: 1.5; margin: 0 0 8px 0;">
-          Or copy this link into your browser:<br />
-          <a href="${acceptUrl}" style="color: #1C1917; word-break: break-all;">${acceptUrl}</a>
+          ${copy.copyLink}<br />
+          <a href="${safeAcceptUrl}" style="color: #1C1917; word-break: break-all;">${safeAcceptUrl}</a>
         </p>
         <p style="font-size: 13px; color: #A8A29E; line-height: 1.5; margin: 16px 0 0 0;">
-          If you weren't expecting this invitation, you can safely ignore this email.
+          ${copy.ignore}
         </p>
 
         <div style="height: 1px; background-color: #E7E5E4; margin: 32px 0;"></div>
 
         <p style="font-size: 11px; color: #A8A29E; margin: 0;">
-          Qtable &mdash; Turn any menu into a beautiful QR experience.
+          Qtable &mdash; ${copy.footer}
         </p>
       </div>
     </div>
@@ -57,6 +64,7 @@ interface RestaurantInviteTemplateParams {
   restaurantName: string
   role: string
   acceptUrl: string
+  copy: RestaurantInviteEmailCopy
 }
 
 export function restaurantInviteEmailTemplate({
@@ -64,8 +72,13 @@ export function restaurantInviteEmailTemplate({
   restaurantName,
   role,
   acceptUrl,
+  copy,
 }: RestaurantInviteTemplateParams) {
-  const subject = `${inviterName} invited you to work at ${restaurantName}`
+  const safeInviterName = escapeHtml(inviterName)
+  const safeRestaurantName = escapeHtml(restaurantName)
+  const safeRole = escapeHtml(role)
+  const safeAcceptUrl = escapeHtml(acceptUrl)
+  const subject = copy.subject({ inviterName, restaurantName })
 
   const html = `
     <div style="font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background-color: #FDFCFB; padding: 0;">
@@ -74,33 +87,35 @@ export function restaurantInviteEmailTemplate({
           <h1 style="font-size: 22px; font-weight: 600; color: #1C1917; margin: 0 0 4px 0; letter-spacing: -0.015em;">
             Qtable
           </h1>
-          <p style="font-size: 13px; color: #78716C; margin: 0;">Digital QR menus for restaurants</p>
+          <p style="font-size: 13px; color: #78716C; margin: 0;">${copy.tagline}</p>
         </div>
 
         <p style="font-size: 14px; color: #57534E; line-height: 1.6; margin: 0 0 24px 0;">
-          <strong style="color: #1C1917;">${inviterName}</strong> invited you to join
-          <strong style="color: #1C1917;">${restaurantName}</strong> as a <strong style="color: #1C1917;">${role}</strong>.
-          You'll be able to view and manage this restaurant's menus from your own account.
+          ${copy.body({
+            inviterName: `<strong style="color: #1C1917;">${safeInviterName}</strong>`,
+            restaurantName: `<strong style="color: #1C1917;">${safeRestaurantName}</strong>`,
+            role: `<strong style="color: #1C1917;">${safeRole}</strong>`,
+          })}
         </p>
 
         <div style="text-align: center; margin-bottom: 24px;">
-          <a href="${acceptUrl}" style="display: inline-block; background-color: #1C1917; color: #FDFCFB; text-decoration: none; font-size: 14px; font-weight: 500; padding: 12px 28px; border-radius: 9999px; letter-spacing: -0.005em;">
-            Accept invitation
+          <a href="${safeAcceptUrl}" style="display: inline-block; background-color: #1C1917; color: #FDFCFB; text-decoration: none; font-size: 14px; font-weight: 500; padding: 12px 28px; border-radius: 9999px; letter-spacing: -0.005em;">
+            ${copy.button}
           </a>
         </div>
 
         <p style="font-size: 13px; color: #57534E; line-height: 1.5; margin: 0 0 8px 0;">
-          Or copy this link into your browser:<br />
-          <a href="${acceptUrl}" style="color: #1C1917; word-break: break-all;">${acceptUrl}</a>
+          ${copy.copyLink}<br />
+          <a href="${safeAcceptUrl}" style="color: #1C1917; word-break: break-all;">${safeAcceptUrl}</a>
         </p>
         <p style="font-size: 13px; color: #A8A29E; line-height: 1.5; margin: 16px 0 0 0;">
-          If you weren't expecting this invitation, you can safely ignore this email.
+          ${copy.ignore}
         </p>
 
         <div style="height: 1px; background-color: #E7E5E4; margin: 32px 0;"></div>
 
         <p style="font-size: 11px; color: #A8A29E; margin: 0;">
-          Qtable &mdash; Turn any menu into a beautiful QR experience.
+          Qtable &mdash; ${copy.footer}
         </p>
       </div>
     </div>
@@ -114,24 +129,13 @@ type OtpType = 'sign-in' | 'email-verification' | 'forget-password' | 'change-em
 interface OtpTemplateParams {
   otp: string
   type: OtpType
+  copy: OtpEmailCopy
 }
 
-export function otpEmailTemplate({ otp, type }: OtpTemplateParams) {
-  const subject =
-    type === 'sign-in'
-      ? 'Your Qtable login code'
-      : type === 'email-verification' || type === 'change-email'
-        ? 'Verify your Qtable email'
-        : 'Reset your Qtable password'
-
-  const actionText =
-    type === 'sign-in'
-      ? 'Use this code to sign in to Qtable:'
-      : type === 'email-verification'
-        ? 'Use this code to verify your email address:'
-        : type === 'change-email'
-          ? 'Use this code to confirm your new email address:'
-          : 'Use this code to reset your password:'
+export function otpEmailTemplate({ otp, type, copy }: OtpTemplateParams) {
+  const subject = copy.subject[type]
+  const actionText = copy.action[type]
+  const safeOtp = escapeHtml(otp)
 
   const html = `
     <div style="font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background-color: #FDFCFB; padding: 0;">
@@ -140,7 +144,7 @@ export function otpEmailTemplate({ otp, type }: OtpTemplateParams) {
           <h1 style="font-size: 22px; font-weight: 600; color: #1C1917; margin: 0 0 4px 0; letter-spacing: -0.015em;">
             Qtable
           </h1>
-          <p style="font-size: 13px; color: #78716C; margin: 0;">Digital QR menus for restaurants</p>
+          <p style="font-size: 13px; color: #78716C; margin: 0;">${copy.tagline}</p>
         </div>
 
         <p style="font-size: 14px; color: #57534E; line-height: 1.6; margin: 0 0 24px 0;">
@@ -149,25 +153,59 @@ export function otpEmailTemplate({ otp, type }: OtpTemplateParams) {
 
         <div style="background-color: #ffffff; border: 1px solid #E7E5E4; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 24px;">
           <div style="font-size: 36px; font-weight: 700; letter-spacing: 12px; color: #1C1917; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;">
-            ${otp}
+            ${safeOtp}
           </div>
         </div>
 
         <p style="font-size: 13px; color: #57534E; line-height: 1.5; margin: 0 0 8px 0;">
-          This code expires in <strong style="color: #1C1917;">5 minutes</strong>.
+          ${copy.expires}
         </p>
         <p style="font-size: 13px; color: #A8A29E; line-height: 1.5; margin: 0;">
-          If you didn't request this code, you can safely ignore this email.
+          ${copy.ignore}
         </p>
 
         <div style="height: 1px; background-color: #E7E5E4; margin: 32px 0;"></div>
 
         <p style="font-size: 11px; color: #A8A29E; margin: 0;">
-          Qtable &mdash; Turn any menu into a beautiful QR experience.
+          Qtable &mdash; ${copy.footer}
         </p>
       </div>
     </div>
   `
 
   return { subject, html }
+}
+
+type RichValueFormatter<T extends string> = (values: Record<T, string>) => string
+
+export interface InviteEmailCopy {
+  tagline: string
+  subject: (values: { inviterName: string; restaurantName: string }) => string
+  body: RichValueFormatter<'inviterName' | 'restaurantName'>
+  button: string
+  copyLink: string
+  ignore: string
+  footer: string
+}
+
+export interface RestaurantInviteEmailCopy extends Omit<InviteEmailCopy, 'body'> {
+  body: RichValueFormatter<'inviterName' | 'restaurantName' | 'role'>
+}
+
+export interface OtpEmailCopy {
+  tagline: string
+  subject: Record<OtpType, string>
+  action: Record<OtpType, string>
+  expires: string
+  ignore: string
+  footer: string
+}
+
+function escapeHtml(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
 }

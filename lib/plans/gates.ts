@@ -3,13 +3,14 @@ import { resolvePlan } from '@/lib/plans'
 import { ensureCompMonthlyCredits } from '@/lib/plans/credits'
 import {
   ACTIVE_SUBSCRIPTION_STATUSES,
-  SUBSCRIPTION_LAPSED_MESSAGE,
+  SUBSCRIPTION_LAPSED_REASON,
   canWriteDashboard,
+  type GateReason,
 } from '@/lib/plans/subscription-access'
 
 export interface GateResult {
   allowed: boolean
-  reason?: string
+  reason?: GateReason
   currentCount: number
   limit: number | null
 }
@@ -41,7 +42,7 @@ export async function canCreateRestaurant(organizationId: string): Promise<GateR
   if (!writeGate.allowed) {
     return {
       allowed: false,
-      reason: writeGate.reason ?? SUBSCRIPTION_LAPSED_MESSAGE,
+      reason: writeGate.reason ?? SUBSCRIPTION_LAPSED_REASON,
       currentCount,
       limit: 0,
     }
@@ -52,7 +53,7 @@ export async function canCreateRestaurant(organizationId: string): Promise<GateR
     allowed,
     reason: allowed
       ? undefined
-      : `Your ${plan.name} plan allows up to ${limit} restaurant${limit === 1 ? '' : 's'}. Upgrade to add more.`,
+      : { key: 'gates.restaurantCap', params: { plan: plan.name, limit: limit as number } },
     currentCount,
     limit,
   }
@@ -68,13 +69,17 @@ export async function canCreateMenu(restaurantId: string): Promise<GateResult> {
     },
   })
   if (!restaurant) {
-    return { allowed: false, reason: 'Restaurant not found', currentCount: 0, limit: null }
+    return {
+      allowed: false,
+      reason: { key: 'common.restaurantNotFound' },
+      currentCount: 0,
+      limit: null,
+    }
   }
   if (restaurant.readOnly) {
     return {
       allowed: false,
-      reason:
-        'This restaurant is read-only because your plan doesn’t cover it. Activate it from Billing or upgrade your plan.',
+      reason: { key: 'gates.menuRestaurantReadOnly' },
       currentCount: restaurant._count.menus,
       limit: 0,
     }
@@ -86,7 +91,7 @@ export async function canCreateMenu(restaurantId: string): Promise<GateResult> {
   if (!writeGate.allowed) {
     return {
       allowed: false,
-      reason: writeGate.reason ?? SUBSCRIPTION_LAPSED_MESSAGE,
+      reason: writeGate.reason ?? SUBSCRIPTION_LAPSED_REASON,
       currentCount: restaurant._count.menus,
       limit: 0,
     }
@@ -96,7 +101,7 @@ export async function canCreateMenu(restaurantId: string): Promise<GateResult> {
   const allowed = currentCount < limit
   return {
     allowed,
-    reason: allowed ? undefined : `Each restaurant supports up to ${limit} menus on your plan.`,
+    reason: allowed ? undefined : { key: 'gates.menuCap', params: { limit } },
     currentCount,
     limit,
   }

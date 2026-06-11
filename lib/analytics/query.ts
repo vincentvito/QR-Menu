@@ -55,10 +55,7 @@ export interface DailyScanPoint {
 
 // Returns one point per day in [since, now], zero-filled for days with no
 // scans. Keeps the line chart continuous instead of skipping missing days.
-export async function getDailyScans({
-  restaurantId,
-  since,
-}: RangeArgs): Promise<DailyScanPoint[]> {
+export async function getDailyScans({ restaurantId, since }: RangeArgs): Promise<DailyScanPoint[]> {
   const events = await prisma.menuEvent.findMany({
     where: { restaurantId, type: 'view', createdAt: { gte: since } },
     select: { createdAt: true },
@@ -88,10 +85,7 @@ export interface HourlyScanPoint {
   scans: number
 }
 
-export async function getPeakHours({
-  restaurantId,
-  since,
-}: RangeArgs): Promise<HourlyScanPoint[]> {
+export async function getPeakHours({ restaurantId, since }: RangeArgs): Promise<HourlyScanPoint[]> {
   const events = await prisma.menuEvent.findMany({
     where: { restaurantId, type: 'view', createdAt: { gte: since } },
     select: { createdAt: true },

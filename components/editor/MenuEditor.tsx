@@ -24,6 +24,8 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { PillButton } from '@/components/ui/pill-button'
 import { Input } from '@/components/ui/input'
+import { DietaryTagPills } from '@/components/menu/DietaryTagPills'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +36,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Textarea } from '@/components/ui/textarea'
 import { currencySymbol } from '@/lib/menus/currency'
+import { formatMenuPrice } from '@/lib/menus/price-format'
 import {
   CATEGORY_ICON_OPTIONS,
   categoryIcon,
@@ -42,6 +45,8 @@ import {
   type CategoryIconId,
 } from '@/lib/menus/category-icon'
 import { BADGES, BADGE_KEYS, type BadgeKey } from '@/lib/menus/badges'
+import { DIETARY_TAG_KEYS } from '@/lib/menus/dietary-tags'
+import { MAX_VARIANTS, MAX_VARIANT_LABEL, type MenuItemVariant } from '@/lib/menus/variants'
 import { DishPhotoUploader } from '@/components/editor/DishPhotoUploader'
 // AI panel is lazy: most editor sessions never open it, and it pulls in the
 // ~3 KB system prompt plus extra UI that only matters once. Loads on first
@@ -64,6 +69,8 @@ interface EditorItem {
   name: string
   description: string
   price: number
+  // Size/price variants. Non-empty list wins over `price` for display.
+  variants: MenuItemVariant[]
   tags: string[]
   badges: string[]
   // ISO string so the editor stays JSON-serializable; compared against
@@ -79,6 +86,7 @@ interface MenuEditorProps {
     name: string
     currency: string
     aiCreditsTotal: number
+    canBuyCredits: boolean
     readOnlyReason: string | null
     categoryIcons: Record<string, CategoryIconId>
     items: EditorItem[]
@@ -94,14 +102,6 @@ const MENU_KEY = '__menu__'
 const MENU_IMPORT = '__menu_import__'
 const CATEGORY_KEY_PREFIX = '__category__:'
 const ENABLED_BADGE_KEYS: BadgeKey[] = [...BADGE_KEYS]
-const DIETARY_TAGS = [
-  { key: 'V', label: 'V' },
-  { key: 'VG', label: 'VG' },
-  { key: 'GF', label: 'GF' },
-  { key: 'DF', label: 'DF' },
-  { key: 'NF', label: 'NF' },
-] as const
-
 function categorySaveKey(category: string) {
   return `${CATEGORY_KEY_PREFIX}${category}`
 }
@@ -168,6 +168,15 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
       iconId: categoryIconId(name, categoryIconOverrides[name]),
     }))
   }, [items, manualCategories, categoryIconOverrides])
+
+  // Stable-identity list of category names for ItemRow's "move to category"
+  // dropdown — keyed on the joined string so item edits that don't change the
+  // category set don't bust ItemRow memoization.
+  const categoryNamesKey = categories.map((category) => category.name).join('\u0000')
+  const categoryNames = useMemo(
+    () => (categoryNamesKey ? categoryNamesKey.split('\u0000') : []),
+    [categoryNamesKey],
+  )
 
   // Visible items = category filter ∩ search query.
   const visibleGroups = useMemo(() => {
@@ -297,6 +306,7 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
         name?: string
         description?: string
         price?: number
+        variants?: MenuItemVariant[]
         category?: string
         tags?: string[]
         badges?: string[]
@@ -328,7 +338,13 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
   const addItem = useCallback(
     async (
       category: string,
-      fields: { name: string; description?: string; price?: number; tags?: string[] },
+      fields: {
+        name: string
+        description?: string
+        price?: number
+        variants?: MenuItemVariant[]
+        tags?: string[]
+      },
     ) => {
       // Adds have no row to anchor to until the server returns an id, so the
       // DraftItemForm's own submitting state handles the progress UI and we
@@ -342,6 +358,7 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
             name: fields.name,
             description: fields.description ?? '',
             price: fields.price ?? 0,
+            variants: fields.variants ?? [],
             tags: fields.tags ?? [],
           }),
         })
@@ -355,6 +372,7 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
             name: data.name,
             description: data.description ?? '',
             price: data.price ?? 0,
+            variants: Array.isArray(data.variants) ? data.variants : [],
             tags: data.tags ?? [],
             badges: data.badges ?? [],
             specialUntil: data.specialUntil ?? null,
@@ -405,7 +423,7 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
           category.name !== from && category.name.toLowerCase() === trimmed.toLowerCase(),
       )
       if (duplicate) {
-        toast.error('A category with that name already exists.')
+        toast.error(t('errors.categoryExists'))
         return false
       }
 
@@ -500,7 +518,7 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
 
   const appendImportedItems = useCallback((nextItems: EditorItem[], category: string | null) => {
     setItems((cur) => [...cur, ...nextItems])
-    if (category) {
+    if (category && nextItems.some((item) => item.category === category)) {
       setSelectedCategory(category)
       setAddingToCategory(null)
     } else if (nextItems[0]?.category) {
@@ -553,16 +571,16 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
       const res = await fetch('/api/billing/credit-pack/checkout', { method: 'POST' })
       const body = (await res.json().catch(() => ({}))) as { url?: string; error?: string }
       if (!res.ok || !body.url) {
-        toast.error(body.error ?? 'Could not start checkout')
+        toast.error(body.error ?? t('aiPhoto.errors.checkoutStartFailed'))
         return
       }
       window.location.href = body.url
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Checkout failed')
+      toast.error(err instanceof Error ? err.message : t('aiPhoto.errors.checkoutFailed'))
     } finally {
       setIsBuyingCredits(false)
     }
-  }, [])
+  }, [t])
 
   return (
     <div>
@@ -575,39 +593,44 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
           <section className="rounded-[18px] border border-red-200 bg-red-50 p-4 text-red-950">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="min-w-0 flex-1">
-                <h2 className="text-sm font-semibold tracking-tight">Editing paused</h2>
+                <h2 className="text-sm font-semibold tracking-tight">{t('editingPaused')}</h2>
                 <p className="mt-1 text-sm">{initial.readOnlyReason}</p>
               </div>
               <Button asChild size="sm" className="shrink-0">
-                <Link href="/dashboard/billing">Pick a plan</Link>
+                <Link href="/dashboard/billing">{t('pickPlan')}</Link>
               </Button>
             </div>
           </section>
         ) : null}
 
-        {!isReadOnly && !hasAICredits ? (
+        {!isReadOnly && initial.canBuyCredits && !hasAICredits ? (
           <section className="border-accent bg-accent/10 rounded-[18px] border p-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <Zap className="text-accent-deep size-4" aria-hidden="true" />
-                  <h2 className="text-sm font-semibold tracking-tight">You're out of AI credits</h2>
+                  <h2 className="text-sm font-semibold tracking-tight">{t('outOfCredits')}</h2>
                 </div>
-                <p className="text-muted-foreground mt-1 text-sm">
-                  Top up to keep generating and enhancing dish photos, or switch plans from Billing.
-                </p>
+                <p className="text-muted-foreground mt-1 text-sm">{t('outOfCreditsDescription')}</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button type="button" size="sm" onClick={buyCreditPack} disabled={isBuyingCredits}>
-                  {isBuyingCredits ? (
-                    <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-                  ) : (
-                    <CreditCard className="size-3.5" aria-hidden="true" />
-                  )}
-                  Buy 100 credits ($15)
-                </Button>
+                {initial.canBuyCredits ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={buyCreditPack}
+                    disabled={isBuyingCredits}
+                  >
+                    {isBuyingCredits ? (
+                      <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+                    ) : (
+                      <CreditCard className="size-3.5" aria-hidden="true" />
+                    )}
+                    {t('buyCredits')}
+                  </Button>
+                ) : null}
                 <Button asChild type="button" size="sm" variant="outline">
-                  <Link href="/dashboard/billing">Upgrade plan</Link>
+                  <Link href="/dashboard/billing">{t('upgradePlan')}</Link>
                 </Button>
               </div>
             </div>
@@ -617,13 +640,11 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
         <section className="border-cream-line bg-card rounded-[18px] border p-4">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div className="min-w-0 flex-1">
-              <h2 className="text-sm font-semibold tracking-tight">Want to style this menu?</h2>
-              <p className="text-muted-foreground mt-1 text-sm">
-                Customize colors, templates, logo, QR style, WiFi, and header images in Settings.
-              </p>
+              <h2 className="text-sm font-semibold tracking-tight">{t('styleMenuTitle')}</h2>
+              <p className="text-muted-foreground mt-1 text-sm">{t('styleMenuDescription')}</p>
             </div>
             <Button asChild type="button" size="sm" variant="outline">
-              <Link href="/dashboard/settings">Open Settings</Link>
+              <Link href="/dashboard/settings">{t('openSettings')}</Link>
             </Button>
           </div>
         </section>
@@ -748,7 +769,9 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
               </div>
               <div className="border-cream-line bg-card text-muted-foreground inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border px-3 text-xs font-semibold tabular-nums">
                 <Zap className="size-3.5" aria-hidden="true" />
-                {aiCreditsTotal} AI credit{aiCreditsTotal === 1 ? '' : 's'}
+                {!isReadOnly && !initial.canBuyCredits
+                  ? t('setupModeBadge')
+                  : t('aiCreditsBadge', { count: aiCreditsTotal })}
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button
@@ -765,7 +788,7 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
                   ) : (
                     <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                   )}
-                  Import more
+                  {t('importMore')}
                 </Button>
                 <Button
                   type="button"
@@ -779,7 +802,7 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
                   ) : (
                     <Plus className="h-3.5 w-3.5" aria-hidden="true" />
                   )}
-                  Category
+                  {t('category')}
                 </Button>
               </div>
             </div>
@@ -787,7 +810,11 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
 
           {addingCategory ? (
             <div className="mb-6">
-              <NewCategoryForm onSubmit={addCategory} onCancel={() => setAddingCategory(false)} />
+              <NewCategoryForm
+                onSubmit={addCategory}
+                onCancel={() => setAddingCategory(false)}
+                t={t}
+              />
             </div>
           ) : null}
 
@@ -796,6 +823,8 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
               <ImportItemsPanel
                 slug={slug}
                 category={null}
+                categoryNames={categoryNames}
+                symbol={symbol}
                 onCancel={() => setImportingCategory(null)}
                 onApplied={(nextItems) => appendImportedItems(nextItems, null)}
               />
@@ -820,12 +849,14 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
                           iconId={iconId}
                           onChange={(nextIconId) => saveCategoryIcon(cat, nextIconId)}
                           readOnly={isReadOnly}
+                          t={t}
                         />
                         <InlineCategoryName
                           category={cat}
                           save={saves[categorySaveKey(cat)]}
                           onSubmit={(nextName) => renameCategory(cat, nextName)}
                           readOnly={isReadOnly}
+                          t={t}
                         />
                         <span className="text-muted-foreground shrink-0 text-xs">
                           · {t('dishesCount', { count: rows.length })}
@@ -844,7 +875,7 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
                           ) : (
                             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
                           )}
-                          Import items
+                          {t('importItems')}
                         </Button>
                         <Button
                           type="button"
@@ -872,6 +903,8 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
                         <ImportItemsPanel
                           slug={slug}
                           category={cat}
+                          categoryNames={categoryNames}
+                          symbol={symbol}
                           onCancel={() => setImportingCategory(null)}
                           onApplied={(nextItems) => appendImportedItems(nextItems, cat)}
                         />
@@ -909,6 +942,8 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
                           symbol={symbol}
                           save={saves[item.id]}
                           enabledBadges={ENABLED_BADGE_KEYS}
+                          categoryNames={categoryNames}
+                          canBuyCredits={initial.canBuyCredits}
                           onChange={saveItem}
                           onDelete={deleteItem}
                           onCreditSpent={handleCreditSpent}
@@ -931,9 +966,11 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
 function NewCategoryForm({
   onSubmit,
   onCancel,
+  t,
 }: {
   onSubmit: (name: string) => boolean
   onCancel: () => void
+  t: ReturnType<typeof useTranslations<'Editor'>>
 }) {
   const [name, setName] = useState('')
 
@@ -952,25 +989,25 @@ function NewCategoryForm({
           htmlFor="new-category-name"
           className="text-muted-foreground block text-[11px] font-semibold tracking-[0.14em] uppercase"
         >
-          New category
+          {t('newCategory')}
         </label>
         <Input
           id="new-category-name"
           autoFocus
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Beer"
+          placeholder={t('categoryPlaceholder')}
           maxLength={80}
           className="mt-1"
         />
       </div>
       <div className="flex gap-2 sm:pt-5">
         <Button type="button" variant="ghost" size="sm" onClick={onCancel}>
-          Cancel
+          {t('newDishCancel')}
         </Button>
         <PillButton type="submit" variant="primary" size="sm" disabled={!name.trim()}>
           <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-          Add category
+          {t('addCategory')}
         </PillButton>
       </div>
     </form>
@@ -982,11 +1019,13 @@ function CategoryIconSelect({
   iconId,
   onChange,
   readOnly,
+  t,
 }: {
   category: string
   iconId: CategoryIconId
   onChange: (iconId: CategoryIconId) => void
   readOnly: boolean
+  t: ReturnType<typeof useTranslations<'Editor'>>
 }) {
   const SelectedIcon = categoryIconById(iconId)
 
@@ -1005,8 +1044,8 @@ function CategoryIconSelect({
           type="button"
           variant="outline"
           size="sm"
-          aria-label={`Change ${category} icon`}
-          title={`Change ${category} icon`}
+          aria-label={t('changeCategoryIcon', { category })}
+          title={t('changeCategoryIcon', { category })}
           className="h-8 w-12 shrink-0 rounded-full px-2"
         >
           <SelectedIcon data-icon="inline-start" aria-hidden="true" />
@@ -1014,7 +1053,7 @@ function CategoryIconSelect({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="max-h-[320px] w-56 overflow-y-auto">
-        <DropdownMenuLabel>Food & beverage icons</DropdownMenuLabel>
+        <DropdownMenuLabel>{t('foodIcons')}</DropdownMenuLabel>
         <DropdownMenuRadioGroup
           value={iconId}
           onValueChange={(value) => {
@@ -1041,11 +1080,13 @@ function InlineCategoryName({
   save,
   onSubmit,
   readOnly,
+  t,
 }: {
   category: string
   save: SaveStatus | undefined
   onSubmit: (name: string) => Promise<boolean>
   readOnly: boolean
+  t: ReturnType<typeof useTranslations<'Editor'>>
 }) {
   const [name, setName] = useState(category)
   const [submitting, setSubmitting] = useState(false)
@@ -1067,7 +1108,7 @@ function InlineCategoryName({
     <div className="flex min-w-0 flex-1 items-center gap-2">
       <h2 className="min-w-0 flex-1">
         <label htmlFor={`category-name-${category}`} className="sr-only">
-          Category name
+          {t('categoryName')}
         </label>
         <Input
           id={`category-name-${category}`}
@@ -1109,30 +1150,38 @@ function DietaryTagPicker({
   disabled?: boolean
   compact?: boolean
 }) {
+  const t = useTranslations('Editor')
+  const tDietary = useTranslations('DietaryTags')
   const selectedSet = new Set(selected)
   return (
     <div className={cn('flex flex-wrap items-center gap-1.5', compact ? '' : 'gap-y-2')}>
-      <span className="text-muted-foreground mr-1 text-xs font-semibold">Dietary</span>
-      {DIETARY_TAGS.map((tag) => {
-        const active = selectedSet.has(tag.key)
+      <span className="text-muted-foreground mr-1 text-xs font-semibold">{t('dietary')}</span>
+      {DIETARY_TAG_KEYS.map((tag) => {
+        const active = selectedSet.has(tag)
+        const label = tDietary(tag)
         return (
-          <button
-            key={tag.key}
-            type="button"
-            aria-pressed={active}
-            onClick={() => {
-              onChange(active ? selected.filter((key) => key !== tag.key) : [...selected, tag.key])
-            }}
-            disabled={disabled}
-            className={cn(
-              'rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50',
-              active
-                ? 'border-accent bg-accent text-accent-foreground'
-                : 'border-cream-line bg-card text-muted-foreground hover:border-foreground/30 hover:text-foreground',
-            )}
-          >
-            {tag.label}
-          </button>
+          <Tooltip key={tag}>
+            <TooltipTrigger asChild>
+              <button
+                type="button"
+                aria-pressed={active}
+                aria-label={`${tag}: ${label}`}
+                onClick={() => {
+                  onChange(active ? selected.filter((key) => key !== tag) : [...selected, tag])
+                }}
+                disabled={disabled}
+                className={cn(
+                  'rounded-full border px-2 py-0.5 text-[11px] font-semibold transition-colors disabled:pointer-events-none disabled:opacity-50',
+                  active
+                    ? 'border-accent bg-accent text-accent-foreground'
+                    : 'border-cream-line bg-card text-muted-foreground hover:border-foreground/30 hover:text-foreground',
+                )}
+              >
+                {tag}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>{label}</TooltipContent>
+          </Tooltip>
         )
       })}
     </div>
@@ -1150,17 +1199,19 @@ function EmptyCategoryPrompt({
   onImport: () => void
   readOnly: boolean
 }) {
+  const t = useTranslations('Editor')
+
   return (
     <li className="bg-card px-4 py-6">
       <div className="mx-auto max-w-md text-center">
-        <p className="text-sm font-semibold tracking-tight">{category} is empty</p>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Add dishes manually, or import a PDF, photo, or pasted text into this category.
+        <p className="text-sm font-semibold tracking-tight">
+          {t('emptyCategoryTitle', { category })}
         </p>
+        <p className="text-muted-foreground mt-1 text-sm">{t('emptyCategoryDescription')}</p>
         <div className="mt-4 flex flex-wrap justify-center gap-2">
           <Button type="button" size="sm" variant="outline" onClick={onImport} disabled={readOnly}>
             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-            Import items
+            {t('importItems')}
           </Button>
           <PillButton
             type="button"
@@ -1170,7 +1221,7 @@ function EmptyCategoryPrompt({
             disabled={readOnly}
           >
             <Plus className="h-3.5 w-3.5" aria-hidden="true" />
-            Add dish
+            {t('addDish')}
           </PillButton>
         </div>
       </div>
@@ -1214,11 +1265,7 @@ function MenuSettingsCard({
           className="border-cream-line bg-background focus:border-foreground/40 w-full rounded-xl border px-3 py-2 text-base font-semibold tracking-[-0.01em] outline-none disabled:cursor-not-allowed disabled:opacity-60"
         />
       </label>
-      {!readOnly ? (
-        <p className="text-muted-foreground mt-2 text-xs">
-          Rename it here; changes save when you click away.
-        </p>
-      ) : null}
+      {!readOnly ? <p className="text-muted-foreground mt-2 text-xs">{t('renameHint')}</p> : null}
     </div>
   )
 }
@@ -1302,6 +1349,7 @@ function CategoryChip({
 }
 
 function useDescriptionEnhancer(slug: string) {
+  const t = useTranslations('Editor')
   const [generatingDescription, setGeneratingDescription] = useState(false)
   const [descriptionError, setDescriptionError] = useState('')
 
@@ -1336,19 +1384,17 @@ function useDescriptionEnhancer(slug: string) {
           error?: string
         }
         if (!res.ok || !data.description) {
-          setDescriptionError(data.error ?? 'Could not generate a description.')
+          setDescriptionError(data.error ?? t('descriptionGenerateFailed'))
           return
         }
         onDescription(data.description)
       } catch (err) {
-        setDescriptionError(
-          err instanceof Error ? err.message : 'Could not generate a description.',
-        )
+        setDescriptionError(err instanceof Error ? err.message : t('descriptionGenerateFailed'))
       } finally {
         setGeneratingDescription(false)
       }
     },
-    [slug],
+    [slug, t],
   )
 
   return {
@@ -1374,6 +1420,7 @@ function DraftItemForm({
     name: string
     description?: string
     price?: number
+    variants?: MenuItemVariant[]
     tags?: string[]
   }) => Promise<boolean>
   onCancel: () => void
@@ -1382,6 +1429,7 @@ function DraftItemForm({
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [priceInput, setPriceInput] = useState('')
+  const [variantRows, setVariantRows] = useState<VariantRow[]>([])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const { generatingDescription, descriptionError, setDescriptionError, enhanceDescription } =
@@ -1390,12 +1438,29 @@ function DraftItemForm({
   async function handleSubmit() {
     const trimmed = name.trim()
     if (!trimmed || submitting) return
-    const price = parsePriceInput(priceInput) ?? 0
+
+    const parsedRows = parseVariantRows(variantRows, symbol)
+    if (parsedRows === null) {
+      toast.error(t('errors.variantsInvalid'))
+      return
+    }
+    let variants: MenuItemVariant[] = []
+    let price: number
+    if (parsedRows.length >= 2) {
+      variants = parsedRows
+      price = Math.min(...parsedRows.map((v) => v.price))
+    } else if (parsedRows.length === 1) {
+      price = parsedRows[0].price
+    } else {
+      price = parsePriceInput(priceInput, symbol) ?? 0
+    }
+
     setSubmitting(true)
     const ok = await onSubmit({
       name: trimmed,
       description: description.trim(),
       price,
+      variants,
       tags: selectedTags,
     })
     if (!ok) setSubmitting(false)
@@ -1430,20 +1495,29 @@ function DraftItemForm({
           disabled={submitting}
           className="flex-1 text-[17px] font-semibold tracking-[-0.01em]"
         />
-        <div className="bg-pop text-pop-foreground flex shrink-0 items-center rounded-full pr-1 pl-3 text-[13px] font-semibold">
-          <span>{symbol}</span>
-          <input
-            type="text"
-            inputMode="decimal"
-            aria-label={t('newDishPrice')}
-            placeholder="0"
-            value={priceInput}
-            onChange={(e) => setPriceInput(e.target.value)}
-            disabled={submitting}
-            className="placeholder:text-pop-foreground/70 focus:bg-background/15 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none"
-          />
-        </div>
+        {variantRows.length === 0 ? (
+          <div className="bg-pop text-pop-foreground flex shrink-0 items-center rounded-full pr-1 pl-3 text-[13px] font-semibold">
+            <span>{symbol}</span>
+            <input
+              type="text"
+              inputMode="decimal"
+              aria-label={t('newDishPrice')}
+              placeholder="0"
+              value={priceInput}
+              onChange={(e) => setPriceInput(e.target.value)}
+              disabled={submitting}
+              className="placeholder:text-pop-foreground/70 focus:bg-background/15 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none"
+            />
+          </div>
+        ) : null}
       </div>
+
+      <VariantRowsEditor
+        symbol={symbol}
+        rows={variantRows}
+        onChange={setVariantRows}
+        disabled={submitting}
+      />
 
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
@@ -1529,6 +1603,8 @@ const ItemRow = memo(function ItemRow({
   symbol,
   save,
   enabledBadges,
+  categoryNames,
+  canBuyCredits,
   onChange,
   onDelete,
   onCreditSpent,
@@ -1541,12 +1617,16 @@ const ItemRow = memo(function ItemRow({
   symbol: string
   save: SaveStatus | undefined
   enabledBadges: BadgeKey[]
+  categoryNames: string[]
+  canBuyCredits: boolean
   onChange: (
     id: string,
     patch: {
       name?: string
       description?: string
       price?: number
+      variants?: MenuItemVariant[]
+      category?: string
       tags?: string[]
       badges?: string[]
       specialUntil?: string | null
@@ -1559,10 +1639,13 @@ const ItemRow = memo(function ItemRow({
   isAdmin: boolean
 }) {
   const t = useTranslations('Editor')
+  const tBadges = useTranslations('Badges')
   const [isEditing, setIsEditing] = useState(false)
   const [draftName, setDraftName] = useState(item.name)
   const [draftDesc, setDraftDesc] = useState(item.description)
   const [draftPrice, setDraftPrice] = useState(formatPriceInput(item.price))
+  const [draftVariants, setDraftVariants] = useState<VariantRow[]>(toVariantRows(item.variants))
+  const [draftCategory, setDraftCategory] = useState(item.category || 'Other')
   const [draftTags, setDraftTags] = useState<string[]>(item.tags)
   const [draftBadges, setDraftBadges] = useState<string[]>(item.badges)
   const [draftSpecialUntil, setDraftSpecialUntil] = useState<string | null>(item.specialUntil)
@@ -1575,6 +1658,8 @@ const ItemRow = memo(function ItemRow({
     setDraftName(item.name)
     setDraftDesc(item.description)
     setDraftPrice(formatPriceInput(item.price))
+    setDraftVariants(toVariantRows(item.variants))
+    setDraftCategory(item.category || 'Other')
     setDraftTags(item.tags)
     setDraftBadges(item.badges)
     setDraftSpecialUntil(item.specialUntil)
@@ -1595,13 +1680,30 @@ const ItemRow = memo(function ItemRow({
   function saveEdit() {
     const name = draftName.trim()
     if (!name) {
-      toast.error('Dish name is required')
+      toast.error(t('errors.dishNameRequired'))
       return
     }
-    const price = parsePriceInput(draftPrice)
-    if (price === null) {
-      toast.error('Price must be a non-negative number')
+
+    const parsedRows = parseVariantRows(draftVariants, symbol)
+    if (parsedRows === null) {
+      toast.error(t('errors.variantsInvalid'))
       return
+    }
+    // One filled size row is just a price — collapse it. Two or more become
+    // the variant list and pin `price` to the cheapest (matches the server).
+    let variants: MenuItemVariant[] = []
+    let price: number | null
+    if (parsedRows.length >= 2) {
+      variants = parsedRows
+      price = Math.min(...parsedRows.map((v) => v.price))
+    } else if (parsedRows.length === 1) {
+      price = parsedRows[0].price
+    } else {
+      price = parsePriceInput(draftPrice, symbol)
+      if (price === null) {
+        toast.error(t('errors.priceInvalid'))
+        return
+      }
     }
 
     const description = draftDesc.trim()
@@ -1609,6 +1711,8 @@ const ItemRow = memo(function ItemRow({
       name?: string
       description?: string
       price?: number
+      variants?: MenuItemVariant[]
+      category?: string
       tags?: string[]
       badges?: string[]
       specialUntil?: string | null
@@ -1617,6 +1721,8 @@ const ItemRow = memo(function ItemRow({
     if (name !== item.name) patch.name = name
     if (description !== item.description) patch.description = description
     if (price !== item.price) patch.price = price
+    if (!sameVariants(variants, item.variants)) patch.variants = variants
+    if (draftCategory !== (item.category || 'Other')) patch.category = draftCategory
     if (!sameStringArray(draftTags, item.tags)) patch.tags = draftTags
     if (!sameStringArray(draftBadges, item.badges)) patch.badges = draftBadges
     if (draftSpecialUntil !== item.specialUntil) patch.specialUntil = draftSpecialUntil
@@ -1647,13 +1753,13 @@ const ItemRow = memo(function ItemRow({
             <div className="flex flex-col gap-1">
               <PhotoActionButton
                 icon={Wand2}
-                label="Enhance"
+                label={t('photoActions.enhance')}
                 onClick={() => setAIMode('enhance')}
                 disabled={readOnly}
               />
               <PhotoActionButton
                 icon={RefreshCw}
-                label="Regen"
+                label={t('photoActions.regen')}
                 onClick={() => setAIMode('generate')}
                 disabled={readOnly}
               />
@@ -1661,7 +1767,7 @@ const ItemRow = memo(function ItemRow({
           ) : (
             <PhotoActionButton
               icon={Sparkles}
-              label="Generate"
+              label={t('photoActions.generate')}
               onClick={() => setAIMode('generate')}
               disabled={readOnly}
             />
@@ -1681,28 +1787,38 @@ const ItemRow = memo(function ItemRow({
                       </p>
                     ) : (
                       <p className="text-muted-foreground/70 mt-1 text-[14px] italic">
-                        No description yet
+                        {t('noDescription')}
                       </p>
                     )}
                   </div>
-                  <span className="bg-pop text-pop-foreground shrink-0 rounded-full px-3 py-1 text-[13px] font-semibold tabular-nums">
-                    {symbol}
-                    {formatPriceInput(item.price) || '0'}
-                  </span>
+                  {item.variants.length > 0 ? (
+                    <div className="flex max-w-[50%] flex-wrap justify-end gap-1.5">
+                      {item.variants.map((variant) => (
+                        <span
+                          key={variant.label}
+                          className="bg-pop text-pop-foreground shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold tabular-nums"
+                        >
+                          {variant.label} {symbol}
+                          {formatMenuPrice(symbol, variant.price)}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="bg-pop text-pop-foreground shrink-0 rounded-full px-3 py-1 text-[13px] font-semibold tabular-nums">
+                      {symbol}
+                      {formatMenuPrice(symbol, item.price)}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex flex-wrap gap-1.5 pt-1">
-                  {item.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="border-cream-line bg-card text-muted-foreground rounded-full border px-2 py-0.5 text-[11px] font-semibold"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                  <DietaryTagPills
+                    tags={item.tags}
+                    pillClassName="border-cream-line bg-card text-muted-foreground border text-[11px] tracking-normal"
+                  />
                   {item.specialUntil && new Date(item.specialUntil).getTime() > Date.now() ? (
                     <span className="border-pop bg-pop/10 text-pop rounded-full border px-2 py-0.5 text-[11px] font-semibold">
-                      Today's Special
+                      {t('todaysSpecial')}
                     </span>
                   ) : null}
                   {item.badges.map((key) => {
@@ -1713,7 +1829,7 @@ const ItemRow = memo(function ItemRow({
                         key={key}
                         className="border-cream-line bg-card text-muted-foreground rounded-full border px-2 py-0.5 text-[11px] font-semibold"
                       >
-                        {def.label}
+                        {tBadges(def.key)}
                       </span>
                     )
                   })}
@@ -1733,7 +1849,7 @@ const ItemRow = memo(function ItemRow({
                         disabled={readOnly}
                       >
                         <X className="h-3.5 w-3.5" aria-hidden="true" />
-                        Cancel
+                        {t('cancelDelete')}
                       </Button>
                       <Button
                         type="button"
@@ -1759,7 +1875,7 @@ const ItemRow = memo(function ItemRow({
                         disabled={readOnly}
                       >
                         <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                        Delete
+                        {t('delete')}
                       </Button>
                       <Button
                         type="button"
@@ -1768,7 +1884,7 @@ const ItemRow = memo(function ItemRow({
                         onClick={beginEdit}
                         disabled={readOnly}
                       >
-                        Edit
+                        {t('edit')}
                       </Button>
                     </>
                   )}
@@ -1786,18 +1902,57 @@ const ItemRow = memo(function ItemRow({
                   disabled={generatingDescription}
                   className="flex-1 text-[17px] font-semibold tracking-[-0.01em]"
                 />
-                <div className="bg-pop text-pop-foreground flex shrink-0 items-center rounded-full pr-1 pl-3 text-[13px] font-semibold">
-                  <span>{symbol}</span>
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    aria-label={t('itemPrice')}
-                    value={draftPrice}
-                    onChange={(e) => setDraftPrice(e.target.value)}
-                    disabled={generatingDescription}
-                    className="placeholder:text-pop-foreground/70 focus:bg-background/15 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none"
-                  />
-                </div>
+                {draftVariants.length === 0 ? (
+                  <div className="bg-pop text-pop-foreground flex shrink-0 items-center rounded-full pr-1 pl-3 text-[13px] font-semibold">
+                    <span>{symbol}</span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      aria-label={t('itemPrice')}
+                      value={draftPrice}
+                      onChange={(e) => setDraftPrice(e.target.value)}
+                      disabled={generatingDescription}
+                      className="placeholder:text-pop-foreground/70 focus:bg-background/15 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none"
+                    />
+                  </div>
+                ) : null}
+              </div>
+
+              <VariantRowsEditor
+                symbol={symbol}
+                rows={draftVariants}
+                onChange={setDraftVariants}
+                disabled={generatingDescription}
+              />
+
+              <div className="flex items-center gap-2">
+                <span className="text-muted-foreground text-xs font-semibold">
+                  {t('itemCategory')}
+                </span>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={generatingDescription}
+                      className="h-8 rounded-full"
+                    >
+                      <span className="max-w-[180px] truncate">{draftCategory}</span>
+                      <ChevronDown data-icon="inline-end" aria-hidden="true" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="max-h-[320px] w-56 overflow-y-auto">
+                    <DropdownMenuLabel>{t('moveToCategory')}</DropdownMenuLabel>
+                    <DropdownMenuRadioGroup value={draftCategory} onValueChange={setDraftCategory}>
+                      {categoryNames.map((name) => (
+                        <DropdownMenuRadioItem key={name} value={name}>
+                          {name}
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               <div className="space-y-2">
@@ -1827,7 +1982,7 @@ const ItemRow = memo(function ItemRow({
                     ) : (
                       <Wand2 className="h-3.5 w-3.5" aria-hidden="true" />
                     )}
-                    AI enhance
+                    {t('aiEnhance')}
                   </Button>
                 </div>
                 <Textarea
@@ -1881,7 +2036,7 @@ const ItemRow = memo(function ItemRow({
                       )}
                     >
                       <Icon className="size-3" aria-hidden="true" />
-                      {def.label}
+                      {tBadges(def.key)}
                     </button>
                   )
                 })}
@@ -1907,7 +2062,7 @@ const ItemRow = memo(function ItemRow({
                     disabled={generatingDescription || !draftName.trim()}
                   >
                     <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                    Save
+                    {t('save')}
                   </PillButton>
                 </div>
               </div>
@@ -1931,6 +2086,7 @@ const ItemRow = memo(function ItemRow({
             onApply={(url) => onChange(item.id, { imageUrl: url })}
             onClose={() => setAIMode(null)}
             onCreditSpent={onCreditSpent}
+            canBuyCredits={canBuyCredits}
             isAdmin={isAdmin}
           />
         </div>
@@ -1981,6 +2137,7 @@ function SpecialToggle({
   onChange: (next: string | null) => void
   disabled?: boolean
 }) {
+  const t = useTranslations('Editor')
   const active = specialUntil ? new Date(specialUntil).getTime() > Date.now() : false
   return (
     <button
@@ -1997,7 +2154,7 @@ function SpecialToggle({
       )}
     >
       <Sun className="size-3" aria-hidden="true" />
-      {active ? "Today's Special" : 'Mark as special'}
+      {active ? t('todaysSpecial') : t('markAsSpecial')}
     </button>
   )
 }
@@ -2072,17 +2229,143 @@ function SaveIndicator({ save }: { save: SaveStatus | undefined }) {
   )
 }
 
+// Draft rows for the size editor — strings so partially-typed prices don't
+// fight the input. Parsed/validated on save.
+interface VariantRow {
+  label: string
+  price: string
+}
+
+function toVariantRows(variants: MenuItemVariant[]): VariantRow[] {
+  return variants.map((v) => ({ label: v.label, price: formatPriceInput(v.price) }))
+}
+
+// null = a row is invalid (half-filled or bad price). Fully empty rows are
+// silently dropped so an abandoned "+ Add size" click doesn't block saving.
+function parseVariantRows(rows: VariantRow[], symbol: string): MenuItemVariant[] | null {
+  const out: MenuItemVariant[] = []
+  for (const row of rows) {
+    const label = row.label.trim().slice(0, MAX_VARIANT_LABEL)
+    const priceText = row.price.trim()
+    if (!label && !priceText) continue
+    const price = parsePriceInput(row.price, symbol)
+    if (!label || price === null) return null
+    out.push({ label, price })
+  }
+  return out
+}
+
+function sameVariants(a: MenuItemVariant[], b: MenuItemVariant[]) {
+  if (a.length !== b.length) return false
+  return a.every((v, i) => v.label === b[i].label && v.price === b[i].price)
+}
+
+function VariantRowsEditor({
+  symbol,
+  rows,
+  onChange,
+  disabled = false,
+}: {
+  symbol: string
+  rows: VariantRow[]
+  onChange: (next: VariantRow[]) => void
+  disabled?: boolean
+}) {
+  const t = useTranslations('Editor')
+
+  if (rows.length === 0) {
+    return (
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        onClick={() =>
+          onChange([
+            { label: '', price: '' },
+            { label: '', price: '' },
+          ])
+        }
+        disabled={disabled}
+        className="border-accent/70 bg-accent/10 text-foreground hover:bg-accent/20"
+      >
+        <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+        {t('addSizes')}
+      </Button>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      <span className="text-muted-foreground text-xs font-semibold">{t('sizesLabel')}</span>
+      {rows.map((row, index) => (
+        <div key={index} className="flex items-center gap-2">
+          <Input
+            aria-label={t('sizeName')}
+            placeholder={t('sizeNamePlaceholder')}
+            value={row.label}
+            maxLength={MAX_VARIANT_LABEL}
+            onChange={(e) =>
+              onChange(rows.map((r, i) => (i === index ? { ...r, label: e.target.value } : r)))
+            }
+            disabled={disabled}
+            className="h-9 flex-1 text-sm"
+          />
+          <div className="bg-pop text-pop-foreground flex shrink-0 items-center rounded-full pr-1 pl-3 text-[13px] font-semibold">
+            <span>{symbol}</span>
+            <input
+              type="text"
+              inputMode="decimal"
+              aria-label={t('sizePrice')}
+              placeholder="0"
+              value={row.price}
+              onChange={(e) =>
+                onChange(rows.map((r, i) => (i === index ? { ...r, price: e.target.value } : r)))
+              }
+              disabled={disabled}
+              className="placeholder:text-pop-foreground/70 focus:bg-background/15 w-14 rounded-full bg-transparent px-1 py-1 text-right tabular-nums outline-none"
+            />
+          </div>
+          <Button
+            type="button"
+            size="icon-sm"
+            variant="ghost"
+            aria-label={t('removeSize')}
+            onClick={() => onChange(rows.filter((_, i) => i !== index))}
+            disabled={disabled}
+          >
+            <X className="h-3.5 w-3.5" aria-hidden="true" />
+          </Button>
+        </div>
+      ))}
+      {rows.length < MAX_VARIANTS ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={() => onChange([...rows, { label: '', price: '' }])}
+          disabled={disabled}
+          className="h-8"
+        >
+          <Plus className="h-3.5 w-3.5" aria-hidden="true" />
+          {t('addSize')}
+        </Button>
+      ) : null}
+    </div>
+  )
+}
+
 function formatPriceInput(n: number): string {
   if (n <= 0) return ''
   return Number.isInteger(n) ? String(n) : n.toFixed(2)
 }
 
-function parsePriceInput(s: string): number | null {
+function parsePriceInput(s: string, symbol: string): number | null {
   const trimmed = s.trim()
   if (!trimmed) return 0
-  const n = parseFloat(trimmed.replace(',', '.'))
+  const normalized = symbol === 'COL$' ? trimmed.replace(/[.,\s]/g, '') : trimmed.replace(',', '.')
+  const n = parseFloat(normalized)
   if (!Number.isFinite(n) || n < 0) return null
-  return Math.round(n * 100) / 100
+  return symbol === 'COL$' ? Math.round(n) : Math.round(n * 100) / 100
 }
 
 function sameStringArray(a: string[], b: string[]) {

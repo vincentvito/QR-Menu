@@ -7,6 +7,7 @@ import {
   isMenuEventType,
   type MenuEventType,
 } from '@/lib/analytics/events'
+import { getTranslations } from 'next-intl/server'
 
 export const runtime = 'nodejs'
 
@@ -20,6 +21,7 @@ export const runtime = 'nodejs'
 // twice (e.g. a dish tapped twice). The dashboard aggregates handle dedup
 // where it matters (e.g. unique-session views).
 export async function POST(request: Request) {
+  const t = await getTranslations('Api')
   let body: {
     type?: unknown
     menuSlug?: unknown
@@ -28,32 +30,28 @@ export async function POST(request: Request) {
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
 
   if (!isMenuEventType(body.type)) {
-    return NextResponse.json({ error: 'Unknown event type' }, { status: 400 })
+    return NextResponse.json({ error: t('analytics.unknownEventType') }, { status: 400 })
   }
   const type: MenuEventType = body.type
 
   if (typeof body.menuSlug !== 'string' || !body.menuSlug) {
-    return NextResponse.json({ error: 'menuSlug is required' }, { status: 400 })
+    return NextResponse.json({ error: t('analytics.menuSlugRequired') }, { status: 400 })
   }
 
   // Guard against accidental payload bloat. Everything we care about
   // fits in a few hundred bytes.
   let payload: Prisma.InputJsonValue | undefined
   if (body.payload !== undefined) {
-    if (
-      typeof body.payload !== 'object' ||
-      body.payload === null ||
-      Array.isArray(body.payload)
-    ) {
-      return NextResponse.json({ error: 'payload must be an object' }, { status: 400 })
+    if (typeof body.payload !== 'object' || body.payload === null || Array.isArray(body.payload)) {
+      return NextResponse.json({ error: t('analytics.payloadObject') }, { status: 400 })
     }
     const serialized = JSON.stringify(body.payload)
     if (serialized.length > 2048) {
-      return NextResponse.json({ error: 'payload too large' }, { status: 400 })
+      return NextResponse.json({ error: t('analytics.payloadTooLarge') }, { status: 400 })
     }
     payload = body.payload as Prisma.InputJsonValue
   }

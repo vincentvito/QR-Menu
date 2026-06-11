@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
 import { randomBytes } from 'node:crypto'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
@@ -30,10 +31,12 @@ async function requireOrgAdmin(orgId: string, userId: string) {
 
 // POST = create a new invitation + send the email.
 export async function POST(request: Request) {
+  const t = await getTranslations('Api')
+  const emailT = await getTranslations('Email')
   const requestHeaders = await headers()
   const session = await auth.api.getSession({ headers: requestHeaders })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
 
   const org = await getActiveOrganization({
@@ -41,39 +44,46 @@ export async function POST(request: Request) {
     activeOrganizationId: session.session.activeOrganizationId,
   })
   if (!org) {
-    return NextResponse.json({ error: 'No active organization' }, { status: 409 })
+    return NextResponse.json({ error: t('common.noActiveOrganization') }, { status: 409 })
   }
 
   if (!(await requireOrgAdmin(org.id, session.user.id))) {
-    return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+    return NextResponse.json({ error: t('common.notAllowed') }, { status: 403 })
   }
   const writeGate = await canWriteDashboard(org.id)
   if (!writeGate.allowed) {
-    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
+    return NextResponse.json(
+      {
+        error: writeGate.reason
+          ? t(writeGate.reason.key, writeGate.reason.params)
+          : t('gates.subscriptionLapsed'),
+        gate: writeGate.gate,
+      },
+      { status: 402 },
+    )
   }
 
   const activeRestaurantId = (session.session as { activeRestaurantId?: string | null })
     .activeRestaurantId
   const restaurant = await getActiveRestaurant(org.id, activeRestaurantId, session.user.id)
   if (!restaurant) {
-    return NextResponse.json({ error: 'No active restaurant' }, { status: 409 })
+    return NextResponse.json({ error: t('common.noActiveRestaurant') }, { status: 409 })
   }
 
   let body: { email?: unknown; role?: unknown }
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
 
-  const email =
-    typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
   const role = typeof body.role === 'string' ? body.role : 'waiter'
   if (!email || !email.includes('@')) {
-    return NextResponse.json({ error: 'Valid email required' }, { status: 400 })
+    return NextResponse.json({ error: t('invitations.invalidEmail') }, { status: 400 })
   }
   if (!ALLOWED_ROLES.has(role)) {
-    return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+    return NextResponse.json({ error: t('invitations.invalidRole') }, { status: 400 })
   }
 
   // Reject if there's already a pending invite or an active membership for
@@ -84,7 +94,7 @@ export async function POST(request: Request) {
   })
   if (existingInvite) {
     return NextResponse.json(
-      { error: 'An invitation is already pending for this email' },
+      { error: t('invitations.alreadyPending') },
       { status: 409 },
     )
   }
@@ -94,7 +104,7 @@ export async function POST(request: Request) {
   })
   if (existingMember) {
     return NextResponse.json(
-      { error: 'That person is already on this restaurant' },
+      { error: t('invitations.alreadyMember') },
       { status: 409 },
     )
   }
@@ -117,11 +127,26 @@ export async function POST(request: Request) {
   const baseUrl = process.env.BETTER_AUTH_URL || 'http://localhost:3000'
   const acceptUrl = `${baseUrl}/accept-restaurant-invite?token=${token}`
   const inviterName = session.user.name?.trim() || session.user.email
+  const roleLabel =
+    role === 'manager'
+      ? emailT('restaurantInvite.roles.manager')
+      : emailT('restaurantInvite.roles.waiter')
   const { subject, html } = restaurantInviteEmailTemplate({
     inviterName,
     restaurantName: restaurant.name,
-    role,
+    role: roleLabel,
     acceptUrl,
+    copy: {
+      tagline: emailT('common.tagline'),
+      subject: ({ inviterName, restaurantName }) =>
+        emailT('restaurantInvite.subject', { inviterName, restaurantName }),
+      body: ({ inviterName, restaurantName, role }) =>
+        emailT('restaurantInvite.body', { inviterName, restaurantName, role }),
+      button: emailT('common.acceptInvitation'),
+      copyLink: emailT('common.copyLink'),
+      ignore: emailT('common.ignoreInvitation'),
+      footer: emailT('common.footer'),
+    },
   })
   await sendEmail({ to: email, subject, html })
 
@@ -136,10 +161,11 @@ export async function POST(request: Request) {
 
 // GET = list pending invitations for the active restaurant.
 export async function GET() {
+  const t = await getTranslations('Api')
   const requestHeaders = await headers()
   const session = await auth.api.getSession({ headers: requestHeaders })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
 
   const org = await getActiveOrganization({
@@ -149,7 +175,7 @@ export async function GET() {
   if (!org) return NextResponse.json({ invitations: [] })
 
   if (!(await requireOrgAdmin(org.id, session.user.id))) {
-    return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+    return NextResponse.json({ error: t('common.notAllowed') }, { status: 403 })
   }
 
   const activeRestaurantId = (session.session as { activeRestaurantId?: string | null })

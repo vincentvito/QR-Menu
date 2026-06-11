@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { Check, Loader2, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
@@ -50,6 +51,7 @@ function formatMonthly(cents: number | null): string {
 }
 
 export function StartTrialPanel({ orgId, plans }: StartTrialPanelProps) {
+  const t = useTranslations('StartTrial')
   const [pendingPlan, setPendingPlan] = useState<string | null>(null)
 
   async function startTrial(planId: string) {
@@ -63,10 +65,10 @@ export function StartTrialPanel({ orgId, plans }: StartTrialPanelProps) {
         cancelUrl: '/onboarding/start-trial',
       })
       if (result.error) {
-        toast.error(result.error.message ?? 'Checkout unavailable. Check your Stripe config.')
+        toast.error(result.error.message ?? t('errors.checkoutUnavailable'))
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Checkout failed')
+      toast.error(err instanceof Error ? err.message : t('errors.checkoutFailed'))
     } finally {
       setPendingPlan(null)
     }
@@ -88,7 +90,7 @@ export function StartTrialPanel({ orgId, plans }: StartTrialPanelProps) {
             >
               {recommended ? (
                 <span className="bg-accent text-accent-foreground absolute top-3 right-3 z-20 rounded-full px-2.5 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
-                  Recommended
+                  {t('recommended')}
                 </span>
               ) : null}
 
@@ -105,7 +107,7 @@ export function StartTrialPanel({ orgId, plans }: StartTrialPanelProps) {
                 <div className="text-background absolute right-4 bottom-4 left-4 flex items-end justify-between gap-3">
                   <div>
                     <div className="text-background/72 text-[11px] font-semibold tracking-[0.1em] uppercase">
-                      {visual.label}
+                      {t(`visuals.${plan.id}`)}
                     </div>
                     <h2 className="mt-1 text-xl leading-tight font-semibold tracking-tight">
                       {plan.name}
@@ -122,7 +124,7 @@ export function StartTrialPanel({ orgId, plans }: StartTrialPanelProps) {
                   {formatMonthly(plan.priceMonthlyCents)}
                   <span className="text-muted-foreground text-sm font-normal">
                     {' '}
-                    /mo after trial
+                    {t('afterTrial')}
                   </span>
                 </p>
 
@@ -132,23 +134,21 @@ export function StartTrialPanel({ orgId, plans }: StartTrialPanelProps) {
                       className="text-accent-deep mt-0.5 size-3.5 flex-shrink-0"
                       aria-hidden="true"
                     />
-                    <span>
-                      {plan.maxRestaurants} restaurant{plan.maxRestaurants === 1 ? '' : 's'}
-                    </span>
+                    <span>{t('features.restaurants', { count: plan.maxRestaurants ?? 0 })}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check
                       className="text-accent-deep mt-0.5 size-3.5 flex-shrink-0"
                       aria-hidden="true"
                     />
-                    <span>{plan.monthlyCredits} AI credits / month</span>
+                    <span>{t('features.aiCredits', { count: plan.monthlyCredits ?? 0 })}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Check
                       className="text-accent-deep mt-0.5 size-3.5 flex-shrink-0"
                       aria-hidden="true"
                     />
-                    <span>{plan.maxMenusPerRestaurant} menus per restaurant</span>
+                    <span>{t('features.menus', { count: plan.maxMenusPerRestaurant })}</span>
                   </li>
                 </ul>
 
@@ -161,12 +161,12 @@ export function StartTrialPanel({ orgId, plans }: StartTrialPanelProps) {
                   {pendingPlan === plan.id ? (
                     <>
                       <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                      <span>Redirecting...</span>
+                      <span>{t('redirecting')}</span>
                     </>
                   ) : (
                     <>
                       <Sparkles className="size-4" aria-hidden="true" />
-                      <span>Start free trial</span>
+                      <span>{t('start')}</span>
                     </>
                   )}
                 </Button>
@@ -176,16 +176,14 @@ export function StartTrialPanel({ orgId, plans }: StartTrialPanelProps) {
         })}
       </div>
 
-      <p className="text-muted-foreground text-center text-xs">
-        Card not charged for 14 days. Cancel any time from billing.
-      </p>
+      <p className="text-muted-foreground text-center text-xs">{t('finePrint')}</p>
 
       <div className="text-center">
         <Link
           href="/dashboard"
           className="text-muted-foreground hover:text-foreground text-xs transition-colors"
         >
-          Skip for now - I&apos;ll start the trial later
+          {t('skip')}
         </Link>
       </div>
     </div>

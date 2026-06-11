@@ -2,6 +2,7 @@
 
 import { Search, Sparkles, Wifi } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { getTemplate } from '@/components/menu/templates'
 import { CategoryTilesPreviewChrome } from '@/components/menu/templates/category-tiles/CategoryTilesBody'
 import { DEMO_GROUPS, DEMO_SPECIALS, DEMO_SYMBOL } from '@/components/menu/templates/demo-data'
@@ -99,6 +100,7 @@ export function TemplatePreview({
   wifiSsid,
   liveUrl,
 }: TemplatePreviewProps) {
+  const t = useTranslations('MenuView')
   const template = getTemplate(templateId)
   const theme = getTheme(themeId)
   const screenRef = useRef<HTMLDivElement | null>(null)
@@ -147,9 +149,7 @@ export function TemplatePreview({
 
   const navIcons = useMemo(() => {
     if (!showCategoryIcons) return null
-    return new Map(
-      bodyData.groups.map((g) => [g.id, categoryIcon(g.category, g.iconId)]),
-    )
+    return new Map(bodyData.groups.map((g) => [g.id, categoryIcon(g.category, g.iconId)]))
   }, [bodyData.groups, showCategoryIcons])
 
   useEffect(() => {
@@ -337,7 +337,7 @@ export function TemplatePreview({
                         ) : null}
                         {showDishCount ? (
                           <p className="text-background/70 mt-2 text-xs">
-                            {bodyData.totalItems} {bodyData.totalItems === 1 ? 'dish' : 'dishes'}
+                            {t('dishCount', { count: bodyData.totalItems })}
                           </p>
                         ) : null}
                       </div>
@@ -354,14 +354,14 @@ export function TemplatePreview({
                           aria-hidden="true"
                         />
                         <div className="border-cream-line bg-card text-muted-foreground flex h-11 items-center rounded-full border pr-4 pl-10 text-[14px]">
-                          Search dishes, ingredients, tags...
+                          {t('searchPlaceholder')}
                         </div>
                       </div>
                     </div>
 
                     {showCategoryNav ? (
                       <nav
-                        aria-label="Menu categories"
+                        aria-label={t('categoryNavLabel')}
                         className="no-scrollbar scroll-fade-x mx-auto flex max-w-[720px] gap-2 overflow-x-auto px-5 py-3"
                       >
                         {bodyData.specials.length > 0 && (
@@ -369,7 +369,7 @@ export function TemplatePreview({
                             {showCategoryIcons ? (
                               <Sparkles className="mr-1.5 inline size-3.5" aria-hidden="true" />
                             ) : null}
-                            Today&apos;s Specials
+                            {t('todaysSpecials')}
                           </span>
                         )}
                         {bodyData.groups.map((group) => {

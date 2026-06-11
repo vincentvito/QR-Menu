@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -8,6 +9,7 @@ import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
 
 export function AcceptInviteButton({ invitationId }: { invitationId: string }) {
+  const t = useTranslations('Invite')
   const router = useRouter()
   const [accepting, setAccepting] = useState(false)
 
@@ -16,7 +18,7 @@ export function AcceptInviteButton({ invitationId }: { invitationId: string }) {
     try {
       const res = await authClient.organization.acceptInvitation({ invitationId })
       if (res.error) {
-        toast.error(res.error.message ?? 'Could not accept invitation')
+        toast.error(res.error.message ?? t('errors.acceptFailed'))
         setAccepting(false)
         return
       }
@@ -28,7 +30,7 @@ export function AcceptInviteButton({ invitationId }: { invitationId: string }) {
       router.push('/dashboard')
       router.refresh()
     } catch {
-      toast.error('Network error — please try again')
+      toast.error(t('errors.network'))
       setAccepting(false)
     }
   }
@@ -38,10 +40,10 @@ export function AcceptInviteButton({ invitationId }: { invitationId: string }) {
       {accepting ? (
         <>
           <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          <span>Accepting…</span>
+          <span>{t('accepting')}</span>
         </>
       ) : (
-        <span>Accept invitation</span>
+        <span>{t('accept')}</span>
       )}
     </Button>
   )

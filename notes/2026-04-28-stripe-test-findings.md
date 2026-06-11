@@ -13,6 +13,7 @@ The API returns `{ error: 'Out of AI credits. Buy more or upgrade your plan.', g
 **User impact:** "Buy more or upgrade your plan" with no button — user is dead-ended on the menu editor with no way to act on the message.
 
 **Fix (refined per testing 2026-04-28):**
+
 - Toast is fine as a transient nudge, but the better surface is an **inline banner directly below the menu editor / item area**: "You're out of AI credits — top up to keep generating dish photos." with a **Buy 100 credits ($15)** button (calls `/api/billing/credit-pack/checkout` directly, same as `BillingPanel.buyCreditPack`) and a secondary **Upgrade plan →** link to `/dashboard/billing`.
 - Banner shows whenever `state.credits.total === 0` (or below the cost of the next gated action) — derived from `getBillingState`. Fades in after the user hits the gate at least once, persists until they have credits again.
 - Toast still fires on the click that triggered the gate, but uses `toast.error(msg, { action: { label: 'Buy credits', onClick } })` so the user has an immediate path without scrolling. The banner is the durable surface.
@@ -26,6 +27,7 @@ The API returns `{ error: 'Out of AI credits. Buy more or upgrade your plan.', g
 **User impact:** A brand-new account looks broken. There's nothing on screen telling them what to do — billing page is buried in the sidebar and nothing pushes them there.
 
 **Fix (the right one, not just a band-aid):**
+
 - After onboarding creates the org, if no subscription exists, redirect to (or open inline) a "Start your 14-day free trial" screen that calls `authClient.subscription.upgrade({ plan: 'trial' or first paid tier, … })` and runs Stripe Checkout for card capture.
 - Until they complete it, every credit-gated UI affordance should preview-only / show a "Start trial to use this" badge instead of bouncing them to a dead-end toast.
 - After Checkout returns: webhook fires → `onTrialStart` grants credits → banner appears → user can use AI.
@@ -57,6 +59,7 @@ Bonus: skip the name step when `initialUserName` is already non-empty (Better Au
 **Where:** dashboard sidebar (`components/dashboard/...`), menu editor toolbar, and any UI surface adjacent to the generate/enhance buttons.
 
 **Fix options:**
+
 - Persistent credit pill in the dashboard sidebar (e.g. `⚡ 4 credits`) — `getBillingState` already computes the total; surface it in the layout.
 - Tooltip / inline counter on the "Generate image" button: `Generate image (1 credit)` so the cost is obvious before clicking.
 - After a successful generate/enhance, return the new balance in the API response and update a client-side store so the pill refreshes without a router.refresh().
@@ -70,6 +73,7 @@ Bonus: skip the name step when `initialUserName` is already non-empty (Better Au
 **User feedback:** "I know it's in Settings but it's not clear to me the first time I go into the app, and on the menu page there's nothing that tells me where to go to do that."
 
 **Fix options:**
+
 - Inline tip / callout above the menu items grid for first-time users: "Want to style your menu? Customize colors, template, and branding in Settings →" (dismissible, persisted per-user).
 - Persistent secondary nav row at the top of the menu editor with quick links to Settings sub-sections: Brand, Menu design, QR code, WiFi.
 - Auto-tour on first menu creation that highlights Settings + the public-menu preview link.
@@ -83,16 +87,19 @@ Cheapest, highest-leverage fix is probably the inline callout — one component,
 **Where:** `app/dashboard/billing/BillingPanel.tsx:257` — renders `'Not subscribed yet'` whenever `state.subscription` is null. Doesn't distinguish never-subscribed from canceled-trial.
 
 **Behavioral gaps:**
+
 - No banner on the dashboard explaining "Your trial has ended" or "Subscription canceled"
 - No "Restart your trial" or "Re-subscribe" button anywhere obvious — the plan picker further down the page works, but it's unmarked as the way out
 - No clarity on what's still allowed: AI actions are gated (correct) but editing text/prices/settings is not (probably correct, but uncommunicated)
 - Public menus keep serving (correct and critical) but the user has no confirmation that their guests are still seeing the menu
 
 **Additional confirmed in testing 2026-04-28:**
+
 - After cancellation in the Stripe Dashboard, the **trial banner persisted on the dashboard until I manually refreshed the page**. The webhook had updated the DB but the UI didn't react — no `router.refresh()` triggered, no SSE/poll, no client-side invalidation.
 - Once refreshed, the banner is gone but **nothing replaces it** — no indicator anywhere that the user is now in a "no subscription" state. From the user's perspective, the dashboard just looks normal again, even though they can't actually generate AI or, per #8a, create unlimited content.
 
 **Fix:**
+
 - Track "ever subscribed" via a boolean on Organization (or detect via `CreditTransaction` history with `type='grant'` and `reason='trial-start'`).
 - When no active sub but ever-subscribed: show a top-of-billing banner. Two copy variants based on what they had before:
   - Trial-canceled / expired: "Your trial ended on {date}. Re-subscribe to keep generating dish photos and stay live with multiple restaurants."
@@ -106,6 +113,7 @@ Cheapest, highest-leverage fix is probably the inline callout — one component,
 ## 8a. No-subscription state lets the user keep creating things
 
 **Confirmed in testing 2026-04-28:** cancelled subscription, then created additional menus — the app accepted them. With no subscription:
+
 - `resolvePlan(null)` returns the **trial plan** (`lib/plans.ts:95`) which has `maxMenusPerRestaurant: 5` and `maxRestaurants: 1`.
 - So a canceled-trial user can effectively keep using a "trial-equivalent" plan without paying. Not the intended behavior.
 
@@ -113,21 +121,23 @@ Cheapest, highest-leverage fix is probably the inline callout — one component,
 subscription is canceled or a trial expires, but dashboard writes become
 read-only until the owner picks a plan again.
 
-| State                         | Public menu     | Dashboard editing | Create menu | Create restaurant | AI actions |
-|-------------------------------|-----------------|-------------------|-------------|-------------------|------------|
-| Trialing                      | live            | full              | ✅ up to 5   | ✅ up to 1         | ✅ via credits |
-| Active (paid plan)            | live            | full              | ✅ per plan  | ✅ per plan        | ✅ via credits |
-| Active, cancel-at-period-end  | live            | full              | ✅ per plan  | ✅ per plan        | ✅ via credits |
-| Canceled / trial expired      | live            | read-only         | ❌          | ❌                | ❌ paused |
+| State                        | Public menu | Dashboard editing | Create menu | Create restaurant | AI actions     |
+| ---------------------------- | ----------- | ----------------- | ----------- | ----------------- | -------------- |
+| Trialing                     | live        | full              | ✅ up to 5  | ✅ up to 1        | ✅ via credits |
+| Active (paid plan)           | live        | full              | ✅ per plan | ✅ per plan       | ✅ via credits |
+| Active, cancel-at-period-end | live        | full              | ✅ per plan | ✅ per plan       | ✅ via credits |
+| Canceled / trial expired     | live        | read-only         | ❌          | ❌                | ❌ paused      |
 
 **Two policy options considered:**
 
 **Option 1 — public menus keep serving even when the subscription is canceled / trial expired without conversion.**
+
 - Pros: guests with already-distributed QR codes don't see a broken menu; the owner's churn doesn't punish their customers; "public menu uptime" is the value prop.
 - Cons: the app keeps doing free hosting work for non-paying users; reduces the urgency to re-subscribe.
-- Implementation: only gate the *dashboard* (creation + editing + AI). Public menu route stays open as-is.
+- Implementation: only gate the _dashboard_ (creation + editing + AI). Public menu route stays open as-is.
 
 **Option 2 — public menus go to a "Menu not available" state when subscription is canceled or expired (including trial expiration without conversion).**
+
 - Pros: clear forcing function — guests scanning a QR get pressure on the owner to re-subscribe; cleaner billing story ("you pay to be live").
 - Cons: punishes the owner's customers for the owner's lapsed payment; ugly broken-link experience for guests; might burn goodwill if a card simply expired.
 - Implementation: public menu route checks `subscription.status` for the org and renders a polite "This menu is temporarily unavailable" page when not in `active|trialing|past_due`. Owner contact email visible. Maybe a grace period (3-7 days post-expiration) before going dark.
@@ -137,6 +147,7 @@ read-only until the owner picks a plan again.
 **Recommended default if forced to pick: Option 1 + grace-period banner.** Public menus stay live indefinitely; dashboard goes read-only on day 1 of canceled. After 7 days, send an email warning "menu will go offline if no resubscribe in 7 days" — gives the owner a reason to come back without immediately punishing guests.
 
 **Other parts of the matrix:**
+
 - **Dashboard goes read-only** — same model as the existing read-only mode for restaurants beyond plan cap (`reconcileRestaurantActivation`). User can still view, share QR, see analytics, but can't edit menu text, prices, items, settings, or generate AI.
 - **Create endpoints all gate on `subscription.status in ('trialing', 'active', 'past_due')`**. If not, return a 402 with a clear "Re-subscribe to keep editing" message and a CTA to billing. Routes: `/api/menus` (create), `/api/restaurants` (create), all `PATCH/PUT/DELETE` on menus/items/settings.
 - **Enforce on the server, not just in UI**. Read-only banner is helpful but the gate must be at the API layer or anyone with cookies can bypass.
@@ -150,13 +161,14 @@ This connects to issue #7 (post-cancellation orientation). The fix is two-part: 
 **Where:** `components/menu-editor/AIPhotoPanel.tsx:91` (the toast call after a failed POST). Same pattern likely repeats on the enhance-image button.
 
 **Fix:**
+
 - Read the JSON body on non-2xx responses and surface `body.error` in the toast (with a sensible fallback if absent).
 - For 4xx responses with a known `gate` discriminator (e.g. `gate: 'credits'`), show the actionable banner / toast action from issue #1.
 - Log the full response (status + body) to console for dev visibility — `console.error('[generate-image]', res.status, body)` — so debug doesn't depend on opening the Network tab.
 
 ## 9. Billing page conflates bonus and monthly credits
 
-**Confirmed in testing 2026-04-28:** during trial, billing shows **"4 / 30 this month"**. That's misleading — the user has 4 *bonus* credits (5 trial – 1 used) and **0 monthly** credits during trial. The `30` is Basic plan's monthly allowance, but it's not the denominator the `4` is a fraction of.
+**Confirmed in testing 2026-04-28:** during trial, billing shows **"4 / 30 this month"**. That's misleading — the user has 4 _bonus_ credits (5 trial – 1 used) and **0 monthly** credits during trial. The `30` is Basic plan's monthly allowance, but it's not the denominator the `4` is a fraction of.
 
 **Where:** `app/dashboard/billing/BillingPanel.tsx:289-296`. The big number is `state.credits.total = monthly + bonus`, but the "/ N this month" suffix uses `state.plan.monthlyCredits` as the denominator — implying the total is a count of monthly credits, which isn't true when bonus is in the mix.
 

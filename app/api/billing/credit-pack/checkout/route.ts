@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
 import Stripe from 'stripe'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { getActiveOrganization } from '@/lib/organizations/get-active-org'
 import { CREDIT_PACK } from '@/lib/plans'
-import { canWriteDashboard } from '@/lib/plans/subscription-access'
+import { canWriteDashboard, getSubscriptionAccessState } from '@/lib/plans/subscription-access'
 
 export const runtime = 'nodejs'
 
@@ -15,19 +16,17 @@ export const runtime = 'nodejs'
 // success the webhook in lib/auth.ts `onEvent` reads `metadata.organizationId`
 // + `metadata.kind` and grants the credits via `grantBonusCredits`.
 export async function POST(request: Request) {
+  const t = await getTranslations('Api')
   const secretKey = process.env.STRIPE_SECRET_KEY
   const priceId = process.env.STRIPE_PRICE_CREDIT_PACK_100
   if (!secretKey || !priceId) {
-    return NextResponse.json(
-      { error: 'Credit-pack checkout is not configured on this environment.' },
-      { status: 503 },
-    )
+    return NextResponse.json({ error: t('billing.checkoutNotConfigured') }, { status: 503 })
   }
 
   const requestHeaders = await headers()
   const session = await auth.api.getSession({ headers: requestHeaders })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
 
   const org = await getActiveOrganization({
@@ -35,7 +34,7 @@ export async function POST(request: Request) {
     activeOrganizationId: session.session.activeOrganizationId,
   })
   if (!org) {
-    return NextResponse.json({ error: 'No active organization' }, { status: 409 })
+    return NextResponse.json({ error: t('common.noActiveOrganization') }, { status: 409 })
   }
 
   const member = await prisma.member.findFirst({
@@ -43,18 +42,34 @@ export async function POST(request: Request) {
     select: { role: true },
   })
   if (!member || !['owner', 'admin'].includes(member.role)) {
-    return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+    return NextResponse.json({ error: t('common.notAllowed') }, { status: 403 })
   }
   const writeGate = await canWriteDashboard(org.id)
   if (!writeGate.allowed) {
-    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
+    return NextResponse.json(
+      {
+        error: writeGate.reason
+          ? t(writeGate.reason.key, writeGate.reason.params)
+          : t('gates.subscriptionLapsed'),
+        gate: writeGate.gate,
+      },
+      { status: 402 },
+    )
+  }
+
+  const subscriptionAccess = await getSubscriptionAccessState(org.id)
+  if (!subscriptionAccess.hasActiveSubscription) {
+    return NextResponse.json(
+      { error: t('billing.startTrialBeforeCredits'), gate: 'setup-mode' },
+      { status: 402 },
+    )
   }
 
   const stripe = new Stripe(secretKey, { apiVersion: '2026-03-25.dahlia' })
 
   // Ensure the org has a Stripe customer. Normally the @better-auth/stripe
-  // plugin creates one when the org first enters a subscription flow, but a
-  // user could in theory click "Buy credits" before ever subscribing.
+  // plugin creates one when the org first enters a subscription flow; this is
+  // defensive for comped or migrated orgs without a stored customer yet.
   const orgRow = await prisma.organization.findUnique({
     where: { id: org.id },
     select: { stripeCustomerId: true, name: true },
@@ -74,9 +89,7 @@ export async function POST(request: Request) {
   }
 
   const origin =
-    requestHeaders.get('origin') ??
-    process.env.BETTER_AUTH_URL ??
-    'http://localhost:3000'
+    requestHeaders.get('origin') ?? process.env.BETTER_AUTH_URL ?? 'http://localhost:3000'
 
   const checkout = await stripe.checkout.sessions.create({
     mode: 'payment',
@@ -98,7 +111,7 @@ export async function POST(request: Request) {
   })
 
   if (!checkout.url) {
-    return NextResponse.json({ error: 'Stripe did not return a checkout URL' }, { status: 500 })
+    return NextResponse.json({ error: t('billing.checkoutNoUrl') }, { status: 500 })
   }
 
   return NextResponse.json({ url: checkout.url })

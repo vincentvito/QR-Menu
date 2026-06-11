@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { ImagePlus, Loader2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { ImageLightbox } from '@/components/menu/ImageLightbox'
@@ -25,6 +26,7 @@ export function DishPhotoUploader({
   onChange,
   disabled = false,
 }: DishPhotoUploaderProps) {
+  const t = useTranslations('Editor.photoUpload')
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [uploading, setUploading] = useState(false)
   const [dragging, setDragging] = useState(false)
@@ -32,11 +34,11 @@ export function DishPhotoUploader({
 
   async function uploadFile(file: File) {
     if (!file.type.startsWith('image/')) {
-      toast.error('Pick a PNG, JPG, or WEBP file')
+      toast.error(t('errors.badType'))
       return
     }
     if (file.size > MAX_BYTES) {
-      toast.error('Photo must be under 5 MB')
+      toast.error(t('errors.tooLarge'))
       return
     }
     setUploading(true)
@@ -50,12 +52,12 @@ export function DishPhotoUploader({
       })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error ?? 'Upload failed')
+        toast.error(data.error ?? t('errors.uploadFailed'))
         return
       }
       onChange(data.url)
     } catch {
-      toast.error('Network error - please try again')
+      toast.error(t('errors.network'))
     } finally {
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ''
@@ -75,7 +77,7 @@ export function DishPhotoUploader({
         <div className="border-cream-line bg-background relative size-20 shrink-0 overflow-hidden rounded-lg border">
           <button
             type="button"
-            aria-label="Open dish photo"
+            aria-label={t('open')}
             onClick={() => setPreviewSrc(value)}
             className="focus-visible:ring-ring block h-full w-full cursor-zoom-in focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
           >
@@ -93,7 +95,7 @@ export function DishPhotoUploader({
           </button>
           <button
             type="button"
-            aria-label="Remove photo"
+            aria-label={t('remove')}
             disabled={busy}
             onClick={() => onChange(null)}
             className="bg-foreground/70 text-background hover:bg-foreground absolute top-1 right-1 grid size-5 place-items-center rounded-full backdrop-blur-sm transition-opacity disabled:opacity-50"
@@ -137,7 +139,7 @@ export function DishPhotoUploader({
       ) : (
         <>
           <ImagePlus className="size-5" aria-hidden="true" />
-          <span>Photo</span>
+          <span>{t('label')}</span>
         </>
       )}
     </label>

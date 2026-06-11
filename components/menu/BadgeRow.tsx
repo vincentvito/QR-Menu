@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl'
 import { visibleBadges } from '@/lib/menus/badges'
 
 interface BadgeRowProps {
@@ -8,6 +9,7 @@ interface BadgeRowProps {
 // BADGE_KEYS ordering inside visibleBadges(), not by the dish's array order
 // so the same two badges render identically across every dish.
 export function BadgeRow({ badges }: BadgeRowProps) {
+  const t = useTranslations('Badges')
   const list = visibleBadges(badges)
   if (list.length === 0) return null
   return (
@@ -20,7 +22,7 @@ export function BadgeRow({ badges }: BadgeRowProps) {
             className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${def.pillClassName}`}
           >
             <Icon className="size-3" aria-hidden="true" />
-            {def.label}
+            {t(def.key)}
           </span>
         )
       })}

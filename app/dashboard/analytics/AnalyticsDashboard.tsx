@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useLocale, useTranslations } from 'next-intl'
 import {
   Bar,
   BarChart,
@@ -32,9 +33,9 @@ function formatPercent(num: number, denom: number): string {
   return `${((num / denom) * 100).toFixed(1)}%`
 }
 
-function formatDate(iso: string): string {
+function formatDate(iso: string, locale: string): string {
   const d = new Date(`${iso}T00:00:00Z`)
-  return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  return d.toLocaleDateString(locale, { month: 'short', day: 'numeric' })
 }
 
 function formatHour(h: number): string {
@@ -44,13 +45,9 @@ function formatHour(h: number): string {
   return h < 12 ? `${h}a` : `${h - 12}p`
 }
 
-export function AnalyticsDashboard({
-  range,
-  kpis,
-  daily,
-  peak,
-  social,
-}: AnalyticsDashboardProps) {
+export function AnalyticsDashboard({ range, kpis, daily, peak, social }: AnalyticsDashboardProps) {
+  const t = useTranslations('Analytics')
+  const locale = useLocale()
   const reviewCtr = formatPercent(kpis.reviewClicks, kpis.scans)
 
   return (
@@ -65,7 +62,7 @@ export function AnalyticsDashboard({
             range === '7d' ? 'bg-foreground text-background' : 'text-muted-foreground'
           }`}
         >
-          Last 7 days
+          {t('ranges.7d')}
         </Link>
         <Link
           href="/dashboard/analytics?range=30d"
@@ -73,34 +70,34 @@ export function AnalyticsDashboard({
             range === '30d' ? 'bg-foreground text-background' : 'text-muted-foreground'
           }`}
         >
-          Last 30 days
+          {t('ranges.30d')}
         </Link>
       </div>
 
       {/* KPI row. Small cards, one stat each — readable without hover. */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <Kpi label="Scans" value={kpis.scans.toLocaleString()} hint="Menu page loads" />
+        <Kpi label={t('kpis.scans')} value={kpis.scans.toLocaleString()} hint={t('hints.scans')} />
         <Kpi
-          label="Unique guests"
+          label={t('kpis.uniqueGuests')}
           value={kpis.uniqueSessions.toLocaleString()}
-          hint="Distinct anonymous sessions"
+          hint={t('hints.uniqueGuests')}
         />
         <Kpi
-          label="Review clicks"
+          label={t('kpis.reviewClicks')}
           value={kpis.reviewClicks.toLocaleString()}
-          hint={`${reviewCtr} of scans`}
+          hint={t('hints.reviewClicks', { percent: reviewCtr })}
         />
         <Kpi
-          label="WiFi reveals"
+          label={t('kpis.wifiReveals')}
           value={kpis.wifiReveals.toLocaleString()}
-          hint="Guests who tapped the WiFi pill"
+          hint={t('hints.wifiReveals')}
         />
       </div>
 
       {/* Scans over time */}
       <section className="border-cream-line bg-card rounded-2xl border p-5">
-        <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-          Scans over time
+        <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
+          {t('charts.scansOverTime')}
         </h2>
         <div className="mt-4 h-64">
           <ResponsiveContainer width="100%" height="100%">
@@ -108,7 +105,7 @@ export function AnalyticsDashboard({
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E7E5E4" />
               <XAxis
                 dataKey="date"
-                tickFormatter={formatDate}
+                tickFormatter={(v) => formatDate(v as string, locale)}
                 stroke="#78716C"
                 fontSize={12}
                 tickLine={false}
@@ -117,16 +114,10 @@ export function AnalyticsDashboard({
               />
               <YAxis stroke="#78716C" fontSize={12} tickLine={false} axisLine={false} />
               <Tooltip
-                labelFormatter={(v) => formatDate(v as string)}
+                labelFormatter={(v) => formatDate(v as string, locale)}
                 contentStyle={{ borderRadius: 8, border: '1px solid #E7E5E4' }}
               />
-              <Line
-                type="monotone"
-                dataKey="scans"
-                stroke="#1C1917"
-                strokeWidth={2}
-                dot={false}
-              />
+              <Line type="monotone" dataKey="scans" stroke="#1C1917" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -135,12 +126,10 @@ export function AnalyticsDashboard({
       <div className="grid gap-6 md:grid-cols-2">
         {/* Peak hours */}
         <section className="border-cream-line bg-card rounded-2xl border p-5">
-          <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-            Peak hours
+          <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
+            {t('charts.peakHours')}
           </h2>
-          <p className="text-muted-foreground mt-1 text-xs">
-            When guests scanned your QR across the range.
-          </p>
+          <p className="text-muted-foreground mt-1 text-xs">{t('charts.peakHoursDescription')}</p>
           <div className="mt-4 h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={peak} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
@@ -167,15 +156,15 @@ export function AnalyticsDashboard({
 
         {/* Social breakdown */}
         <section className="border-cream-line bg-card rounded-2xl border p-5">
-          <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-            Social clicks
+          <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
+            {t('charts.socialClicks')}
           </h2>
           <p className="text-muted-foreground mt-1 text-xs">
-            {kpis.socialClicks.toLocaleString()} total clicks on social links.
+            {t('charts.socialClicksTotal', { count: kpis.socialClicks })}
           </p>
           {social.length === 0 ? (
             <p className="text-muted-foreground mt-8 text-center text-sm">
-              No social clicks yet.
+              {t('charts.noSocialClicks')}
             </p>
           ) : (
             <ul className="mt-4 space-y-2">
@@ -185,7 +174,7 @@ export function AnalyticsDashboard({
                   className="border-cream-line bg-background flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
                 >
                   <span className="capitalize">{row.platform}</span>
-                  <span className="tabular-nums font-medium">{row.clicks.toLocaleString()}</span>
+                  <span className="font-medium tabular-nums">{row.clicks.toLocaleString()}</span>
                 </li>
               ))}
             </ul>

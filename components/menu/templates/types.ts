@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react'
 import type { CategoryIconId } from '@/lib/menus/category-icon'
+import type { MenuItemVariant } from '@/lib/menus/variants'
 
 // Shape every template component receives. Matches what PublicMenuBody has
 // already filtered + grouped, so templates focus on rendering.
@@ -9,6 +10,8 @@ export interface TemplateItem {
   name: string
   description: string
   price: number
+  // Size/price variants. Non-empty list wins over `price` for display.
+  variants: MenuItemVariant[]
   tags: string[]
   badges: string[]
   imageUrl: string | null

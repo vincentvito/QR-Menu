@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { makeSlug } from '@/lib/menus/slug'
 import { isSupportedCurrency, DEFAULT_CURRENCY } from '@/lib/menus/currency'
+import { getTranslations } from 'next-intl/server'
 
 const MAX_USER_NAME = 120
 
@@ -37,29 +38,30 @@ function cleanUrl(value: unknown): string | undefined {
 }
 
 export async function POST(request: Request) {
+  const t = await getTranslations('Api')
   const requestHeaders = await headers()
   const session = await auth.api.getSession({ headers: requestHeaders })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
 
   // Enforce the "1 org per user for now" rule. Fails cleanly if someone
   // retries the onboarding after already creating an org.
   const existing = await prisma.member.findFirst({ where: { userId: session.user.id } })
   if (existing) {
-    return NextResponse.json({ error: 'You already belong to a restaurant' }, { status: 409 })
+    return NextResponse.json({ error: t('onboarding.alreadyBelong') }, { status: 409 })
   }
 
   let body: Record<string, unknown>
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
 
   const name = cleanString(body.name, MAX_NAME)
   if (!name) {
-    return NextResponse.json({ error: 'Restaurant name is required' }, { status: 400 })
+    return NextResponse.json({ error: t('onboarding.nameRequired') }, { status: 400 })
   }
 
   // Persist a display name on the user if the onboarding form supplied one.
@@ -97,7 +99,7 @@ export async function POST(request: Request) {
   })
 
   if (!organization) {
-    return NextResponse.json({ error: 'Failed to create restaurant' }, { status: 500 })
+    return NextResponse.json({ error: t('onboarding.createFailed') }, { status: 500 })
   }
 
   // If the derived restaurant slug collides (rare), append a short suffix.

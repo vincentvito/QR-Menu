@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
 import { Loader2, Mail, Trash2, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -39,6 +40,8 @@ interface StaffPanelProps {
 }
 
 export function StaffPanel({ canManage, members, invitations }: StaffPanelProps) {
+  const t = useTranslations('Staff')
+  const locale = useLocale()
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'manager' | 'waiter'>('waiter')
@@ -57,10 +60,10 @@ export function StaffPanel({ canManage, members, invitations }: StaffPanelProps)
       })
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string }
-        toast.error(body.error ?? 'Could not send invitation')
+        toast.error(body.error ?? t('errors.sendFailed'))
         return
       }
-      toast.success(`Invitation sent to ${email.trim()}`)
+      toast.success(t('toast.inviteSent', { email: email.trim() }))
       setEmail('')
       router.refresh()
     } finally {
@@ -73,10 +76,10 @@ export function StaffPanel({ canManage, members, invitations }: StaffPanelProps)
     try {
       const res = await fetch(`/api/restaurant-invitations/${id}`, { method: 'DELETE' })
       if (!res.ok) {
-        toast.error('Could not revoke invitation')
+        toast.error(t('errors.revokeFailed'))
         return
       }
-      toast.success('Invitation revoked')
+      toast.success(t('toast.revoked'))
       router.refresh()
     } finally {
       setPendingId(null)
@@ -84,15 +87,15 @@ export function StaffPanel({ canManage, members, invitations }: StaffPanelProps)
   }
 
   async function removeMember(id: string, name: string) {
-    if (!confirm(`Remove ${name} from this restaurant?`)) return
+    if (!confirm(t('confirmRemove', { name }))) return
     setPendingId(id)
     try {
       const res = await fetch(`/api/restaurant-members/${id}`, { method: 'DELETE' })
       if (!res.ok) {
-        toast.error('Could not remove member')
+        toast.error(t('errors.removeFailed'))
         return
       }
-      toast.success(`${name} removed`)
+      toast.success(t('toast.removed', { name }))
       router.refresh()
     } finally {
       setPendingId(null)
@@ -105,57 +108,53 @@ export function StaffPanel({ canManage, members, invitations }: StaffPanelProps)
         <section className="border-cream-line bg-card rounded-2xl border p-5">
           <div className="mb-4 flex items-center gap-2">
             <UserPlus className="text-muted-foreground size-4" aria-hidden="true" />
-            <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-              Invite staff
+            <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
+              {t('invite.title')}
             </h2>
           </div>
           <form onSubmit={sendInvitation} className="grid gap-3 sm:grid-cols-[1fr_auto_auto]">
             <div>
               <Label htmlFor="invite-email" className="sr-only">
-                Email
+                {t('invite.email')}
               </Label>
               <Input
                 id="invite-email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="teammate@example.com"
+                placeholder={t('invite.emailPlaceholder')}
                 required
                 disabled={sending}
               />
             </div>
             <div>
               <Label htmlFor="invite-role" className="sr-only">
-                Role
+                {t('invite.role')}
               </Label>
               <Select value={role} onValueChange={(v) => setRole(v as 'manager' | 'waiter')}>
                 <SelectTrigger id="invite-role" className="w-[140px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="waiter">Waiter</SelectItem>
-                  <SelectItem value="manager">Manager</SelectItem>
+                  <SelectItem value="waiter">{t('roles.waiter')}</SelectItem>
+                  <SelectItem value="manager">{t('roles.manager')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <Button type="submit" disabled={sending || !email.trim()}>
-              {sending ? (
-                <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-              ) : null}
-              Send invite
+              {sending ? <Loader2 className="size-3.5 animate-spin" aria-hidden="true" /> : null}
+              {t('invite.send')}
             </Button>
           </form>
         </section>
       ) : null}
 
       <section className="border-cream-line bg-card rounded-2xl border p-5">
-        <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-          Current staff
+        <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
+          {t('current.title')}
         </h2>
         {members.length === 0 ? (
-          <p className="text-muted-foreground mt-3 text-sm">
-            No restaurant-level staff yet. Account owners and admins always have access.
-          </p>
+          <p className="text-muted-foreground mt-3 text-sm">{t('current.empty')}</p>
         ) : (
           <ul className="mt-3 divide-y divide-[color:var(--color-cream-line)]">
             {members.map((m) => {
@@ -179,14 +178,14 @@ export function StaffPanel({ canManage, members, invitations }: StaffPanelProps)
                     <div className="truncate text-sm font-medium">{displayName}</div>
                     <div className="text-muted-foreground truncate text-xs">{m.user.email}</div>
                   </div>
-                  <span className="text-muted-foreground text-xs capitalize">{m.role}</span>
+                  <span className="text-muted-foreground text-xs">{t(`roles.${m.role}`)}</span>
                   {canManage ? (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => removeMember(m.id, displayName)}
                       disabled={pendingId === m.id}
-                      aria-label={`Remove ${displayName}`}
+                      aria-label={t('current.removeAria', { name: displayName })}
                     >
                       {pendingId === m.id ? (
                         <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
@@ -204,8 +203,8 @@ export function StaffPanel({ canManage, members, invitations }: StaffPanelProps)
 
       {canManage && invitations.length > 0 ? (
         <section className="border-cream-line bg-card rounded-2xl border p-5">
-          <h2 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
-            Pending invitations
+          <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
+            {t('pending.title')}
           </h2>
           <ul className="mt-3 divide-y divide-[color:var(--color-cream-line)]">
             {invitations.map((i) => (
@@ -216,16 +215,18 @@ export function StaffPanel({ canManage, members, invitations }: StaffPanelProps)
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{i.email}</div>
                   <div className="text-muted-foreground truncate text-xs">
-                    Expires {new Date(i.expiresAt).toLocaleDateString()}
+                    {t('pending.expires', {
+                      date: new Date(i.expiresAt).toLocaleDateString(locale),
+                    })}
                   </div>
                 </div>
-                <span className="text-muted-foreground text-xs capitalize">{i.role}</span>
+                <span className="text-muted-foreground text-xs">{t(`roles.${i.role}`)}</span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => revokeInvitation(i.id)}
                   disabled={pendingId === i.id}
-                  aria-label={`Revoke invitation for ${i.email}`}
+                  aria-label={t('pending.revokeAria', { email: i.email })}
                 >
                   {pendingId === i.id ? (
                     <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />

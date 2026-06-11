@@ -29,8 +29,15 @@ export interface SubscriptionAccessState {
   } | null
 }
 
-export const SUBSCRIPTION_LAPSED_MESSAGE =
-  'Your subscription has ended. Public menus stay live, but dashboard editing is paused until you pick a plan.'
+// Gate reasons are i18n keys (relative to the `Api` messages namespace) plus
+// ICU params. API routes translate them with getTranslations('Api') so the
+// message follows the signed-in user's locale.
+export interface GateReason {
+  key: string
+  params?: Record<string, string | number>
+}
+
+export const SUBSCRIPTION_LAPSED_REASON: GateReason = { key: 'gates.subscriptionLapsed' }
 
 export const getSubscriptionAccessState = cache(async function getSubscriptionAccessState(
   organizationId: string,
@@ -88,14 +95,14 @@ export const getSubscriptionAccessState = cache(async function getSubscriptionAc
 
 export async function canWriteDashboard(organizationId: string): Promise<{
   allowed: boolean
-  reason?: string
+  reason?: GateReason
   gate?: 'subscription-lapsed'
 }> {
   const access = await getSubscriptionAccessState(organizationId)
   if (!access.isLapsed) return { allowed: true }
   return {
     allowed: false,
-    reason: SUBSCRIPTION_LAPSED_MESSAGE,
+    reason: SUBSCRIPTION_LAPSED_REASON,
     gate: 'subscription-lapsed',
   }
 }
@@ -105,7 +112,7 @@ export async function canWriteRestaurant(
   restaurantId: string | null,
 ): Promise<{
   allowed: boolean
-  reason?: string
+  reason?: GateReason
   gate?: 'subscription-lapsed' | 'restaurant-read-only'
 }> {
   const dashboardGate = await canWriteDashboard(organizationId)
@@ -119,8 +126,7 @@ export async function canWriteRestaurant(
   if (!restaurant?.readOnly) return { allowed: true }
   return {
     allowed: false,
-    reason:
-      'This restaurant is read-only under your current plan. Activate it from Billing or upgrade your plan.',
+    reason: { key: 'gates.restaurantReadOnly' },
     gate: 'restaurant-read-only',
   }
 }

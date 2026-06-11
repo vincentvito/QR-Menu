@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { cookies, headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import { getTrialState } from '@/lib/plans/billing-state'
 import { getSubscriptionAccessState } from '@/lib/plans/subscription-access'
@@ -7,13 +8,18 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/s
 import { DashboardSidebar } from '@/components/dashboard/DashboardSidebar'
 import { ImpersonationBanner } from '@/components/dashboard/ImpersonationBanner'
 import { ReadOnlyBanner } from '@/components/dashboard/ReadOnlyBanner'
+import { SetupModeBanner } from '@/components/dashboard/SetupModeBanner'
 import { SubscriptionLapsedBanner } from '@/components/dashboard/SubscriptionLapsedBanner'
 import { TrialBanner } from '@/components/dashboard/TrialBanner'
 import { RouteViewTransition } from '@/components/navigation/RouteViewTransition'
 
-export const metadata: Metadata = {
-  title: 'Dashboard',
-  robots: { index: false, follow: false },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('Dashboard')
+
+  return {
+    title: t('metadataTitle'),
+    robots: { index: false, follow: false },
+  }
 }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -40,6 +46,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
     routes: ['/dashboard/menus/new'],
     prefixes: ['/dashboard/menus/'],
   })
+  const isSetupMode =
+    !trial &&
+    !subscriptionAccess.isLapsed &&
+    !subscriptionAccess.isComped &&
+    !subscriptionAccess.hasSubscriptionHistory
 
   return (
     <>
@@ -76,6 +87,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
             />
           ) : trial ? (
             <TrialBanner trialEnd={trial.trialEnd} planName={trial.planName} />
+          ) : isSetupMode && pathname !== '/dashboard/billing' ? (
+            <SetupModeBanner />
           ) : null}
           {restaurant.readOnly && !subscriptionAccess.isLapsed && !hideReadOnlyBanner ? (
             <ReadOnlyBanner restaurantName={restaurant.name} />

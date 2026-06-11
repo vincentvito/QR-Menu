@@ -1,7 +1,9 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Download, Loader2, Trash2 } from 'lucide-react'
 import type QRCodeStylingType from 'qr-code-styling'
 import { toast } from 'sonner'
@@ -38,20 +40,16 @@ import { SEASONAL_OVERLAYS, DEFAULT_SEASONAL_OVERLAY_ID } from '@/lib/menus/seas
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const QR_DOT_STYLES: { value: QRDotStyle; label: string }[] = [
-  { value: 'square', label: 'Square' },
-  { value: 'rounded', label: 'Rounded' },
-  { value: 'dots', label: 'Dots' },
-  { value: 'classy', label: 'Classy' },
-  { value: 'classy-rounded', label: 'Classy rounded' },
-  { value: 'extra-rounded', label: 'Extra rounded' },
+const QR_DOT_STYLES: QRDotStyle[] = [
+  'square',
+  'rounded',
+  'dots',
+  'classy',
+  'classy-rounded',
+  'extra-rounded',
 ]
 
-const QR_CORNER_STYLES: { value: QRCornerStyle; label: string }[] = [
-  { value: 'square', label: 'Square' },
-  { value: 'dot', label: 'Dot' },
-  { value: 'extra-rounded', label: 'Extra rounded' },
-]
+const QR_CORNER_STYLES: QRCornerStyle[] = ['square', 'dot', 'extra-rounded']
 
 const VALID_CENTER_TYPES: QRCenterType[] = ['none', 'logo', 'text']
 function normalizeCenterType(value: string): QRCenterType {
@@ -127,6 +125,7 @@ interface SettingsDraft {
 
 interface SettingsFormProps {
   canEdit: boolean
+  canPublish: boolean
   initial: {
     name: string
     description: string
@@ -232,11 +231,13 @@ function createDraftFromInitial(initial: SettingsFormProps['initial']): Settings
 
 export function SettingsForm({
   canEdit,
+  canPublish,
   initial,
   previewMenu,
   templatePreviewMockupUrl,
   templatePreviewData,
 }: SettingsFormProps) {
+  const t = useTranslations('Settings')
   const router = useRouter()
   const qrRef = useRef<QRCodeStylingType | null>(null)
   const wifiQrRef = useRef<QRCodeStylingType | null>(null)
@@ -262,15 +263,15 @@ export function SettingsForm({
     return fields.some((field) => draft[field] !== savedDraft[field])
   }
 
-  async function saveFields(fields: readonly (keyof SettingsDraft)[], label: string) {
+  async function saveFields(fields: readonly (keyof SettingsDraft)[], section: string) {
     if (!draft.name.trim()) {
-      toast.error('Restaurant name is required')
+      toast.error(t('errors.nameRequired'))
       return
     }
 
     const payload = Object.fromEntries(fields.map((field) => [field, draft[field]]))
 
-    setSavingSection(label)
+    setSavingSection(section)
     try {
       const res = await fetch('/api/organizations', {
         method: 'PATCH',
@@ -279,14 +280,14 @@ export function SettingsForm({
       })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error ?? 'Could not save')
+        toast.error(data.error ?? t('errors.saveFailed'))
         return
       }
       setSavedDraft((current) => ({ ...current, ...payload }))
-      toast.success(`${label} saved`)
+      toast.success(t('toast.sectionSaved', { section: t(`sections.${section}`) }))
       router.refresh()
     } catch {
-      toast.error('Network error â€” please try again')
+      toast.error(t('errors.network'))
     } finally {
       setSavingSection(null)
     }
@@ -304,7 +305,7 @@ export function SettingsForm({
   async function save(e: React.FormEvent) {
     e.preventDefault()
     if (!draft.name.trim()) {
-      toast.error('Restaurant name is required')
+      toast.error(t('errors.nameRequired'))
       return
     }
     setSubmitting(true)
@@ -316,14 +317,14 @@ export function SettingsForm({
       })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error ?? 'Could not save')
+        toast.error(data.error ?? t('errors.saveFailed'))
         return
       }
       setSavedDraft(draft)
-      toast.success('Saved')
+      toast.success(t('toast.saved'))
       router.refresh()
     } catch {
-      toast.error('Network error — please try again')
+      toast.error(t('errors.network'))
     } finally {
       setSubmitting(false)
     }
@@ -331,7 +332,7 @@ export function SettingsForm({
 
   async function deleteRestaurant() {
     if (!canDeleteRestaurant) {
-      toast.error('Type confirm to delete this restaurant')
+      toast.error(t('errors.confirmDelete'))
       return
     }
 
@@ -344,15 +345,15 @@ export function SettingsForm({
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        toast.error(data.error ?? 'Could not delete restaurant')
+        toast.error(data.error ?? t('errors.deleteFailed'))
         return
       }
-      toast.success(`${savedDraft.name} deleted`)
+      toast.success(t('toast.deleted', { name: savedDraft.name }))
       setDeleteConfirmation('')
       router.push('/dashboard/settings')
       router.refresh()
     } catch {
-      toast.error('Network error - please try again')
+      toast.error(t('errors.network'))
     } finally {
       setDeletingRestaurant(false)
     }
@@ -362,15 +363,15 @@ export function SettingsForm({
     <form onSubmit={save} className="border-cream-line bg-card space-y-6 rounded-2xl border p-8">
       {!canEdit && (
         <p className="bg-background/50 border-cream-line text-muted-foreground rounded-lg border p-3 text-xs">
-          Only owners and admins can edit these settings.
+          {t('readOnly')}
         </p>
       )}
 
       <section id="settings-restaurant" className="scroll-mt-24 space-y-4">
-        <SectionHeading>Restaurant</SectionHeading>
+        <SectionHeading>{t('sections.restaurant')}</SectionHeading>
 
         <div className="space-y-2">
-          <Label htmlFor="org-name">Restaurant name *</Label>
+          <Label htmlFor="org-name">{t('restaurant.name')}</Label>
           <Input
             id="org-name"
             value={draft.name}
@@ -382,7 +383,7 @@ export function SettingsForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="org-description">Short description</Label>
+          <Label htmlFor="org-description">{t('restaurant.descriptionLabel')}</Label>
           <Textarea
             id="org-description"
             value={draft.description}
@@ -394,7 +395,7 @@ export function SettingsForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="org-source-url">Website</Label>
+          <Label htmlFor="org-source-url">{t('restaurant.website')}</Label>
           <Input
             id="org-source-url"
             type="url"
@@ -406,7 +407,7 @@ export function SettingsForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="org-currency">Currency</Label>
+          <Label htmlFor="org-currency">{t('restaurant.currency')}</Label>
           <Select
             value={draft.currency}
             onValueChange={(v) => setDraft({ ...draft, currency: v as CurrencyCode })}
@@ -423,17 +424,16 @@ export function SettingsForm({
               ))}
             </SelectContent>
           </Select>
-          <p className="text-muted-foreground text-xs">
-            Applies to every menu on this restaurant, including existing ones.
-          </p>
+          <p className="text-muted-foreground text-xs">{t('restaurant.currencyHint')}</p>
         </div>
 
         <SectionFooter>
           <SectionSaveButton
+            t={t}
             dirty={restaurantDirty}
             disabled={disabled}
-            saving={savingSection === 'Restaurant'}
-            onClick={() => saveFields(RESTAURANT_FIELDS, 'Restaurant')}
+            saving={savingSection === 'restaurant'}
+            onClick={() => saveFields(RESTAURANT_FIELDS, 'restaurant')}
           />
         </SectionFooter>
       </section>
@@ -442,14 +442,11 @@ export function SettingsForm({
         id="settings-links"
         className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
       >
-        <SectionHeading>Links</SectionHeading>
-        <p className="text-muted-foreground text-xs">
-          Shown in your menu&apos;s footer so guests can review you or follow along. Leave any field
-          blank to hide it.
-        </p>
+        <SectionHeading>{t('sections.links')}</SectionHeading>
+        <p className="text-muted-foreground text-xs">{t('links.description')}</p>
 
         <div className="space-y-2">
-          <Label htmlFor="google-review-url">Google review link</Label>
+          <Label htmlFor="google-review-url">{t('links.googleReview')}</Label>
           <Input
             id="google-review-url"
             value={draft.googleReviewUrl}
@@ -458,45 +455,43 @@ export function SettingsForm({
             placeholder="g.page/r/…/review"
             autoComplete="off"
           />
-          <p className="text-muted-foreground text-xs">
-            Paste the review link from your Google Business profile. No need to type
-            &ldquo;https://&rdquo; — we&apos;ll add it.
-          </p>
+          <p className="text-muted-foreground text-xs">{t('links.googleReviewHint')}</p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
           <HandleField
             id="instagram-url"
-            label="Instagram"
+            label={t('links.instagram')}
             value={draft.instagramUrl}
             onChange={(v) => setDraft({ ...draft, instagramUrl: v })}
             disabled={disabled}
-            placeholder="yourhandle"
+            placeholder={t('links.handlePlaceholder')}
           />
           <HandleField
             id="tiktok-url"
-            label="TikTok"
+            label={t('links.tiktok')}
             value={draft.tiktokUrl}
             onChange={(v) => setDraft({ ...draft, tiktokUrl: v })}
             disabled={disabled}
-            placeholder="yourhandle"
+            placeholder={t('links.handlePlaceholder')}
           />
           <HandleField
             id="facebook-url"
-            label="Facebook"
+            label={t('links.facebook')}
             value={draft.facebookUrl}
             onChange={(v) => setDraft({ ...draft, facebookUrl: v })}
             disabled={disabled}
-            placeholder="yourpage"
+            placeholder={t('links.pagePlaceholder')}
           />
         </div>
 
         <SectionFooter>
           <SectionSaveButton
+            t={t}
             dirty={linksDirty}
             disabled={disabled}
-            saving={savingSection === 'Links'}
-            onClick={() => saveFields(LINKS_FIELDS, 'Links')}
+            saving={savingSection === 'links'}
+            onClick={() => saveFields(LINKS_FIELDS, 'links')}
           />
         </SectionFooter>
       </section>
@@ -505,13 +500,11 @@ export function SettingsForm({
         id="settings-menu-design"
         className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
       >
-        <SectionHeading>Menu design</SectionHeading>
+        <SectionHeading>{t('sections.menuDesign')}</SectionHeading>
         <p className="text-muted-foreground text-xs">
-          Pick how your public menu is laid out. The preview shows{' '}
-          {templatePreviewData
-            ? 'your actual menu'
-            : 'a sample menu (create a real one to preview it here)'}
-          , and updates live as you switch templates or change brand colors.
+          {t('menuDesign.description', {
+            preview: templatePreviewData ? t('menuDesign.actualMenu') : t('menuDesign.sampleMenu'),
+          })}
         </p>
 
         <div className="grid gap-6 md:grid-cols-[1fr_320px]">
@@ -519,9 +512,13 @@ export function SettingsForm({
           <div className="order-2 space-y-6 md:order-1">
             <div>
               <div className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-[0.14em] uppercase">
-                Layout
+                {t('menuDesign.layout')}
               </div>
-              <div role="radiogroup" aria-label="Menu template" className="space-y-2.5">
+              <div
+                role="radiogroup"
+                aria-label={t('menuDesign.templateAria')}
+                className="space-y-2.5"
+              >
                 {TEMPLATES.map((tpl) => {
                   const selected = draft.templateId === tpl.id
                   return (
@@ -566,11 +563,11 @@ export function SettingsForm({
 
             <div>
               <div className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-[0.14em] uppercase">
-                Theme
+                {t('menuDesign.theme')}
               </div>
               <div
                 role="radiogroup"
-                aria-label="Menu theme"
+                aria-label={t('menuDesign.themeAria')}
                 className="grid grid-cols-1 gap-2 sm:grid-cols-2"
               >
                 {THEMES.map((th) => {
@@ -633,11 +630,11 @@ export function SettingsForm({
 
             <div>
               <div className="text-muted-foreground mb-2 text-[11px] font-semibold tracking-[0.14em] uppercase">
-                Seasonal touch
+                {t('menuDesign.seasonalTouch')}
               </div>
               <div
                 role="radiogroup"
-                aria-label="Seasonal overlay"
+                aria-label={t('menuDesign.seasonalAria')}
                 className="grid grid-cols-2 gap-2 sm:grid-cols-4"
               >
                 {SEASONAL_OVERLAYS.map((ov) => {
@@ -673,47 +670,45 @@ export function SettingsForm({
               <div className="space-y-2">
                 <ColorField
                   id="header-text-color"
-                  label="Restaurant name color"
+                  label={t('menuDesign.restaurantNameColor')}
                   value={draft.headerTextColor}
                   disabled={disabled}
                   onChange={(v) => setDraft((prev) => ({ ...prev, headerTextColor: v }))}
                 />
                 <p className="text-muted-foreground text-[11px] leading-snug">
-                  Overrides the restaurant name color on the public menu. Leave empty to use the
-                  theme default.
+                  {t('menuDesign.restaurantNameColorHint')}
                 </p>
               </div>
 
               <div className="space-y-2">
                 <ColorField
                   id="menu-name-color"
-                  label="Menu name color"
+                  label={t('menuDesign.menuNameColor')}
                   value={draft.menuNameColor}
                   disabled={disabled}
                   onChange={(v) => setDraft((prev) => ({ ...prev, menuNameColor: v }))}
                 />
                 <p className="text-muted-foreground text-[11px] leading-snug">
-                  Overrides the small menu label color, so it stays readable on any header image or
-                  theme.
+                  {t('menuDesign.menuNameColorHint')}
                 </p>
               </div>
             </div>
 
             <div className="space-y-3">
               <div className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-                Header visibility
+                {t('menuDesign.headerVisibility')}
               </div>
               <div className="grid gap-2 sm:grid-cols-2">
                 <VisibilityToggle
-                  label="Logo"
-                  description="Show your restaurant logo in the public menu header."
+                  label={t('menuDesign.visibility.logo')}
+                  description={t('menuDesign.visibility.logoDescription')}
                   checked={draft.showLogo}
                   disabled={disabled}
                   onChange={(checked) => setDraft((prev) => ({ ...prev, showLogo: checked }))}
                 />
                 <VisibilityToggle
-                  label="Restaurant name"
-                  description="Show the restaurant name at the top of the public menu."
+                  label={t('menuDesign.visibility.restaurantName')}
+                  description={t('menuDesign.visibility.restaurantNameDescription')}
                   checked={draft.showRestaurantName}
                   disabled={disabled}
                   onChange={(checked) =>
@@ -721,22 +716,22 @@ export function SettingsForm({
                   }
                 />
                 <VisibilityToggle
-                  label="Menu name"
-                  description="Show labels like Dinner, Brunch, or Cocktails above the restaurant name."
+                  label={t('menuDesign.visibility.menuName')}
+                  description={t('menuDesign.visibility.menuNameDescription')}
                   checked={draft.showMenuName}
                   disabled={disabled}
                   onChange={(checked) => setDraft((prev) => ({ ...prev, showMenuName: checked }))}
                 />
                 <VisibilityToggle
-                  label="Dish count"
-                  description="Show the total number of dishes under the header names."
+                  label={t('menuDesign.visibility.dishCount')}
+                  description={t('menuDesign.visibility.dishCountDescription')}
                   checked={draft.showDishCount}
                   disabled={disabled}
                   onChange={(checked) => setDraft((prev) => ({ ...prev, showDishCount: checked }))}
                 />
                 <VisibilityToggle
-                  label="Category icons"
-                  description="Show each category's icon inside the public menu filter pills."
+                  label={t('menuDesign.visibility.categoryIcons')}
+                  description={t('menuDesign.visibility.categoryIconsDescription')}
                   checked={draft.showCategoryIcons}
                   disabled={disabled}
                   onChange={(checked) =>
@@ -779,10 +774,11 @@ export function SettingsForm({
 
         <SectionFooter>
           <SectionSaveButton
+            t={t}
             dirty={menuDesignDirty}
             disabled={disabled}
-            saving={savingSection === 'Menu design'}
-            onClick={() => saveFields(MENU_DESIGN_FIELDS, 'Menu design')}
+            saving={savingSection === 'menuDesign'}
+            onClick={() => saveFields(MENU_DESIGN_FIELDS, 'menuDesign')}
           />
         </SectionFooter>
       </section>
@@ -791,10 +787,10 @@ export function SettingsForm({
         id="settings-brand"
         className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
       >
-        <SectionHeading>Brand</SectionHeading>
+        <SectionHeading>{t('sections.brand')}</SectionHeading>
 
         <div className="space-y-2">
-          <Label>Logo</Label>
+          <Label>{t('brand.logo')}</Label>
           <LogoUploader
             value={draft.logo}
             onChange={(url) => setDraft({ ...draft, logo: url })}
@@ -803,29 +799,26 @@ export function SettingsForm({
         </div>
 
         <div className="space-y-2">
-          <Label>Header image</Label>
+          <Label>{t('brand.headerImage')}</Label>
           <HeaderImageUploader
             value={draft.headerImage}
             onChange={(url) => setDraft({ ...draft, headerImage: url })}
             disabled={disabled}
           />
-          <p className="text-muted-foreground text-xs">
-            Shown behind your restaurant name at the top of the menu. Wide landscape photos read
-            best (roughly 1600×900). Leave empty to keep the brand-color gradient.
-          </p>
+          <p className="text-muted-foreground text-xs">{t('brand.headerImageHint')}</p>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <ColorField
             id="primary-color"
-            label="Main color"
+            label={t('brand.mainColor')}
             value={draft.primaryColor}
             disabled={disabled}
             onChange={(v) => setDraft((prev) => ({ ...prev, primaryColor: v }))}
           />
           <ColorField
             id="secondary-color"
-            label="Accent color"
+            label={t('brand.accentColor')}
             value={draft.secondaryColor}
             disabled={disabled}
             onChange={(v) => setDraft((prev) => ({ ...prev, secondaryColor: v }))}
@@ -834,10 +827,11 @@ export function SettingsForm({
 
         <SectionFooter>
           <SectionSaveButton
+            t={t}
             dirty={brandDirty}
             disabled={disabled}
-            saving={savingSection === 'Brand'}
-            onClick={() => saveFields(BRAND_FIELDS, 'Brand')}
+            saving={savingSection === 'brand'}
+            onClick={() => saveFields(BRAND_FIELDS, 'brand')}
           />
         </SectionFooter>
       </section>
@@ -846,16 +840,14 @@ export function SettingsForm({
         id="settings-qr"
         className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
       >
-        <SectionHeading>QR code style</SectionHeading>
-        <p className="text-muted-foreground text-xs">
-          Applies to every menu QR you generate. Preview uses your most recent menu.
-        </p>
+        <SectionHeading>{t('sections.qr')}</SectionHeading>
+        <p className="text-muted-foreground text-xs">{t('qr.description')}</p>
 
         <div className="grid gap-5 sm:grid-cols-[1fr_220px] sm:items-start">
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="qr-dot-style">Dot style</Label>
+                <Label htmlFor="qr-dot-style">{t('qr.dotStyle')}</Label>
                 <Select
                   value={draft.qrDotStyle}
                   onValueChange={(v) => setDraft({ ...draft, qrDotStyle: v as QRDotStyle })}
@@ -865,9 +857,9 @@ export function SettingsForm({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {QR_DOT_STYLES.map((s) => (
-                      <SelectItem key={s.value} value={s.value}>
-                        {s.label}
+                    {QR_DOT_STYLES.map((v) => (
+                      <SelectItem key={v} value={v}>
+                        {t(`qr.dotStyles.${v}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -875,7 +867,7 @@ export function SettingsForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="qr-corner-style">Corner style</Label>
+                <Label htmlFor="qr-corner-style">{t('qr.cornerStyle')}</Label>
                 <Select
                   value={draft.qrCornerStyle}
                   onValueChange={(v) => setDraft({ ...draft, qrCornerStyle: v as QRCornerStyle })}
@@ -885,9 +877,9 @@ export function SettingsForm({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {QR_CORNER_STYLES.map((s) => (
-                      <SelectItem key={s.value} value={s.value}>
-                        {s.label}
+                    {QR_CORNER_STYLES.map((v) => (
+                      <SelectItem key={v} value={v}>
+                        {t(`qr.cornerStyles.${v}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -898,14 +890,14 @@ export function SettingsForm({
             <div className="grid grid-cols-2 gap-4">
               <ColorField
                 id="qr-fg"
-                label="Foreground"
+                label={t('qr.foreground')}
                 value={draft.qrForegroundColor}
                 disabled={disabled}
                 onChange={(v) => setDraft((prev) => ({ ...prev, qrForegroundColor: v }))}
               />
               <ColorField
                 id="qr-bg"
-                label="Background"
+                label={t('qr.background')}
                 value={draft.qrBackgroundColor}
                 disabled={disabled}
                 onChange={(v) => setDraft((prev) => ({ ...prev, qrBackgroundColor: v }))}
@@ -938,11 +930,12 @@ export function SettingsForm({
                     style={{ background: draft.secondaryColor || 'transparent' }}
                   />
                 </span>
-                Use my brand colors
+                {t('qr.useBrandColors')}
               </button>
             )}
 
             <CenterPicker
+              t={t}
               idPrefix="qr"
               centerType={draft.qrCenterType}
               centerText={draft.qrCenterText}
@@ -974,47 +967,59 @@ export function SettingsForm({
             {previewMenu.name ? (
               <>
                 <p className="text-muted-foreground truncate text-[11px]">{previewMenu.name}</p>
-                <div className="flex w-full gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => {
-                      if (!qrRef.current) return
-                      downloadQR(qrRef.current, `${toFileStem(previewMenu.name!)}-qr`, 'svg')
-                    }}
-                  >
-                    <Download className="size-3.5" aria-hidden="true" />
-                    SVG
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => {
-                      if (!qrRef.current) return
-                      downloadQR(qrRef.current, `${toFileStem(previewMenu.name!)}-qr`, 'png')
-                    }}
-                  >
-                    <Download className="size-3.5" aria-hidden="true" />
-                    PNG
-                  </Button>
-                </div>
+                {canPublish ? (
+                  <div className="flex w-full gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {
+                        if (!qrRef.current) return
+                        downloadQR(qrRef.current, `${toFileStem(previewMenu.name!)}-qr`, 'svg')
+                      }}
+                    >
+                      <Download className="size-3.5" aria-hidden="true" />
+                      SVG
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => {
+                        if (!qrRef.current) return
+                        downloadQR(qrRef.current, `${toFileStem(previewMenu.name!)}-qr`, 'png')
+                      }}
+                    >
+                      <Download className="size-3.5" aria-hidden="true" />
+                      PNG
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="bg-muted/45 w-full rounded-lg px-3 py-2 text-center">
+                    <p className="text-muted-foreground text-[11px] leading-5">
+                      {t('qr.startTrialToDownload')}
+                    </p>
+                    <Button asChild size="sm" className="mt-2 h-8">
+                      <Link href="/dashboard/billing#plan-picker">{t('qr.startTrial')}</Link>
+                    </Button>
+                  </div>
+                )}
               </>
             ) : (
-              <p className="text-muted-foreground text-[11px]">Create a menu to download a QR.</p>
+              <p className="text-muted-foreground text-[11px]">{t('qr.createMenuToDownload')}</p>
             )}
           </div>
         </div>
 
         <SectionFooter>
           <SectionSaveButton
+            t={t}
             dirty={qrDirty}
             disabled={disabled}
-            saving={savingSection === 'QR code style'}
-            onClick={() => saveFields(QR_FIELDS, 'QR code style')}
+            saving={savingSection === 'qr'}
+            onClick={() => saveFields(QR_FIELDS, 'qr')}
           />
         </SectionFooter>
       </section>
@@ -1023,30 +1028,26 @@ export function SettingsForm({
         id="settings-wifi"
         className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
       >
-        <SectionHeading>WiFi</SectionHeading>
-        <p className="text-muted-foreground text-xs">
-          Guests see a &quot;Show WiFi&quot; button on your menu to reveal and copy the password.
-          Download the WiFi QR below for table cards — modern phones auto-join when their camera
-          scans it.
-        </p>
+        <SectionHeading>{t('sections.wifi')}</SectionHeading>
+        <p className="text-muted-foreground text-xs">{t('wifi.description')}</p>
 
         <div className="grid gap-4 sm:grid-cols-[1fr_220px] sm:items-start">
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="wifi-ssid">Network name (SSID)</Label>
+              <Label htmlFor="wifi-ssid">{t('wifi.ssid')}</Label>
               <Input
                 id="wifi-ssid"
                 value={draft.wifiSsid}
                 onChange={(e) => setDraft({ ...draft, wifiSsid: e.target.value })}
                 disabled={disabled}
                 maxLength={32}
-                placeholder="e.g. Bistro-Guest"
+                placeholder={t('wifi.ssidPlaceholder')}
                 autoComplete="off"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="wifi-encryption">Security</Label>
+              <Label htmlFor="wifi-encryption">{t('wifi.security')}</Label>
               <Select
                 value={draft.wifiEncryption}
                 onValueChange={(v) => setDraft({ ...draft, wifiEncryption: v as WifiEncryption })}
@@ -1058,14 +1059,14 @@ export function SettingsForm({
                 <SelectContent>
                   <SelectItem value="WPA">WPA / WPA2 / WPA3</SelectItem>
                   <SelectItem value="WEP">WEP</SelectItem>
-                  <SelectItem value="nopass">None (open network)</SelectItem>
+                  <SelectItem value="nopass">{t('wifi.openNetwork')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             {draft.wifiEncryption !== 'nopass' && (
               <div className="space-y-2">
-                <Label htmlFor="wifi-password">Password</Label>
+                <Label htmlFor="wifi-password">{t('wifi.password')}</Label>
                 <Input
                   id="wifi-password"
                   type="text"
@@ -1077,13 +1078,12 @@ export function SettingsForm({
                   spellCheck={false}
                   className="font-mono"
                 />
-                <p className="text-muted-foreground text-xs">
-                  Stored so you can update it; shown on your menu only when a guest taps to reveal.
-                </p>
+                <p className="text-muted-foreground text-xs">{t('wifi.passwordHint')}</p>
               </div>
             )}
 
             <CenterPicker
+              t={t}
               idPrefix="wifi"
               centerType={draft.wifiCenterType}
               centerText={draft.wifiCenterText}
@@ -1156,7 +1156,7 @@ export function SettingsForm({
               </>
             ) : (
               <p className="text-muted-foreground px-2 py-8 text-center text-[11px]">
-                Enter a network name to generate a WiFi QR.
+                {t('wifi.enterNetwork')}
               </p>
             )}
           </div>
@@ -1164,10 +1164,11 @@ export function SettingsForm({
 
         <SectionFooter>
           <SectionSaveButton
+            t={t}
             dirty={wifiDirty}
             disabled={disabled}
-            saving={savingSection === 'WiFi'}
-            onClick={() => saveFields(WIFI_FIELDS, 'WiFi')}
+            saving={savingSection === 'wifi'}
+            onClick={() => saveFields(WIFI_FIELDS, 'wifi')}
           />
         </SectionFooter>
       </section>
@@ -1175,15 +1176,12 @@ export function SettingsForm({
       {canEdit ? (
         <section className="border-destructive/25 bg-destructive/5 scroll-mt-24 space-y-4 rounded-2xl border p-5">
           <div className="space-y-1">
-            <SectionHeading>Danger zone</SectionHeading>
-            <p className="text-muted-foreground text-xs leading-5">
-              Permanently delete this restaurant and all of its menus, staff access, settings, and
-              analytics. This cannot be undone.
-            </p>
+            <SectionHeading>{t('danger.title')}</SectionHeading>
+            <p className="text-muted-foreground text-xs leading-5">{t('danger.description')}</p>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="delete-restaurant-confirmation">Type confirm to delete</Label>
+            <Label htmlFor="delete-restaurant-confirmation">{t('danger.confirmLabel')}</Label>
             <Input
               id="delete-restaurant-confirmation"
               value={deleteConfirmation}
@@ -1205,7 +1203,7 @@ export function SettingsForm({
               ) : (
                 <Trash2 className="size-3.5" aria-hidden="true" />
               )}
-              Delete restaurant
+              {t('danger.deleteButton')}
             </Button>
           </div>
         </section>
@@ -1216,10 +1214,10 @@ export function SettingsForm({
           {submitting ? (
             <>
               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-              <span>Saving…</span>
+              <span>{t('actions.saving')}</span>
             </>
           ) : (
-            <span>{anyDirty ? 'Save all unsaved changes' : 'All changes saved'}</span>
+            <span>{anyDirty ? t('actions.saveAll') : t('actions.allSaved')}</span>
           )}
         </Button>
       )}
@@ -1228,11 +1226,13 @@ export function SettingsForm({
 }
 
 function SectionSaveButton({
+  t,
   dirty,
   disabled,
   saving,
   onClick,
 }: {
+  t: ReturnType<typeof useTranslations<'Settings'>>
   dirty: boolean
   disabled: boolean
   saving: boolean
@@ -1250,12 +1250,12 @@ function SectionSaveButton({
       {saving ? (
         <>
           <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-          <span>Saving…</span>
+          <span>{t('actions.saving')}</span>
         </>
       ) : dirty ? (
-        <span>Save section</span>
+        <span>{t('actions.saveSection')}</span>
       ) : (
-        <span>Saved</span>
+        <span>{t('actions.saved')}</span>
       )}
     </Button>
   )
@@ -1397,6 +1397,7 @@ function ColorField({
 }
 
 function CenterPicker({
+  t,
   idPrefix,
   centerType,
   centerText,
@@ -1405,6 +1406,7 @@ function CenterPicker({
   onCenterTypeChange,
   onCenterTextChange,
 }: {
+  t: ReturnType<typeof useTranslations<'Settings'>>
   idPrefix: string
   centerType: QRCenterType
   centerText: string
@@ -1415,13 +1417,13 @@ function CenterPicker({
 }) {
   return (
     <div className="space-y-2">
-      <Label>Center content</Label>
-      <div role="radiogroup" aria-label="Center content" className="grid grid-cols-3 gap-2">
+      <Label>{t('center.label')}</Label>
+      <div role="radiogroup" aria-label={t('center.label')} className="grid grid-cols-3 gap-2">
         {(
           [
-            { value: 'none', label: 'None' },
-            { value: 'logo', label: 'Logo' },
-            { value: 'text', label: 'Text' },
+            { value: 'none', label: t('center.none') },
+            { value: 'logo', label: t('center.logo') },
+            { value: 'text', label: t('center.text') },
           ] as const
         ).map((opt) => {
           const selected = centerType === opt.value
@@ -1441,7 +1443,7 @@ function CenterPicker({
                   : 'border-cream-line hover:border-foreground/40',
                 'disabled:cursor-not-allowed disabled:opacity-50',
               )}
-              title={logoMissing ? 'Add a restaurant logo first' : undefined}
+              title={logoMissing ? t('center.logoMissing') : undefined}
             >
               {opt.label}
             </button>
@@ -1456,12 +1458,10 @@ function CenterPicker({
             onChange={(e) => onCenterTextChange(e.target.value.slice(0, 4))}
             disabled={disabled}
             maxLength={4}
-            placeholder="e.g. JR"
+            placeholder={t('center.textPlaceholder')}
             className="mt-2"
           />
-          <p className="text-muted-foreground text-xs">
-            Up to 4 characters so the QR stays scannable.
-          </p>
+          <p className="text-muted-foreground text-xs">{t('center.textHint')}</p>
         </>
       )}
     </div>
@@ -1481,6 +1481,8 @@ function VisibilityToggle({
   disabled: boolean
   onChange: (checked: boolean) => void
 }) {
+  const t = useTranslations('Settings')
+
   return (
     <button
       type="button"
@@ -1489,18 +1491,20 @@ function VisibilityToggle({
       disabled={disabled}
       onClick={() => onChange(!checked)}
       className={cn(
-        'flex h-full min-h-[128px] flex-col rounded-[14px] border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+        'grid h-full min-h-[128px] grid-rows-[auto_1fr_auto] gap-2 rounded-[14px] border p-3 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50',
         checked
           ? 'border-pop bg-pop/5 ring-pop/20 ring-2'
           : 'border-cream-line hover:border-foreground/30 hover:bg-card/60',
       )}
     >
-      <span className="flex items-center justify-between gap-3">
-        <span className="text-foreground text-sm font-semibold tracking-tight">{label}</span>
+      <span className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
+        <span className="text-foreground min-w-0 text-sm leading-snug font-semibold tracking-tight">
+          {label}
+        </span>
         <span
           aria-hidden="true"
           className={cn(
-            'relative h-6 w-11 rounded-full border transition-colors',
+            'relative mt-0.5 h-6 w-11 shrink-0 rounded-full border transition-colors',
             checked ? 'border-pop bg-pop' : 'border-cream-line bg-background',
           )}
         >
@@ -1512,9 +1516,9 @@ function VisibilityToggle({
           />
         </span>
       </span>
-      <span className="text-muted-foreground mt-1 block text-xs leading-snug">{description}</span>
-      <span className="text-muted-foreground mt-auto block pt-3 text-[11px] font-semibold">
-        {checked ? 'Visible' : 'Hidden'}
+      <span className="text-muted-foreground block text-xs leading-snug">{description}</span>
+      <span className="text-muted-foreground block text-[11px] font-semibold">
+        {checked ? t('visibility.visible') : t('visibility.hidden')}
       </span>
     </button>
   )

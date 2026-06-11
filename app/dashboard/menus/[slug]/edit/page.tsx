@@ -5,6 +5,7 @@ import { ArrowLeft, ExternalLink } from 'lucide-react'
 import prisma from '@/lib/prisma'
 import { getMenuBySlug } from '@/lib/menus/get'
 import { parseCategoryIconOverrides } from '@/lib/menus/category-icon'
+import { parseVariants } from '@/lib/menus/variants'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import { getBillingState } from '@/lib/plans/billing-state'
 import { Button } from '@/components/ui/button'
@@ -50,6 +51,7 @@ export default async function EditMenuPage({ params }: PageProps) {
   // don't edit a menu belonging to a different venue than the one their
   // dashboard is currently scoped to.
   if (menu.restaurantId !== restaurant.id) redirect('/dashboard/menus')
+  const isPublished = billingState.subscriptionAccess.hasActiveSubscription
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
@@ -63,8 +65,12 @@ export default async function EditMenuPage({ params }: PageProps) {
           {t('back')}
         </TransitionLink>
         <Button asChild variant="outline" size="sm">
-          <Link href={`/m/${slug}`} target="_blank" rel="noopener">
-            {t('viewPublic')}
+          <Link
+            href={isPublished ? `/m/${slug}` : `/m/${slug}?preview=1`}
+            target="_blank"
+            rel="noopener"
+          >
+            {isPublished ? t('viewPublic') : t('preview')}
             <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>
         </Button>
@@ -77,10 +83,11 @@ export default async function EditMenuPage({ params }: PageProps) {
           name: menu.name,
           currency: menu.restaurant?.currency ?? 'USD',
           aiCreditsTotal: billingState.credits.total,
+          canBuyCredits: billingState.subscriptionAccess.hasActiveSubscription,
           readOnlyReason: billingState.subscriptionAccess.isLapsed
-            ? 'Your subscription has ended. Public menus stay live, but editing is paused until you pick a plan.'
+            ? t('readOnlyReasons.subscriptionEnded')
             : menu.restaurant?.readOnly
-              ? 'This restaurant is read-only under your current plan.'
+              ? t('readOnlyReasons.restaurantReadOnly')
               : null,
           categoryIcons: parseCategoryIconOverrides(menu.categoryIcons),
           items: menu.items.map((i) => ({
@@ -89,6 +96,7 @@ export default async function EditMenuPage({ params }: PageProps) {
             name: i.name,
             description: i.description,
             price: i.price,
+            variants: parseVariants(i.variants),
             tags: i.tags,
             badges: i.badges,
             specialUntil: i.specialUntil ? i.specialUntil.toISOString() : null,

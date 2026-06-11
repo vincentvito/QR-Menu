@@ -57,7 +57,7 @@ export function PublicMenuBody({
     const order: string[] = []
     const groupsMap = new Map<string, TemplateItem[]>()
     for (const item of filtered) {
-      const key = item.category || 'Other'
+      const key = item.category || t('otherCategory')
       if (!groupsMap.has(key)) {
         groupsMap.set(key, [])
         order.push(key)
@@ -78,7 +78,7 @@ export function PublicMenuBody({
       totalMatches: filtered.length,
       hasQuery: q.length > 0,
     }
-  }, [items, specialIds, query, categoryIcons])
+  }, [items, specialIds, query, categoryIcons, t])
 
   const navIcons = useMemo(() => {
     if (!showCategoryIcons) return null
@@ -132,7 +132,7 @@ export function PublicMenuBody({
 
           {showCategoryNav && (
             <nav
-              aria-label="Menu categories"
+              aria-label={t('categoryNavLabel')}
               className="no-scrollbar scroll-fade-x mx-auto flex max-w-[720px] gap-2 overflow-x-auto px-5 py-3 sm:px-8"
             >
               {visibleSpecials.length > 0 && (
@@ -141,7 +141,7 @@ export function PublicMenuBody({
                   className="bg-pop text-pop-foreground hover:bg-pop-deep inline-flex shrink-0 items-center gap-1.5 rounded-full px-4 py-2 text-[13px] font-semibold whitespace-nowrap transition-colors"
                 >
                   {showCategoryIcons ? <Sparkles className="size-3.5" aria-hidden="true" /> : null}
-                  Today&apos;s Specials
+                  {t('todaysSpecials')}
                 </a>
               )}
               {visibleGroups.map((g) => {
@@ -186,7 +186,7 @@ export function PublicMenuBody({
         )}
         {hasQuery && !nothingToShow && (
           <p className="text-muted-foreground py-6 text-center text-xs">
-            {totalMatches === 1 ? '1 match' : `${totalMatches} matches`}
+            {t('matchesCount', { count: totalMatches })}
           </p>
         )}
       </main>

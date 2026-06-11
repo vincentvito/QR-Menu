@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Loader2, Sparkles, Wand2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -21,19 +22,20 @@ interface AIPhotoPanelProps {
   onApply: (url: string) => void
   onClose: () => void
   onCreditSpent?: () => void
+  canBuyCredits: boolean
   // Admins get an editable prompt textarea for diagnostics; everyone else
   // sees a read-only preview. Server enforces this independently.
   isAdmin?: boolean
 }
 
 type Status = 'setup' | 'processing' | 'review'
-type ApiErrorBody = { error?: string; gate?: string }
+type ApiErrorBody = { error?: string; gate?: 'credits' | 'setup' | string }
 
-async function buyCreditPack() {
+async function buyCreditPack(fallbackError: string) {
   const res = await fetch('/api/billing/credit-pack/checkout', { method: 'POST' })
   const body = (await res.json().catch(() => ({}))) as { url?: string; error?: string }
   if (!res.ok || !body.url) {
-    toast.error(body.error ?? 'Could not start checkout')
+    toast.error(body.error ?? fallbackError)
     return
   }
   window.location.href = body.url
@@ -51,8 +53,10 @@ export function AIPhotoPanel({
   onApply,
   onClose,
   onCreditSpent,
+  canBuyCredits,
   isAdmin = false,
 }: AIPhotoPanelProps) {
+  const t = useTranslations('Editor.aiPhoto')
   const [status, setStatus] = useState<Status>('setup')
   const [extraContext, setExtraContext] = useState('')
   const [resultUrl, setResultUrl] = useState<string | null>(null)
@@ -124,16 +128,31 @@ export function AIPhotoPanel({
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
         const body = data as ApiErrorBody
-        const message = body.error ?? 'AI request failed'
-        console.error(`[${mode}-image]`, res.status, body)
-        if (body.gate === 'credits') {
+        const message =
+          body.error ??
+          (body.gate === 'setup' || (res.status === 402 && !canBuyCredits)
+            ? t('errors.startTrialRequired')
+            : t('errors.requestFailed'))
+        if (res.status >= 500) {
+          console.error(`[${mode}-image]`, res.status, body)
+        }
+        if (body.gate === 'credits' && canBuyCredits) {
           toast.error(message, {
             action: {
-              label: 'Buy credits',
+              label: t('buyCredits'),
               onClick: () => {
-                buyCreditPack().catch((err) => {
-                  toast.error(err instanceof Error ? err.message : 'Checkout failed')
+                buyCreditPack(t('errors.checkoutStartFailed')).catch((err) => {
+                  toast.error(err instanceof Error ? err.message : t('errors.checkoutFailed'))
                 })
+              },
+            },
+          })
+        } else if (body.gate === 'setup' || (res.status === 402 && !canBuyCredits)) {
+          toast.error(message, {
+            action: {
+              label: t('startTrial'),
+              onClick: () => {
+                window.location.href = '/dashboard/billing#plan-picker'
               },
             },
           })
@@ -148,10 +167,10 @@ export function AIPhotoPanel({
       setStatus('review')
       // Owner may have scrolled away during the 15–30s wait. Nudge them
       // back with a toast — action scrolls the dish row into view.
-      const label = dish.name.trim() || 'your dish'
-      toast.success(`Photo ready for "${label}"`, {
+      const label = dish.name.trim() || t('fallbackDish')
+      toast.success(t('toast.ready', { dish: label }), {
         action: {
-          label: 'View',
+          label: t('view'),
           onClick: () => {
             document
               .getElementById(`dish-row-${itemId}`)
@@ -165,7 +184,7 @@ export function AIPhotoPanel({
         setStatus('setup')
         return
       }
-      toast.error('Network error — please try again')
+      toast.error(t('errors.network'))
       setStatus('setup')
     } finally {
       abortRef.current = null
@@ -176,7 +195,7 @@ export function AIPhotoPanel({
     abortRef.current?.abort()
   }
 
-  const primaryLabel = mode === 'enhance' ? 'Enhance photo (1 credit)' : 'Generate photo (1 credit)'
+  const primaryLabel = mode === 'enhance' ? t('enhanceCta') : t('generateCta')
   const primaryIcon = mode === 'enhance' ? Wand2 : Sparkles
 
   return (
@@ -184,18 +203,16 @@ export function AIPhotoPanel({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3 className="text-foreground text-sm font-semibold tracking-tight">
-            {mode === 'enhance' ? 'Enhance photo with AI' : 'Generate a photo with AI'}
+            {mode === 'enhance' ? t('enhanceTitle') : t('generateTitle')}
           </h3>
           <p className="text-muted-foreground mt-0.5 text-xs">
-            {mode === 'enhance'
-              ? 'Keeps the exact dish — improves lighting, background, and framing.'
-              : "Uses this dish's name and description. Review before saving."}
+            {mode === 'enhance' ? t('enhanceDescription') : t('generateDescription')}
           </p>
         </div>
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close"
+          aria-label={t('close')}
           disabled={status === 'processing'}
           className="text-muted-foreground hover:text-foreground rounded-full p-1 transition-colors disabled:opacity-30"
         >
@@ -210,17 +227,13 @@ export function AIPhotoPanel({
               htmlFor={`ai-context-${itemId}`}
               className="text-muted-foreground text-[11px] font-semibold tracking-[0.08em] uppercase"
             >
-              Extra direction (optional)
+              {t('extraDirection')}
             </label>
             <Textarea
               id={`ai-context-${itemId}`}
               value={extraContext}
               onChange={(e) => setExtraContext(e.target.value.slice(0, 400))}
-              placeholder={
-                mode === 'enhance'
-                  ? 'e.g. make the sauce glossier · darker plate · more steam'
-                  : 'e.g. served on a slate plate · garnished with microgreens · overhead on light oak'
-              }
+              placeholder={mode === 'enhance' ? t('enhancePlaceholder') : t('generatePlaceholder')}
               rows={2}
               className="text-sm"
             />
@@ -231,12 +244,12 @@ export function AIPhotoPanel({
               <summary className="text-muted-foreground hover:text-foreground cursor-pointer list-none text-[11px] font-semibold tracking-[0.08em] uppercase select-none">
                 <span className="inline-flex items-center gap-1">
                   <span className="transition-transform group-open:rotate-90">▸</span>
-                  Master prompt{isOverridden ? ' (edited)' : ''}
+                  {t('masterPrompt')}
+                  {isOverridden ? ` ${t('editedSuffix')}` : ''}
                 </span>
               </summary>
               <p className="text-muted-foreground/80 mt-2 text-[11px] italic">
-                Admin only. Edits override the composed prompt for the next
-                generation on this dish — useful for diagnosing weird outputs.
+                {t('adminPromptHint')}
               </p>
               <textarea
                 value={displayedPrompt}
@@ -252,7 +265,7 @@ export function AIPhotoPanel({
                     size="sm"
                     onClick={() => setOverridePrompt(null)}
                   >
-                    Reset to default
+                    {t('resetPrompt')}
                   </Button>
                 </div>
               ) : null}
@@ -261,7 +274,7 @@ export function AIPhotoPanel({
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={onClose}>
-              Cancel
+              {t('cancel')}
             </Button>
             <Button type="button" size="sm" onClick={run}>
               {(() => {
@@ -279,14 +292,14 @@ export function AIPhotoPanel({
           <div className="border-cream-line bg-background flex flex-col items-center gap-3 rounded-[12px] border border-dashed px-4 py-8">
             <Loader2 className="text-muted-foreground size-6 animate-spin" aria-hidden="true" />
             <p className="text-muted-foreground text-center text-xs">
-              Working on it — usually 15 to 30 seconds.
+              {t('processingLine1')}
               <br />
-              You can keep editing other dishes while this runs.
+              {t('processingLine2')}
             </p>
           </div>
           <div className="flex justify-end">
             <Button type="button" variant="ghost" size="sm" onClick={cancel}>
-              Cancel
+              {t('cancel')}
             </Button>
           </div>
         </div>
@@ -301,17 +314,17 @@ export function AIPhotoPanel({
             )}
           >
             {mode === 'enhance' && currentImageUrl ? (
-              <PreviewTile label="Original" src={currentImageUrl} />
+              <PreviewTile label={t('original')} src={currentImageUrl} />
             ) : null}
             <PreviewTile
-              label={mode === 'enhance' ? 'Enhanced' : 'Generated'}
+              label={mode === 'enhance' ? t('enhanced') : t('generated')}
               src={resultUrl}
               highlight
             />
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={onClose}>
-              {mode === 'enhance' ? 'Keep original' : 'Discard'}
+              {mode === 'enhance' ? t('keepOriginal') : t('discard')}
             </Button>
             <Button
               type="button"
@@ -325,7 +338,7 @@ export function AIPhotoPanel({
                 setStatus('setup')
               }}
             >
-              Try again
+              {t('tryAgain')}
             </Button>
             <Button
               type="button"
@@ -338,7 +351,7 @@ export function AIPhotoPanel({
                 onClose()
               }}
             >
-              {mode === 'enhance' ? 'Keep enhanced' : 'Use this photo'}
+              {mode === 'enhance' ? t('keepEnhanced') : t('useThisPhoto')}
             </Button>
           </div>
         </div>

@@ -13,6 +13,7 @@ import { isThemeId } from '@/lib/menus/themes'
 import { isSeasonalOverlayId } from '@/lib/menus/seasonal-overlays'
 import { deleteByUrl } from '@/lib/storage/r2'
 import { canWriteDashboard } from '@/lib/plans/subscription-access'
+import { getTranslations } from 'next-intl/server'
 
 export const runtime = 'nodejs'
 
@@ -61,10 +62,11 @@ function cleanUrl(value: unknown): string | null | undefined {
 }
 
 export async function PATCH(request: Request) {
+  const t = await getTranslations('Api')
   const requestHeaders = await headers()
   const session = await auth.api.getSession({ headers: requestHeaders })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
 
   const org = await getActiveOrganization({
@@ -72,7 +74,7 @@ export async function PATCH(request: Request) {
     activeOrganizationId: session.session.activeOrganizationId,
   })
   if (!org) {
-    return NextResponse.json({ error: 'No active restaurant' }, { status: 409 })
+    return NextResponse.json({ error: t('common.noActiveRestaurant') }, { status: 409 })
   }
 
   const membership = await prisma.member.findFirst({
@@ -80,18 +82,26 @@ export async function PATCH(request: Request) {
     select: { role: true },
   })
   if (!membership || !['owner', 'admin'].includes(membership.role)) {
-    return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+    return NextResponse.json({ error: t('common.notAllowed') }, { status: 403 })
   }
   const writeGate = await canWriteDashboard(org.id)
   if (!writeGate.allowed) {
-    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
+    return NextResponse.json(
+      {
+        error: writeGate.reason
+          ? t(writeGate.reason.key, writeGate.reason.params)
+          : t('gates.subscriptionLapsed'),
+        gate: writeGate.gate,
+      },
+      { status: 402 },
+    )
   }
 
   let body: Record<string, unknown>
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
 
   const VALID_DOT_STYLES = new Set([
@@ -114,10 +124,10 @@ export async function PATCH(request: Request) {
   if ('name' in body) {
     const cleaned = cleanString(body.name, MAX_NAME)
     if (cleaned === undefined) {
-      return NextResponse.json({ error: 'Invalid name' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidName') }, { status: 400 })
     }
     if (cleaned === null) {
-      return NextResponse.json({ error: 'Name can\u2019t be empty' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.nameEmpty') }, { status: 400 })
     }
     orgUpdates.name = cleaned
     // Mirror to restaurant too — the settings form is titled "restaurant
@@ -128,7 +138,7 @@ export async function PATCH(request: Request) {
   if ('logo' in body) {
     const cleaned = cleanUrl(body.logo)
     if (cleaned === undefined) {
-      return NextResponse.json({ error: 'Invalid logo URL' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidLogoUrl') }, { status: 400 })
     }
     // Restaurant is the source of truth for logos. `organization.logo` is
     // vestigial (still in the schema, not yet dropped) and no longer
@@ -140,7 +150,7 @@ export async function PATCH(request: Request) {
   if ('description' in body) {
     const cleaned = cleanString(body.description, MAX_DESCRIPTION)
     if (cleaned === undefined) {
-      return NextResponse.json({ error: 'Invalid description' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidDescription') }, { status: 400 })
     }
     restaurantUpdates.description = cleaned
   }
@@ -148,7 +158,7 @@ export async function PATCH(request: Request) {
   if ('headerImage' in body) {
     const cleaned = cleanUrl(body.headerImage)
     if (cleaned === undefined) {
-      return NextResponse.json({ error: 'Invalid header image URL' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidHeaderImageUrl') }, { status: 400 })
     }
     restaurantUpdates.headerImage = cleaned
   }
@@ -156,7 +166,7 @@ export async function PATCH(request: Request) {
   if ('sourceUrl' in body) {
     const cleaned = cleanUrl(body.sourceUrl)
     if (cleaned === undefined) {
-      return NextResponse.json({ error: 'Invalid website URL' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidWebsiteUrl') }, { status: 400 })
     }
     restaurantUpdates.sourceUrl = cleaned
   }
@@ -164,7 +174,7 @@ export async function PATCH(request: Request) {
   if ('primaryColor' in body) {
     const cleaned = cleanHex(body.primaryColor)
     if (cleaned === undefined) {
-      return NextResponse.json({ error: 'Invalid primary color' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidPrimaryColor') }, { status: 400 })
     }
     restaurantUpdates.primaryColor = cleaned
   }
@@ -172,7 +182,7 @@ export async function PATCH(request: Request) {
   if ('secondaryColor' in body) {
     const cleaned = cleanHex(body.secondaryColor)
     if (cleaned === undefined) {
-      return NextResponse.json({ error: 'Invalid secondary color' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidSecondaryColor') }, { status: 400 })
     }
     restaurantUpdates.secondaryColor = cleaned
   }
@@ -180,7 +190,7 @@ export async function PATCH(request: Request) {
   if ('headerTextColor' in body) {
     const cleaned = cleanHex(body.headerTextColor)
     if (cleaned === undefined) {
-      return NextResponse.json({ error: 'Invalid header text color' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidHeaderTextColor') }, { status: 400 })
     }
     restaurantUpdates.headerTextColor = cleaned
   }
@@ -188,63 +198,63 @@ export async function PATCH(request: Request) {
   if ('menuNameColor' in body) {
     const cleaned = cleanHex(body.menuNameColor)
     if (cleaned === undefined) {
-      return NextResponse.json({ error: 'Invalid menu name color' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidMenuNameColor') }, { status: 400 })
     }
     restaurantUpdates.menuNameColor = cleaned
   }
 
   if ('showLogo' in body) {
     if (typeof body.showLogo !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid logo visibility' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidLogoVisibility') }, { status: 400 })
     }
     restaurantUpdates.showLogo = body.showLogo
   }
 
   if ('showRestaurantName' in body) {
     if (typeof body.showRestaurantName !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid restaurant name visibility' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidRestaurantNameVisibility') }, { status: 400 })
     }
     restaurantUpdates.showRestaurantName = body.showRestaurantName
   }
 
   if ('showMenuName' in body) {
     if (typeof body.showMenuName !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid menu name visibility' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidMenuNameVisibility') }, { status: 400 })
     }
     restaurantUpdates.showMenuName = body.showMenuName
   }
 
   if ('showDishCount' in body) {
     if (typeof body.showDishCount !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid dish count visibility' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidDishCountVisibility') }, { status: 400 })
     }
     restaurantUpdates.showDishCount = body.showDishCount
   }
 
   if ('showCategoryIcons' in body) {
     if (typeof body.showCategoryIcons !== 'boolean') {
-      return NextResponse.json({ error: 'Invalid category icon visibility' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidCategoryIconVisibility') }, { status: 400 })
     }
     restaurantUpdates.showCategoryIcons = body.showCategoryIcons
   }
 
   if ('currency' in body) {
     if (typeof body.currency !== 'string' || !isSupportedCurrency(body.currency)) {
-      return NextResponse.json({ error: 'Unsupported currency' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.unsupportedCurrency') }, { status: 400 })
     }
     restaurantUpdates.currency = body.currency
   }
 
   if ('qrDotStyle' in body) {
     if (typeof body.qrDotStyle !== 'string' || !VALID_DOT_STYLES.has(body.qrDotStyle)) {
-      return NextResponse.json({ error: 'Invalid QR dot style' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidQrDotStyle') }, { status: 400 })
     }
     restaurantUpdates.qrDotStyle = body.qrDotStyle
   }
 
   if ('qrCornerStyle' in body) {
     if (typeof body.qrCornerStyle !== 'string' || !VALID_CORNER_STYLES.has(body.qrCornerStyle)) {
-      return NextResponse.json({ error: 'Invalid QR corner style' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidQrCornerStyle') }, { status: 400 })
     }
     restaurantUpdates.qrCornerStyle = body.qrCornerStyle
   }
@@ -252,7 +262,7 @@ export async function PATCH(request: Request) {
   if ('qrForegroundColor' in body) {
     const cleaned = cleanHex(body.qrForegroundColor)
     if (cleaned === undefined || cleaned === null) {
-      return NextResponse.json({ error: 'Invalid QR foreground color' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidQrForegroundColor') }, { status: 400 })
     }
     restaurantUpdates.qrForegroundColor = cleaned
   }
@@ -260,14 +270,14 @@ export async function PATCH(request: Request) {
   if ('qrBackgroundColor' in body) {
     const cleaned = cleanHex(body.qrBackgroundColor)
     if (cleaned === undefined || cleaned === null) {
-      return NextResponse.json({ error: 'Invalid QR background color' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidQrBackgroundColor') }, { status: 400 })
     }
     restaurantUpdates.qrBackgroundColor = cleaned
   }
 
   if ('qrCenterType' in body) {
     if (typeof body.qrCenterType !== 'string' || !VALID_CENTER_TYPES.has(body.qrCenterType)) {
-      return NextResponse.json({ error: 'Invalid QR center type' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidQrCenterType') }, { status: 400 })
     }
     restaurantUpdates.qrCenterType = body.qrCenterType
   }
@@ -278,14 +288,14 @@ export async function PATCH(request: Request) {
     } else if (typeof body.qrCenterText === 'string') {
       restaurantUpdates.qrCenterText = body.qrCenterText.trim().slice(0, 4)
     } else {
-      return NextResponse.json({ error: 'Invalid QR center text' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidQrCenterText') }, { status: 400 })
     }
   }
 
   if ('wifiSsid' in body) {
     const cleaned = cleanString(body.wifiSsid, MAX_WIFI_SSID)
     if (cleaned === undefined) {
-      return NextResponse.json({ error: 'Invalid WiFi SSID' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidWifiSsid') }, { status: 400 })
     }
     restaurantUpdates.wifiSsid = cleaned
   }
@@ -293,21 +303,21 @@ export async function PATCH(request: Request) {
   if ('wifiPassword' in body) {
     const cleaned = cleanString(body.wifiPassword, MAX_WIFI_PASSWORD)
     if (cleaned === undefined) {
-      return NextResponse.json({ error: 'Invalid WiFi password' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidWifiPassword') }, { status: 400 })
     }
     restaurantUpdates.wifiPassword = cleaned
   }
 
   if ('wifiEncryption' in body) {
     if (!isWifiEncryption(body.wifiEncryption)) {
-      return NextResponse.json({ error: 'Invalid WiFi encryption' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidWifiEncryption') }, { status: 400 })
     }
     restaurantUpdates.wifiEncryption = body.wifiEncryption
   }
 
   if ('wifiCenterType' in body) {
     if (typeof body.wifiCenterType !== 'string' || !VALID_CENTER_TYPES.has(body.wifiCenterType)) {
-      return NextResponse.json({ error: 'Invalid WiFi QR center type' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidWifiQrCenterType') }, { status: 400 })
     }
     restaurantUpdates.wifiCenterType = body.wifiCenterType
   }
@@ -318,14 +328,14 @@ export async function PATCH(request: Request) {
     } else if (typeof body.wifiCenterText === 'string') {
       restaurantUpdates.wifiCenterText = body.wifiCenterText.trim().slice(0, 4)
     } else {
-      return NextResponse.json({ error: 'Invalid WiFi QR center text' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidWifiQrCenterText') }, { status: 400 })
     }
   }
 
   if ('googleReviewUrl' in body) {
     const cleaned = cleanUrl(body.googleReviewUrl)
     if (cleaned === undefined) {
-      return NextResponse.json({ error: 'Invalid Google review URL' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidGoogleReviewUrl') }, { status: 400 })
     }
     restaurantUpdates.googleReviewUrl = cleaned
   }
@@ -337,7 +347,7 @@ export async function PATCH(request: Request) {
     if (key in body) {
       const raw = body[key]
       if (raw !== null && typeof raw !== 'string') {
-        return NextResponse.json({ error: `Invalid ${key}` }, { status: 400 })
+        return NextResponse.json({ error: t('organizations.invalidSocialHandle') }, { status: 400 })
       }
       restaurantUpdates[key] = raw ? normalizeSocialHandle(raw).slice(0, 64) : null
     }
@@ -345,27 +355,27 @@ export async function PATCH(request: Request) {
 
   if ('templateId' in body) {
     if (!isTemplateId(body.templateId)) {
-      return NextResponse.json({ error: 'Invalid template' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidTemplate') }, { status: 400 })
     }
     restaurantUpdates.templateId = body.templateId
   }
 
   if ('theme' in body) {
     if (!isThemeId(body.theme)) {
-      return NextResponse.json({ error: 'Invalid theme' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidTheme') }, { status: 400 })
     }
     restaurantUpdates.theme = body.theme
   }
 
   if ('seasonalOverlay' in body) {
     if (!isSeasonalOverlayId(body.seasonalOverlay)) {
-      return NextResponse.json({ error: 'Invalid seasonal overlay' }, { status: 400 })
+      return NextResponse.json({ error: t('organizations.invalidSeasonalOverlay') }, { status: 400 })
     }
     restaurantUpdates.seasonalOverlay = body.seasonalOverlay
   }
 
   if (Object.keys(orgUpdates).length === 0 && Object.keys(restaurantUpdates).length === 0) {
-    return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
+    return NextResponse.json({ error: t('common.noFieldsToUpdate') }, { status: 400 })
   }
 
   // Resolve the active restaurant up front — we need its id for both the
@@ -377,8 +387,7 @@ export async function PATCH(request: Request) {
   if (activeRestaurant?.readOnly) {
     return NextResponse.json(
       {
-        error:
-          'This restaurant is read-only under your current plan. Activate it from Billing or upgrade your plan.',
+        error: t('gates.restaurantReadOnly'),
         gate: 'restaurant-read-only',
       },
       { status: 402 },
@@ -400,7 +409,7 @@ export async function PATCH(request: Request) {
       headers: requestHeaders,
     })
     if (!updated) {
-      return NextResponse.json({ error: 'Update failed' }, { status: 500 })
+      return NextResponse.json({ error: t('common.updateFailed') }, { status: 500 })
     }
   }
 

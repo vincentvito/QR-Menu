@@ -17,6 +17,7 @@ bookmarks are the only pain point, and that's a rounding error for a
 ≤5-restaurant-per-account product.
 
 **Revisit when:**
+
 - Customer explicitly asks for bookmarkable per-restaurant pages.
 - Dashboard grows analytics/reports pages where the URL "which restaurant
   am I looking at?" becomes genuinely ambiguous.
@@ -37,6 +38,7 @@ fields that were clearly per-venue. Logo is a minor fourth column that
 can ride in its own migration without blocking anything.
 
 **Revisit when:**
+
 - Any user creates a second restaurant under one account.
 - Before shipping the "+ Add restaurant" flow publicly (phase 3 territory).
 

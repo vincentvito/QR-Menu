@@ -19,6 +19,7 @@ const ACCEPTED_MIME = [
   'application/pdf',
 ]
 const ACCEPT_ATTR = ACCEPTED_MIME.join(',')
+const MAX_FILES = 3
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`
@@ -30,7 +31,7 @@ export function NewMenuForm() {
   const t = useTranslations('Dashboard.newMenu')
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   const [url, setUrl] = useState('')
   const [text, setText] = useState('')
   const [name, setName] = useState('')
@@ -40,28 +41,49 @@ export function NewMenuForm() {
   const [isPending, startTransition] = useTransition()
   const busy = isLoading || isPending
 
-  function validateAndSetFile(f: File | null) {
-    if (!f) {
-      setFile(null)
+  function sameFile(a: File, b: File) {
+    return a.name === b.name && a.size === b.size && a.lastModified === b.lastModified
+  }
+
+  function validateAndSetFiles(nextFiles: File[]) {
+    // Re-selecting the same file must fire onChange again, and a drop with no
+    // files (e.g. dragged text) must not wipe the current selection.
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    if (nextFiles.length === 0) return
+    const mergedFiles = [...files]
+    for (const file of nextFiles) {
+      if (!mergedFiles.some((existing) => sameFile(existing, file))) {
+        mergedFiles.push(file)
+      }
+    }
+    if (mergedFiles.length > MAX_FILES) {
+      setError(t('errors.tooManyFiles', { limit: MAX_FILES }))
       return
     }
-    if (!ACCEPTED_MIME.includes(f.type)) {
+    if (mergedFiles.some((file) => !ACCEPTED_MIME.includes(file.type))) {
       setError(t('errors.badType'))
       return
     }
     setError('')
-    setFile(f)
+    setFiles(mergedFiles)
   }
 
-  function clearFile() {
-    setFile(null)
+  function clearFiles() {
+    setFiles([])
+    setError('')
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  function removeFile(index: number) {
+    setFiles((current) => current.filter((_, i) => i !== index))
+    setError('')
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (busy) return
-    if (!file && !url.trim() && !text.trim()) {
+    if (files.length === 0 && !url.trim() && !text.trim()) {
       setError(t('errors.empty'))
       return
     }
@@ -69,7 +91,7 @@ export function NewMenuForm() {
     setIsLoading(true)
     try {
       const formData = new FormData()
-      if (file) formData.append('file', file)
+      for (const file of files) formData.append('file', file)
       if (url.trim()) formData.append('url', url.trim())
       if (text.trim()) formData.append('text', text.trim())
       if (name.trim()) formData.append('name', name.trim())
@@ -77,7 +99,7 @@ export function NewMenuForm() {
       const res = await fetch('/api/menus', { method: 'POST', body: formData })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        setError(data.error ?? 'Something went wrong')
+        setError(data.error ?? t('errors.generic'))
         setIsLoading(false)
         return
       }
@@ -88,12 +110,10 @@ export function NewMenuForm() {
         router.push(`/dashboard/menus/${data.slug}/edit`)
       })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Network error')
+      setError(err instanceof Error ? err.message : t('errors.network'))
       setIsLoading(false)
     }
   }
-
-  const FileIcon = file?.type === 'application/pdf' ? FileText : ImageIcon
 
   return (
     <div className="border-cream-line bg-card rounded-[24px] border p-6 sm:p-8">
@@ -112,46 +132,25 @@ export function NewMenuForm() {
         <div className="space-y-2">
           <Label htmlFor="menu-file">{t('fileLabel')}</Label>
 
-          {file ? (
-            <div className="border-cream-line bg-background flex items-center gap-3 rounded-[14px] border p-3">
-              <div className="bg-accent text-accent-foreground flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg">
-                <FileIcon className="h-5 w-5" aria-hidden="true" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium">{file.name}</div>
-                <div className="text-muted-foreground text-xs">{formatBytes(file.size)}</div>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                onClick={clearFile}
-                disabled={busy}
-                aria-label={t('fileClear')}
-              >
-                <X className="h-4 w-4" aria-hidden="true" />
-              </Button>
-            </div>
-          ) : (
-            <label
-              htmlFor="menu-file"
-              onDragOver={(e) => {
-                e.preventDefault()
-                setIsDragging(true)
-              }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={(e) => {
-                e.preventDefault()
-                setIsDragging(false)
-                const dropped = e.dataTransfer.files?.[0]
-                if (dropped) validateAndSetFile(dropped)
-              }}
-              className={`flex cursor-pointer items-center gap-3 rounded-[14px] border-2 border-dashed px-3 py-3 transition-colors ${
-                isDragging
-                  ? 'border-foreground bg-background'
-                  : 'border-cream-line bg-background/50 hover:border-foreground/40 hover:bg-background'
-              }`}
-            >
+          <label
+            htmlFor="menu-file"
+            onDragOver={(e) => {
+              e.preventDefault()
+              setIsDragging(true)
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault()
+              setIsDragging(false)
+              validateAndSetFiles(Array.from(e.dataTransfer.files ?? []))
+            }}
+            className={`block cursor-pointer rounded-[14px] border-2 border-dashed px-3 py-3 transition-colors ${
+              isDragging
+                ? 'border-foreground bg-background'
+                : 'border-cream-line bg-background/50 hover:border-foreground/40 hover:bg-background'
+            }`}
+          >
+            <div className="flex items-center gap-3">
               <div className="bg-card text-muted-foreground flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full">
                 <Upload className="h-4 w-4" aria-hidden="true" />
               </div>
@@ -159,17 +158,70 @@ export function NewMenuForm() {
                 <div className="text-sm font-medium">{t('fileDrop')}</div>
                 <div className="text-muted-foreground truncate text-[11px]">{t('fileHint')}</div>
               </div>
-            </label>
-          )}
+            </div>
+
+            {files.length > 0 ? (
+              <div className="mt-3 space-y-2">
+                {files.map((file, index) => {
+                  const FileIcon = file.type === 'application/pdf' ? FileText : ImageIcon
+
+                  return (
+                    <div
+                      key={`${file.name}-${file.size}-${file.lastModified}`}
+                      className="border-cream-line bg-card flex items-center gap-2 rounded-[10px] border px-2.5 py-2"
+                    >
+                      <FileIcon
+                        className="text-muted-foreground h-4 w-4 shrink-0"
+                        aria-hidden="true"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-xs font-medium">{file.name}</div>
+                        <div className="text-muted-foreground text-[11px]">
+                          {formatBytes(file.size)}
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          removeFile(index)
+                        }}
+                        disabled={busy}
+                        aria-label={t('fileClear')}
+                      >
+                        <X className="h-4 w-4" aria-hidden="true" />
+                      </Button>
+                    </div>
+                  )
+                })}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    clearFiles()
+                  }}
+                  disabled={busy}
+                  className="h-8 px-2"
+                >
+                  {t('filesClear')}
+                </Button>
+              </div>
+            ) : null}
+          </label>
 
           <input
             ref={fileInputRef}
             id="menu-file"
             type="file"
+            multiple
             accept={ACCEPT_ATTR}
             className="sr-only"
             disabled={busy}
-            onChange={(e) => validateAndSetFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => validateAndSetFiles(Array.from(e.target.files ?? []))}
           />
         </div>
 

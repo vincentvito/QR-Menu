@@ -1,10 +1,14 @@
 import { redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import prisma from '@/lib/prisma'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import { TeamPanel } from './TeamPanel'
 
 export default async function TeamPage() {
-  const { session, org, role, scope } = await getDashboardContext()
+  const [{ session, org, role, scope }, t] = await Promise.all([
+    getDashboardContext(),
+    getTranslations('Team'),
+  ])
   if (scope === 'restaurant') redirect('/dashboard/menus')
   const canManage = ['owner', 'admin'].includes(role)
 
@@ -25,8 +29,10 @@ export default async function TeamPage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Team</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Who can access {org.name}.</p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          {t('description', { organization: org.name })}
+        </p>
       </div>
 
       <TeamPanel

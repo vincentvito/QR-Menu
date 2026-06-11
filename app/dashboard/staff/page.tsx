@@ -1,9 +1,13 @@
+import { getTranslations } from 'next-intl/server'
 import prisma from '@/lib/prisma'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import { StaffPanel } from './StaffPanel'
 
 export default async function StaffPage() {
-  const { restaurant, role, scope } = await getDashboardContext()
+  const [{ restaurant, role, scope }, t] = await Promise.all([
+    getDashboardContext(),
+    getTranslations('Staff'),
+  ])
   const canManage = scope === 'org' && ['owner', 'admin'].includes(role)
 
   const [members, invitations] = await Promise.all([
@@ -32,11 +36,8 @@ export default async function StaffPage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Staff</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Invite managers and waiters who should be able to view and edit this restaurant&apos;s
-          menus.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+        <p className="text-muted-foreground mt-1 text-sm">{t('description')}</p>
       </div>
 
       <StaffPanel

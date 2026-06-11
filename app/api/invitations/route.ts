@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { getActiveOrganization } from '@/lib/organizations/get-active-org'
 import { canWriteDashboard } from '@/lib/plans/subscription-access'
+import { translatedApiError } from '@/lib/api/errors'
 
 export const runtime = 'nodejs'
 
@@ -11,10 +13,11 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const INVITABLE_ROLES = new Set(['admin', 'member'])
 
 export async function POST(request: Request) {
+  const t = await getTranslations('Api')
   const requestHeaders = await headers()
   const session = await auth.api.getSession({ headers: requestHeaders })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
 
   const org = await getActiveOrganization({
@@ -22,7 +25,7 @@ export async function POST(request: Request) {
     activeOrganizationId: session.session.activeOrganizationId,
   })
   if (!org) {
-    return NextResponse.json({ error: 'No active restaurant' }, { status: 409 })
+    return NextResponse.json({ error: t('common.noActiveRestaurant') }, { status: 409 })
   }
 
   const membership = await prisma.member.findFirst({
@@ -30,28 +33,36 @@ export async function POST(request: Request) {
     select: { role: true },
   })
   if (!membership || !['owner', 'admin'].includes(membership.role)) {
-    return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+    return NextResponse.json({ error: t('common.notAllowed') }, { status: 403 })
   }
   const writeGate = await canWriteDashboard(org.id)
   if (!writeGate.allowed) {
-    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
+    return NextResponse.json(
+      {
+        error: writeGate.reason
+          ? t(writeGate.reason.key, writeGate.reason.params)
+          : t('gates.subscriptionLapsed'),
+        gate: writeGate.gate,
+      },
+      { status: 402 },
+    )
   }
 
   let body: { email?: unknown; role?: unknown }
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
 
   const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
   if (!EMAIL_RE.test(email)) {
-    return NextResponse.json({ error: 'Invalid email' }, { status: 400 })
+    return NextResponse.json({ error: t('invitations.invalidEmail') }, { status: 400 })
   }
 
   const role = typeof body.role === 'string' ? body.role : 'member'
   if (!INVITABLE_ROLES.has(role)) {
-    return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+    return NextResponse.json({ error: t('invitations.invalidRole') }, { status: 400 })
   }
 
   try {
@@ -61,23 +72,24 @@ export async function POST(request: Request) {
     })
     return NextResponse.json({ id: invitation?.id, email, role })
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Invite failed'
+    const message = translatedApiError(t, err, 'invitations.inviteFailed')
     console.error('[api/invitations] create failed:', err)
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
 export async function DELETE(request: Request) {
+  const t = await getTranslations('Api')
   const requestHeaders = await headers()
   const session = await auth.api.getSession({ headers: requestHeaders })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
 
   const url = new URL(request.url)
   const invitationId = url.searchParams.get('id')
   if (!invitationId) {
-    return NextResponse.json({ error: 'id is required' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
 
   try {
@@ -87,7 +99,7 @@ export async function DELETE(request: Request) {
     })
     return new NextResponse(null, { status: 204 })
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Cancel failed'
+    const message = translatedApiError(t, err, 'invitations.cancelFailed')
     console.error('[api/invitations] cancel failed:', err)
     return NextResponse.json({ error: message }, { status: 500 })
   }

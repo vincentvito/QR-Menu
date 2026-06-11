@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 import {
   BarChart3,
   CreditCard,
@@ -25,6 +26,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { BrandMark } from '@/components/brand/BrandMark'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { signOut } from '@/lib/auth-client'
 import { formatDisplayName } from '@/lib/display-name'
 import { RestaurantSwitcher } from './RestaurantSwitcher'
@@ -33,15 +35,15 @@ import { RestaurantSwitcher } from './RestaurantSwitcher'
 // (managers/waiters). Server writes on those pages already block staff, but
 // the nav would otherwise leak links they'll only bounce off.
 const NAV = [
-  { href: '/dashboard/menus', label: 'Menus', icon: Utensils, orgOnly: false },
-  { href: '/dashboard/staff', label: 'Staff', icon: UserCheck, orgOnly: false },
-  { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3, orgOnly: true },
-  { href: '/dashboard/team', label: 'Team', icon: Users, orgOnly: true },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings, orgOnly: true },
-  { href: '/dashboard/billing', label: 'Billing', icon: CreditCard, orgOnly: true },
+  { href: '/dashboard/menus', labelKey: 'menus', icon: Utensils, orgOnly: false },
+  { href: '/dashboard/staff', labelKey: 'staff', icon: UserCheck, orgOnly: false },
+  { href: '/dashboard/analytics', labelKey: 'analytics', icon: BarChart3, orgOnly: true },
+  { href: '/dashboard/team', labelKey: 'team', icon: Users, orgOnly: true },
+  { href: '/dashboard/settings', labelKey: 'settings', icon: Settings, orgOnly: true },
+  { href: '/dashboard/billing', labelKey: 'billing', icon: CreditCard, orgOnly: true },
 ] as const
 
-const ADMIN_NAV = { href: '/admin', label: 'Admin', icon: Shield } as const
+const ADMIN_NAV = { href: '/admin', labelKey: 'admin', icon: Shield } as const
 
 interface DashboardSidebarProps {
   restaurant: { id: string; name: string; logo: string | null }
@@ -56,6 +58,8 @@ export function DashboardSidebar({
   viewer,
   scope,
 }: DashboardSidebarProps) {
+  const t = useTranslations('Dashboard.sidebar')
+  const locale = useLocale()
   const pathname = usePathname()
   const router = useRouter()
   const collapsedButtonClass = 'group-data-[collapsible=icon]:mx-auto'
@@ -78,7 +82,7 @@ export function DashboardSidebar({
     <Sidebar collapsible="icon" className="[view-transition-name:dashboard-sidebar]">
       <SidebarHeader>
         <div className="flex items-center gap-2 px-2 py-1 group-data-[collapsible=icon]:hidden">
-          <Link href="/" aria-label="Qtable home" className="shrink-0">
+          <Link href="/" aria-label={t('homeAria')} className="shrink-0">
             <BrandMark size="sm" />
           </Link>
         </div>
@@ -91,17 +95,18 @@ export function DashboardSidebar({
             <SidebarMenu>
               {NAV.filter((item) => scope === 'org' || !item.orgOnly).map((item) => {
                 const isActive = pathname.startsWith(item.href)
+                const label = t(`nav.${item.labelKey}`)
                 return (
                   <SidebarMenuItem key={item.href}>
                     <SidebarMenuButton
                       asChild
                       isActive={isActive}
-                      tooltip={item.label}
+                      tooltip={label}
                       className={collapsedButtonClass}
                     >
                       <Link href={item.href}>
                         <item.icon />
-                        <span>{item.label}</span>
+                        <span>{label}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -112,12 +117,12 @@ export function DashboardSidebar({
                   <SidebarMenuButton
                     asChild
                     isActive={pathname.startsWith(ADMIN_NAV.href)}
-                    tooltip={ADMIN_NAV.label}
+                    tooltip={t('nav.admin')}
                     className={collapsedButtonClass}
                   >
                     <Link href={ADMIN_NAV.href}>
                       <ADMIN_NAV.icon />
-                      <span>{ADMIN_NAV.label}</span>
+                      <span>{t('nav.admin')}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -129,6 +134,9 @@ export function DashboardSidebar({
 
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem className="px-2 pb-1 group-data-[collapsible=icon]:hidden">
+            <LanguageSwitcher currentLocale={locale} />
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
@@ -152,12 +160,12 @@ export function DashboardSidebar({
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              tooltip="Sign out"
+              tooltip={t('signOut')}
               onClick={handleSignOut}
               className={collapsedButtonClass}
             >
               <LogOut />
-              <span>Sign out</span>
+              <span>{t('signOut')}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

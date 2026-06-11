@@ -1,5 +1,6 @@
 import { cache } from 'react'
 import { headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
 import { betterAuth } from 'better-auth'
 import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { admin, emailOTP, organization } from 'better-auth/plugins'
@@ -203,7 +204,29 @@ export const auth = betterAuth({
       otpLength: 6,
       expiresIn: 300,
       async sendVerificationOTP({ email, otp, type }) {
-        const { subject, html } = otpEmailTemplate({ otp, type })
+        const t = await getTranslations('Email')
+        const { subject, html } = otpEmailTemplate({
+          otp,
+          type,
+          copy: {
+            tagline: t('common.tagline'),
+            subject: {
+              'sign-in': t('otp.subject.signIn'),
+              'email-verification': t('otp.subject.emailVerification'),
+              'forget-password': t('otp.subject.forgetPassword'),
+              'change-email': t('otp.subject.changeEmail'),
+            },
+            action: {
+              'sign-in': t('otp.action.signIn'),
+              'email-verification': t('otp.action.emailVerification'),
+              'forget-password': t('otp.action.forgetPassword'),
+              'change-email': t('otp.action.changeEmail'),
+            },
+            expires: t('otp.expires'),
+            ignore: t('otp.ignore'),
+            footer: t('common.footer'),
+          },
+        })
         await sendEmail({ to: email, subject, html })
       },
     }),
@@ -216,10 +239,22 @@ export const auth = betterAuth({
         const baseUrl = process.env.BETTER_AUTH_URL || 'http://localhost:3000'
         const acceptUrl = `${baseUrl}/accept-invite?invitationId=${invitation.id}`
         const inviterName = inviter.user.name?.trim() || inviter.user.email || 'A teammate'
+        const t = await getTranslations('Email')
         const { subject, html } = inviteEmailTemplate({
           inviterName,
           restaurantName: organization.name,
           acceptUrl,
+          copy: {
+            tagline: t('common.tagline'),
+            subject: ({ inviterName, restaurantName }) =>
+              t('orgInvite.subject', { inviterName, restaurantName }),
+            body: ({ inviterName, restaurantName }) =>
+              t('orgInvite.body', { inviterName, restaurantName }),
+            button: t('common.acceptInvitation'),
+            copyLink: t('common.copyLink'),
+            ignore: t('common.ignoreInvitation'),
+            footer: t('common.footer'),
+          },
         })
         await sendEmail({ to: email, subject, html })
       },

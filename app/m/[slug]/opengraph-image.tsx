@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og'
+import { getTranslations } from 'next-intl/server'
 import { getMenuBySlug } from '@/lib/menus/get'
 import { getTheme } from '@/lib/menus/themes'
 
@@ -19,7 +20,7 @@ interface Props {
 // generic Qtable card.
 export default async function MenuOpenGraphImage({ params }: Props) {
   const { slug } = await params
-  const menu = await getMenuBySlug(slug)
+  const [menu, t] = await Promise.all([getMenuBySlug(slug), getTranslations('MenuView')])
 
   // Fall back to the generic landing image when the slug is unknown.
   if (!menu) {
@@ -38,7 +39,7 @@ export default async function MenuOpenGraphImage({ params }: Props) {
           fontWeight: 700,
         }}
       >
-        Menu not found
+        {t('notFoundTitle')}
       </div>,
       { ...size },
     )
@@ -60,7 +61,7 @@ export default async function MenuOpenGraphImage({ params }: Props) {
           fontWeight: 700,
         }}
       >
-        Menu not found
+        {t('notFoundTitle')}
       </div>,
       { ...size },
     )
@@ -183,7 +184,7 @@ export default async function MenuOpenGraphImage({ params }: Props) {
               fontSize: 20,
             }}
           >
-            {itemCount} {itemCount === 1 ? 'dish' : 'dishes'}
+            {t('dishCount', { count: itemCount })}
           </span>
         </div>
         <div

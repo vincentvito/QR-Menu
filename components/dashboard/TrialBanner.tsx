@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
 import { Sparkles } from 'lucide-react'
 
 interface TrialBannerProps {
@@ -8,21 +9,15 @@ interface TrialBannerProps {
 
 // Top-of-dashboard bar shown only while the org is trialing. Urgent
 // styling kicks in under 3 days so nobody is surprised by an expiring
-// card charge. "Manage billing" goes to the billing page, where they
-// can cancel or upgrade before the first real charge.
-export function TrialBanner({ trialEnd, planName }: TrialBannerProps) {
+// card charge.
+export async function TrialBanner({ trialEnd, planName }: TrialBannerProps) {
+  const t = await getTranslations('Dashboard.banners.trial')
   const msRemaining = trialEnd.getTime() - Date.now()
-  // Floor to whole days — showing "0 days left" is clearer than "14h".
   const daysRemaining = Math.max(0, Math.ceil(msRemaining / (1000 * 60 * 60 * 24)))
   const urgent = daysRemaining < 3
 
   const prettyPlan = planName.charAt(0).toUpperCase() + planName.slice(1)
-  const label =
-    daysRemaining === 0
-      ? 'Your trial ends today'
-      : daysRemaining === 1
-        ? '1 day left in your trial'
-        : `${daysRemaining} days left in your trial`
+  const label = t('daysLeft', { count: daysRemaining })
 
   return (
     <div
@@ -35,13 +30,13 @@ export function TrialBanner({ trialEnd, planName }: TrialBannerProps) {
     >
       <Sparkles className="size-4 shrink-0" aria-hidden="true" />
       <span className="truncate">
-        {label} · <span className="font-medium">{prettyPlan}</span> plan
+        {label} · <span className="font-medium">{prettyPlan}</span> {t('planSuffix')}
       </span>
       <Link
         href="/dashboard/billing"
-        className="underline-offset-4 hover:underline shrink-0 text-xs font-medium"
+        className="shrink-0 text-xs font-medium underline-offset-4 hover:underline"
       >
-        Manage billing
+        {t('manageBilling')}
       </Link>
     </div>
   )

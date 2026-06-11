@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
@@ -14,10 +15,11 @@ export const runtime = 'nodejs'
 // won't let them be edited until the user either picks them again (after
 // freeing a slot) or upgrades the plan.
 export async function POST(request: Request) {
+  const t = await getTranslations('Api')
   const requestHeaders = await headers()
   const session = await auth.api.getSession({ headers: requestHeaders })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
 
   const org = await getActiveOrganization({
@@ -25,7 +27,7 @@ export async function POST(request: Request) {
     activeOrganizationId: session.session.activeOrganizationId,
   })
   if (!org) {
-    return NextResponse.json({ error: 'No active organization' }, { status: 409 })
+    return NextResponse.json({ error: t('common.noActiveOrganization') }, { status: 409 })
   }
 
   const member = await prisma.member.findFirst({
@@ -33,22 +35,30 @@ export async function POST(request: Request) {
     select: { role: true },
   })
   if (!member || !['owner', 'admin'].includes(member.role)) {
-    return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+    return NextResponse.json({ error: t('common.notAllowed') }, { status: 403 })
   }
   const writeGate = await canWriteDashboard(org.id)
   if (!writeGate.allowed) {
-    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
+    return NextResponse.json(
+      {
+        error: writeGate.reason
+          ? t(writeGate.reason.key, writeGate.reason.params)
+          : t('gates.subscriptionLapsed'),
+        gate: writeGate.gate,
+      },
+      { status: 402 },
+    )
   }
 
   let body: { activeIds?: unknown }
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
 
   if (!Array.isArray(body.activeIds) || !body.activeIds.every((id) => typeof id === 'string')) {
-    return NextResponse.json({ error: 'activeIds must be a string[]' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
   const activeIds = Array.from(new Set(body.activeIds as string[]))
 
@@ -80,12 +90,12 @@ export async function POST(request: Request) {
 
   const orgRestaurantIds = new Set(restaurants.map((r) => r.id))
   if (!activeIds.every((id) => orgRestaurantIds.has(id))) {
-    return NextResponse.json({ error: 'Unknown restaurant in activeIds' }, { status: 400 })
+    return NextResponse.json({ error: t('restaurants.unknownActiveRestaurant') }, { status: 400 })
   }
   if (cap !== null && activeIds.length > cap) {
     return NextResponse.json(
       {
-        error: `Your ${plan.name} plan only allows ${cap} active restaurant${cap === 1 ? '' : 's'}.`,
+        error: t('restaurants.activationCap', { plan: plan.name, limit: cap }),
       },
       { status: 409 },
     )

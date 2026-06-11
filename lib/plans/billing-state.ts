@@ -49,6 +49,7 @@ export interface BillingState {
     cancelAt: Date | null
   } | null
   subscriptionAccess: {
+    hasActiveSubscription: boolean
     isLapsed: boolean
     isComped: boolean
     hasSubscriptionHistory: boolean
@@ -130,6 +131,7 @@ export const getBillingState = cache(async function getBillingState(
     plan,
     subscription,
     subscriptionAccess: {
+      hasActiveSubscription: subscriptionAccess.hasActiveSubscription,
       isLapsed: subscriptionAccess.isLapsed,
       isComped: subscriptionAccess.isComped,
       hasSubscriptionHistory: subscriptionAccess.hasSubscriptionHistory,

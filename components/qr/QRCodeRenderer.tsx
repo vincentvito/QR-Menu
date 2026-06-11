@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import type QRCodeStylingType from 'qr-code-styling'
 
 export type QRDotStyle =
@@ -59,6 +60,7 @@ export function QRCodeRenderer({
   className,
   onReady,
 }: QRCodeRendererProps) {
+  const t = useTranslations('Common')
   const containerRef = useRef<HTMLDivElement | null>(null)
   const qrRef = useRef<QRCodeStylingType | null>(null)
 
@@ -128,7 +130,7 @@ export function QRCodeRenderer({
       ref={containerRef}
       className={className}
       style={{ width: size, height: size }}
-      aria-label="QR code preview"
+      aria-label={t('qrCodePreview')}
     />
   )
 }

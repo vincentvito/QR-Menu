@@ -1,10 +1,6 @@
 'use client'
 
-import {
-  ANALYTICS_SESSION_COOKIE,
-  ANALYTICS_SESSION_MAX_AGE,
-  type MenuEventType,
-} from './events'
+import { ANALYTICS_SESSION_COOKIE, ANALYTICS_SESSION_MAX_AGE, type MenuEventType } from './events'
 
 interface TrackArgs {
   menuSlug: string

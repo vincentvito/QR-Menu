@@ -6,6 +6,106 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.30.0',
+    date: '2026-06-12',
+    title: 'Multiple prices per dish and easier category fixes',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Dishes can now have multiple sizes with their own prices (e.g. Small / Medium / Large pizzas), shown inline on the public menu',
+          'Menu imports now detect size-based pricing automatically from photos, PDFs, and pasted text',
+          'Dishes can now be moved to a different category from the editor',
+        ],
+      },
+      {
+        type: 'changed' as const,
+        items: [
+          'Menu imports now infer a dish’s category from its description when the section heading is unclear, instead of dumping items into “Other”',
+          'Import previews now let you correct dish categories and review size-based prices before adding items to the menu',
+          'Onboarding and Billing now clearly show setup mode before the 14-day trial starts, including the 5 AI-credit trial benefit',
+          'Extra AI-credit packs are now only offered after a trial, subscription, or complimentary plan is active',
+          'The setup-mode banner now makes Start trial the primary call to action and explains the publish benefit more clearly',
+          'Public menu links, QR downloads, and search sitemap entries now stay private until the trial or subscription is active',
+          'Dietary tags now explain their shorthand on hover, and the Add sizes action is easier to spot in the editor',
+          'Colombian peso menu prices now display with local thousands separators, such as COL$5.000',
+        ],
+      },
+      {
+        type: 'fixed' as const,
+        items: [
+          'AI image generation in setup mode now shows a clear Start trial prompt instead of a developer-style 402 error',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.29.0',
+    date: '2026-06-12',
+    title: 'Multi-file menu imports',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Menu creation and editor imports now accept up to three PDF or photo files at once',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.28.0',
+    date: '2026-06-12',
+    title: 'Colombian peso support',
+    changes: [
+      {
+        type: 'added' as const,
+        items: ['Colombian peso is now available as a restaurant currency option'],
+      },
+    ],
+  },
+  {
+    version: '0.27.1',
+    date: '2026-06-12',
+    title: 'Spanish localization completeness pass',
+    changes: [
+      {
+        type: 'fixed' as const,
+        items: [
+          'The AI credit counter, photo action buttons, and checkout error messages in the menu editor now translate to Spanish',
+          'Dish badges like Best Seller and Chef’s Pick now display in the diner’s language on public menus and in the editor',
+          'QR style options and social link placeholders in Settings now translate',
+          'Invite email placeholders and invitation expiry dates in Team and Staff now follow the selected language',
+          'Analytics chart dates now format using the selected language',
+          'Browser tab titles for invite, onboarding, and start-trial pages now follow the selected language',
+          'Sign-in code fields now announce themselves in Spanish to screen readers',
+          'API error messages now translate in Spanish instead of showing English server text in toasts',
+          'Invitation and sign-in code emails now use the selected language',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.27.0',
+    date: '2026-06-11',
+    title: 'Spanish landing page',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Landing page visitors can now switch between English and Spanish from the top navigation',
+          'The landing page now has Spanish copy across the hero, examples, QR demo, testimonials, pricing, FAQ, and footer',
+          'Login page visitors can now switch languages and see the sign-in experience in Spanish',
+          'Dashboard menu management, editor, public menus, QR pages, settings, analytics, staff, team, and profile screens now use English and Spanish localization',
+          'Billing pages, plan recovery banners, pricing cards, credit summaries, and activation controls now localize in English and Spanish',
+          'Dashboard users can switch languages directly from the sidebar footer',
+          'Invite acceptance, onboarding, trial setup, WiFi reveal, photo lightbox, and remaining editor controls now follow the selected language',
+          'Public menu templates now localize search, specials, dish counts, review prompts, and QR/share metadata',
+          'Spanish editor and settings copy now renders accents and punctuation correctly instead of showing question marks',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.26.0',
     date: '2026-05-03',
     title: 'Smarter AI photos for drinks, coffee, and desserts',

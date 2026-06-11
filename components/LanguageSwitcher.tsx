@@ -4,11 +4,12 @@ import { useTranslations } from 'next-intl'
 import { useRouter } from 'next/navigation'
 import { useTransition } from 'react'
 import { Button } from '@/components/ui/button'
+import { locales, type Locale } from '@/i18n/locales'
 
-const LOCALES = [
-  { code: 'en', label: 'EN' },
-  { code: 'es', label: 'ES' },
-] as const
+const LOCALE_LABELS: Record<Locale, string> = {
+  en: 'EN',
+  es: 'ES',
+}
 
 export default function LanguageSwitcher({ currentLocale }: { currentLocale: string }) {
   const t = useTranslations('LanguageSwitcher')
@@ -25,7 +26,7 @@ export default function LanguageSwitcher({ currentLocale }: { currentLocale: str
 
   return (
     <div role="group" aria-label={t('label')} className="flex items-center gap-1">
-      {LOCALES.map(({ code, label }) => {
+      {locales.map((code) => {
         const active = currentLocale === code
         return (
           <Button
@@ -36,9 +37,9 @@ export default function LanguageSwitcher({ currentLocale }: { currentLocale: str
             size="sm"
             aria-pressed={active}
             aria-label={t(code)}
-            className="h-11 px-3 text-xs sm:h-8 sm:px-2"
+            className="h-9 px-2.5 text-xs sm:h-8 sm:px-2"
           >
-            {label}
+            {LOCALE_LABELS[code]}
           </Button>
         )
       })}

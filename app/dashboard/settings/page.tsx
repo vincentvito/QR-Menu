@@ -1,16 +1,21 @@
 import { redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import prisma from '@/lib/prisma'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import { getSubscriptionAccessState } from '@/lib/plans/subscription-access'
 import { templatePreviewMockupUrl } from '@/lib/menus/template-assets'
 import { currencySymbol } from '@/lib/menus/currency'
 import { parseCategoryIconOverrides } from '@/lib/menus/category-icon'
+import { parseVariants } from '@/lib/menus/variants'
 import type { TemplateItem } from '@/components/menu/templates/types'
 import { SettingsForm } from './SettingsForm'
 import { SettingsSideNav } from './SettingsSideNav'
 
 export default async function SettingsPage() {
-  const { restaurant, role, scope } = await getDashboardContext()
+  const [{ restaurant, role, scope }, t] = await Promise.all([
+    getDashboardContext(),
+    getTranslations('Settings'),
+  ])
   // Restaurant-scoped staff (manager/waiter) don't touch account-level
   // settings — bounce them back to the menus they can actually work on.
   if (scope === 'restaurant') redirect('/dashboard/menus')
@@ -42,6 +47,7 @@ export default async function SettingsPage() {
             name: i.name,
             description: i.description,
             price: i.price,
+            variants: parseVariants(i.variants),
             tags: i.tags,
             badges: i.badges,
             imageUrl: i.imageUrl,
@@ -58,10 +64,8 @@ export default async function SettingsPage() {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground mt-1 text-sm">
-          Edit your restaurant details, brand, QR style, and default currency.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
+        <p className="text-muted-foreground mt-1 text-sm">{t('description')}</p>
       </div>
 
       {/* Left quick-nav sticks beside the form on md+; on mobile it
@@ -76,6 +80,7 @@ export default async function SettingsPage() {
         <SettingsForm
           key={restaurant.id}
           canEdit={canEdit}
+          canPublish={subscriptionAccess.hasActiveSubscription}
           previewMenu={previewMenu}
           templatePreviewMockupUrl={templatePreviewMockupUrl()}
           templatePreviewData={templatePreviewData}

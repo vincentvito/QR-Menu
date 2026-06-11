@@ -1,6 +1,9 @@
 import { memo } from 'react'
+import { useTranslations } from 'next-intl'
 import { BadgeRow } from '@/components/menu/BadgeRow'
+import { DietaryTagPills } from '@/components/menu/DietaryTagPills'
 import { PriceChip } from '@/components/menu/PriceChip'
+import { VariantPriceChips } from '@/components/menu/VariantPriceChips'
 import { cn } from '@/lib/utils'
 import type {
   TemplateBodyProps,
@@ -21,6 +24,7 @@ function PhotoGridBody({
   onOpenImage,
   preview,
 }: TemplateBodyProps) {
+  const t = useTranslations('MenuView')
   const singleSpecial = specials.length === 1
 
   return (
@@ -39,7 +43,7 @@ function PhotoGridBody({
           }}
         >
           <h2 className="bg-pop text-pop-foreground mb-4 inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold tracking-[0.18em] uppercase">
-            Today&apos;s Specials
+            {t('todaysSpecials')}
           </h2>
           <ul className={cn('grid gap-3 sm:gap-4', singleSpecial ? 'grid-cols-1' : 'grid-cols-2')}>
             {specials.map((item) => (
@@ -99,6 +103,7 @@ const PhotoGridTile = memo(function PhotoGridTile({
   preview,
   featured,
 }: TileProps) {
+  const t = useTranslations('MenuView')
   const imageUrl = item.imageUrl
   const photoTileClass = cn(
     'border-cream-line bg-card relative w-full overflow-hidden border',
@@ -117,7 +122,7 @@ const PhotoGridTile = memo(function PhotoGridTile({
               decoding="async"
               className="h-full w-full object-cover"
             />
-            {item.price > 0 && (
+            {item.price > 0 && item.variants.length === 0 && (
               <span className="absolute right-2 bottom-2">
                 <PriceChip symbol={symbol} price={item.price} size="sm" />
               </span>
@@ -126,7 +131,7 @@ const PhotoGridTile = memo(function PhotoGridTile({
         ) : (
           <button
             type="button"
-            aria-label={`Open photo of ${item.name}`}
+            aria-label={t('openPhotoAria', { item: item.name })}
             onClick={() => onOpenImage(imageUrl)}
             className={`${photoTileClass} focus-visible:ring-foreground transition-transform hover:scale-[1.02] focus-visible:ring-2 focus-visible:outline-none`}
           >
@@ -138,7 +143,7 @@ const PhotoGridTile = memo(function PhotoGridTile({
               decoding="async"
               className="h-full w-full object-cover"
             />
-            {item.price > 0 && (
+            {item.price > 0 && item.variants.length === 0 && (
               <span className="absolute right-2 bottom-2">
                 <PriceChip symbol={symbol} price={item.price} size="sm" />
               </span>
@@ -153,9 +158,9 @@ const PhotoGridTile = memo(function PhotoGridTile({
           )}
         >
           <span className="text-muted-foreground/60 text-[10px] font-semibold tracking-[0.18em] uppercase">
-            No photo
+            {t('noPhoto')}
           </span>
-          {item.price > 0 && (
+          {item.price > 0 && item.variants.length === 0 && (
             <span className="absolute right-2 bottom-2">
               <PriceChip symbol={symbol} price={item.price} size="sm" />
             </span>
@@ -165,6 +170,14 @@ const PhotoGridTile = memo(function PhotoGridTile({
       <div className="mt-2.5 space-y-1">
         <BadgeRow badges={item.badges} />
         <h3 className="text-[15px] leading-tight font-semibold tracking-[-0.01em]">{item.name}</h3>
+        {item.variants.length > 0 && (
+          <VariantPriceChips
+            symbol={symbol}
+            variants={item.variants}
+            size="sm"
+            className="pt-0.5"
+          />
+        )}
         {item.description && (
           <p
             className={cn(
@@ -175,18 +188,7 @@ const PhotoGridTile = memo(function PhotoGridTile({
             {item.description}
           </p>
         )}
-        {item.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 pt-0.5">
-            {item.tags.map((tag) => (
-              <span
-                key={tag}
-                className="bg-accent/30 text-foreground rounded-[6px] px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.1em] uppercase"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        <DietaryTagPills tags={item.tags} className="pt-0.5" pillClassName="px-1.5 text-[9px]" />
       </div>
     </li>
   )

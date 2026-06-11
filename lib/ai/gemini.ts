@@ -1,4 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { minVariantPrice, parseVariants, type MenuItemVariant } from '@/lib/menus/variants'
 
 const MODEL = 'gemini-3.1-flash-lite-preview'
 let genAI: GoogleGenerativeAI | null = null
@@ -17,6 +18,7 @@ export interface ExtractedMenuItem {
   name: string
   category: string
   price: number
+  variants: MenuItemVariant[]
   description: string
   tags: DietaryTag[]
 }
@@ -53,6 +55,7 @@ Return a JSON object with this exact shape:
       "name": "exact dish name as written",
       "category": "section heading it belongs to (Starters, Mains, Desserts, Drinks, etc.)",
       "price": numeric price as a number (0 if not found),
+      "variants": [{ "label": "size or option name", "price": numeric price }] — ONLY when the item has multiple prices, otherwise [],
       "description": "dish description if present, otherwise empty string",
       "tags": array of applicable dietary tags from ["V","VG","GF","DF","NF"] inferred from name/description
     }
@@ -62,7 +65,23 @@ Return a JSON object with this exact shape:
 Rules:
 - Do not invent items or sections not present in the source
 - Do not skip any item you can find
-- If a section heading is unclear, use "Other"
+- Category assignment:
+  - Prefer the section heading the item appears under. Beware multi-column or
+    decorative layouts where a heading covers items far from it.
+  - If the heading is missing, unclear, or generic, infer the category from the
+    item's name and description (e.g. a dish described with dough, sauce, and
+    toppings belongs in "Pizza"; a cold dish of greens belongs in "Salads").
+  - Reuse an existing category from this menu whenever the item plausibly fits
+    one — do not create near-duplicate categories.
+  - Use "Other" ONLY as a last resort when the item genuinely fits no category
+    you can see or infer.
+- Multiple prices per item (very common on pizza menus with Small/Medium/Large
+  columns, or drinks with glass/bottle):
+  - Put each size in "variants" with the label exactly as the menu names it
+    (e.g. "Small", "Medium", "Large", or 10"/14"/18"). If sizes are shown as
+    column headers, apply those headers to every item in that section.
+  - Set "price" to the LOWEST variant price.
+  - Items with a single price keep that price in "price" and "variants" as [].
 - If no restaurant name is evident, use "Untitled Menu"
 - Return ONLY the raw JSON object, no markdown fences, no commentary`
 
@@ -105,10 +124,21 @@ export async function extractMenu(input: ExtractInput): Promise<ExtractedMenu> {
     ? parsed.items
         .map((item) => {
           const obj = item as Record<string, unknown>
+          const variants = parseVariants(obj.variants)
+          // A single "variant" is just a price — collapse it so the editor
+          // doesn't show a one-row size list.
+          const singleVariant = variants.length === 1 ? variants[0] : null
+          const rawPrice =
+            typeof obj.price === 'number' ? obj.price : parseFloat(String(obj.price)) || 0
+          const price =
+            variants.length > 1
+              ? minVariantPrice(variants)
+              : (singleVariant?.price ?? (Number.isFinite(rawPrice) ? rawPrice : 0))
           return {
             name: String(obj.name ?? '').trim(),
             category: String(obj.category ?? 'Other').trim() || 'Other',
-            price: typeof obj.price === 'number' ? obj.price : parseFloat(String(obj.price)) || 0,
+            price,
+            variants: variants.length > 1 ? variants : [],
             description: String(obj.description ?? '').trim(),
             tags: (Array.isArray(obj.tags) ? obj.tags : []).filter((t): t is DietaryTag =>
               ['V', 'VG', 'GF', 'DF', 'NF'].includes(String(t)),

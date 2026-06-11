@@ -8,7 +8,7 @@ interface CreateMenuInput {
   restaurantId: string
   url?: string
   text?: string
-  file?: { base64: string; mimeType: string }
+  files?: { base64: string; mimeType: string }[]
   name?: string
 }
 
@@ -27,22 +27,34 @@ export async function createMenuFromSource({
   restaurantId,
   url,
   text,
-  file,
+  files = [],
   name,
 }: CreateMenuInput): Promise<CreateMenuResult> {
   const source = url?.trim()
   const pasted = text?.trim()
+  const menuFiles = files.filter(Boolean)
 
-  if (!source && !pasted && !file) {
+  if (!source && !pasted && menuFiles.length === 0) {
     throw new Error('Provide a URL, pasted text, or a file.')
   }
 
   let extracted: ExtractedMenu
-  if (file) {
-    extracted = await extractMenu({
-      fileBase64: file.base64,
-      mimeType: file.mimeType,
-    })
+  if (menuFiles.length > 0) {
+    const extractedFiles = await Promise.all(
+      menuFiles.map((file) =>
+        extractMenu({
+          fileBase64: file.base64,
+          mimeType: file.mimeType,
+        }),
+      ),
+    )
+    extracted = {
+      restaurantName:
+        extractedFiles.find((menu) => menu.restaurantName !== 'Untitled Menu')?.restaurantName ??
+        extractedFiles[0]?.restaurantName ??
+        'Untitled Menu',
+      items: extractedFiles.flatMap((menu) => menu.items),
+    }
   } else if (source) {
     const markdown = await scrapeUrl(source)
     extracted = await extractMenu({ text: markdown })
@@ -60,13 +72,14 @@ export async function createMenuFromSource({
       restaurantId,
       name: finalName,
       sourceUrl: source || null,
-      sourceText: !source && !file ? pasted : null,
+      sourceText: !source && menuFiles.length === 0 ? pasted : null,
       items: {
         create: extracted.items.map((item, i) => ({
           category: item.category,
           name: item.name,
           description: item.description,
           price: item.price,
+          variants: item.variants,
           tags: item.tags,
           order: i,
         })),

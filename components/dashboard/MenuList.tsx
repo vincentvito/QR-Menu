@@ -19,9 +19,10 @@ interface MenuListItem {
 interface MenuListProps {
   menus: MenuListItem[]
   publicBaseUrl: string
+  isPublished: boolean
 }
 
-export function MenuList({ menus, publicBaseUrl }: MenuListProps) {
+export function MenuList({ menus, publicBaseUrl, isPublished }: MenuListProps) {
   const t = useTranslations('Dashboard.menus')
   const [copiedId, setCopiedId] = useState<string | null>(null)
 
@@ -66,30 +67,36 @@ export function MenuList({ menus, publicBaseUrl }: MenuListProps) {
               <Button asChild size="sm" variant="outline">
                 <TransitionLink href={`/dashboard/menus/${m.slug}/qr`} transitionType="nav-forward">
                   <QrCode className="h-3.5 w-3.5" aria-hidden="true" />
-                  QR
+                  {t('qr')}
                 </TransitionLink>
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => copyLink(m.id, m.slug)}
-              >
-                {copiedId === m.id ? (
-                  <>
-                    <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                    {t('copied')}
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-3.5 w-3.5" aria-hidden="true" />
-                    {t('copyLink')}
-                  </>
-                )}
-              </Button>
+              {isPublished ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyLink(m.id, m.slug)}
+                >
+                  {copiedId === m.id ? (
+                    <>
+                      <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                      {t('copied')}
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="h-3.5 w-3.5" aria-hidden="true" />
+                      {t('copyLink')}
+                    </>
+                  )}
+                </Button>
+              ) : null}
               <PillButton asChild size="sm" variant="primary">
-                <Link href={`/m/${m.slug}`} target="_blank" rel="noopener">
-                  {t('viewMenu')}
+                <Link
+                  href={isPublished ? `/m/${m.slug}` : `/m/${m.slug}?preview=1`}
+                  target="_blank"
+                  rel="noopener"
+                >
+                  {isPublished ? t('viewMenu') : t('previewMenu')}
                   <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               </PillButton>

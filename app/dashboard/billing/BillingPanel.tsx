@@ -1,6 +1,7 @@
 'use client'
 
 import Image from 'next/image'
+import { useLocale, useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import { Check, CreditCard, Gift, Lock, Loader2, Sparkles, Zap } from 'lucide-react'
@@ -21,38 +22,38 @@ const PLAN_VISUALS: Record<
   PlanDefinition['id'],
   {
     imageSrc: string
-    label: string
+    labelKey: 'trial' | 'basic' | 'pro' | 'business' | 'enterprise'
     objectPosition: string
     overlay: string
   }
 > = {
   trial: {
     imageSrc: '/images/pricing-pro-plan.png',
-    label: 'Trial preview',
+    labelKey: 'trial',
     objectPosition: '50% 50%',
     overlay: 'from-[#1a1e17]/92 via-[#1a1e17]/46 to-[#1a1e17]/4',
   },
   basic: {
     imageSrc: '/images/pricing-basic-plan.png',
-    label: 'Solo menu',
+    labelKey: 'basic',
     objectPosition: '50% 50%',
     overlay: 'from-[#1a1e17]/92 via-[#1a1e17]/50 to-[#1a1e17]/4',
   },
   pro: {
     imageSrc: '/images/pricing-pro-plan.png',
-    label: 'Guest ready',
+    labelKey: 'pro',
     objectPosition: '50% 50%',
     overlay: 'from-[#1a1e17]/94 via-[#1a1e17]/42 to-[#1a1e17]/4',
   },
   business: {
     imageSrc: '/images/pricing-business-plan.png',
-    label: 'Multi-location',
+    labelKey: 'business',
     objectPosition: '50% 50%',
     overlay: 'from-[#1a1e17]/92 via-[#1a1e17]/48 to-[#1a1e17]/4',
   },
   enterprise: {
     imageSrc: '/images/pricing-enterprise-plan.png',
-    label: 'Scaled service',
+    labelKey: 'enterprise',
     objectPosition: '50% 50%',
     overlay: 'from-[#1a1e17]/94 via-[#1a1e17]/52 to-[#1a1e17]/4',
   },
@@ -60,34 +61,41 @@ const PLAN_VISUALS: Record<
 
 const SUBSCRIBABLE_PLANS: Array<PlanDefinition['id']> = ['basic', 'pro', 'business', 'enterprise']
 
-const CREDIT_PACK_LABEL = '100 credits · $15'
-
 function formatPrice(cents: number | null): string {
-  if (cents === null) return '—'
+  if (cents === null) return '-'
   const dollars = cents / 100
   return dollars % 1 === 0 ? `$${dollars.toFixed(0)}` : `$${dollars.toFixed(2)}`
 }
 
-function formatDate(date: Date | null): string {
-  if (!date) return '—'
-  return new Date(date).toLocaleDateString(undefined, {
+function formatDate(date: Date | null, locale: string): string {
+  if (!date) return '-'
+  return new Date(date).toLocaleDateString(locale, {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   })
 }
 
-function getSubscriptionSummary(subscription: BillingState['subscription']): string {
-  if (!subscription) return 'Not subscribed yet'
+type BillingTranslator = ReturnType<typeof useTranslations<'Billing'>>
+
+function getSubscriptionSummary(
+  subscription: BillingState['subscription'],
+  t: BillingTranslator,
+  locale: string,
+): string {
+  if (!subscription) return t('currentPlan.notSubscribed')
 
   const scheduledEnd =
     subscription.cancelAt ?? (subscription.cancelAtPeriodEnd ? subscription.periodEnd : null)
   if (scheduledEnd) {
-    return `Cancellation scheduled · access ends ${formatDate(scheduledEnd)}`
+    return t('currentPlan.cancellationScheduled', { date: formatDate(scheduledEnd, locale) })
   }
 
   if (subscription.periodEnd) {
-    return `${subscription.status} · renews ${formatDate(subscription.periodEnd)}`
+    return t('currentPlan.renews', {
+      status: subscription.status,
+      date: formatDate(subscription.periodEnd, locale),
+    })
   }
 
   return subscription.status
@@ -98,30 +106,37 @@ function getCreditCycleLabel({
   lastResetAt,
   scheduledCancellationDate,
   isComped,
+  t,
+  locale,
 }: {
   subscription: BillingState['subscription']
   lastResetAt: Date | null
   scheduledCancellationDate: Date | null
   isComped: boolean
+  t: BillingTranslator
+  locale: string
 }): string | null {
   if (scheduledCancellationDate) {
-    return `Monthly credits available until ${formatDate(scheduledCancellationDate)}`
+    return t('credits.availableUntil', { date: formatDate(scheduledCancellationDate, locale) })
   }
 
   if (!isComped && subscription?.periodEnd) {
-    return `Next monthly reset ${formatDate(subscription.periodEnd)}`
+    return t('credits.nextReset', { date: formatDate(subscription.periodEnd, locale) })
   }
 
   if (lastResetAt) {
-    return `Last monthly reset ${formatDate(lastResetAt)}`
+    return t('credits.lastReset', { date: formatDate(lastResetAt, locale) })
   }
 
   return null
 }
 
 export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPanelProps) {
+  const t = useTranslations('Billing')
+  const locale = useLocale()
   const router = useRouter()
   const searchParams = useSearchParams()
+  const creditPackLabel = t('credits.packLabel')
   const [interval, setInterval] = useState<'month' | 'year'>(
     state.subscription?.billingInterval === 'year' ? 'year' : 'month',
   )
@@ -140,21 +155,22 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
     if (toastHandled.current) return
     const creditPack = searchParams.get('creditPack')
     if (creditPack === 'success') {
-      toast.success(`${CREDIT_PACK_LABEL} purchased — credits will appear in a few seconds.`)
+      toast.success(t('credits.packPurchased', { pack: creditPackLabel }))
       toastHandled.current = true
       router.replace('/dashboard/billing')
       router.refresh()
     } else if (creditPack === 'cancel') {
-      toast.info('Credit pack purchase canceled.')
+      toast.info(t('credits.packCanceled'))
       toastHandled.current = true
       router.replace('/dashboard/billing')
     }
-  }, [searchParams, router])
+  }, [searchParams, router, t, creditPackLabel])
 
   const currentPlanId = state.plan.id
   const isTrialing = state.subscription?.status === 'trialing'
   const isLapsed = state.subscriptionAccess.isLapsed
   const isComped = Boolean(state.comp.plan)
+  const isSetupMode = !state.subscription && !isLapsed && !isComped
   const scheduledCancellationDate =
     state.subscription?.cancelAt ??
     (state.subscription?.cancelAtPeriodEnd ? state.subscription.periodEnd : null)
@@ -163,13 +179,17 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
     lastResetAt: state.credits.resetsAt,
     scheduledCancellationDate,
     isComped,
+    t,
+    locale,
   })
   const displayPlanName = isComped
-    ? `Complimentary ${state.plan.name}`
-    : isLapsed && state.subscriptionAccess.latestPlan
-      ? (planCatalog.find((p) => p.id === state.subscriptionAccess.latestPlan)?.name ??
-        state.subscriptionAccess.latestPlan)
-      : state.plan.name
+    ? t('currentPlan.complimentary', { plan: state.plan.name })
+    : isSetupMode
+      ? t('currentPlan.setupMode')
+      : isLapsed && state.subscriptionAccess.latestPlan
+        ? (planCatalog.find((p) => p.id === state.subscriptionAccess.latestPlan)?.name ??
+          state.subscriptionAccess.latestPlan)
+        : state.plan.name
 
   async function startUpgrade(planId: string) {
     setPendingPlan(planId)
@@ -182,11 +202,11 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
         cancelUrl: '/dashboard/billing?checkout=cancel',
       })
       if (result.error) {
-        toast.error(result.error.message ?? 'Checkout unavailable. Check your Stripe config.')
+        toast.error(result.error.message ?? t('errors.checkoutUnavailable'))
       }
-      // On success the call returns a URL to redirect to — the plugin handles that.
+      // On success the call returns a URL to redirect to; the plugin handles that.
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Checkout failed')
+      toast.error(err instanceof Error ? err.message : t('errors.checkoutFailed'))
     } finally {
       setPendingPlan(null)
     }
@@ -198,12 +218,12 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
       const res = await fetch('/api/billing/credit-pack/checkout', { method: 'POST' })
       const body = (await res.json().catch(() => ({}))) as { url?: string; error?: string }
       if (!res.ok || !body.url) {
-        toast.error(body.error ?? 'Could not start checkout')
+        toast.error(body.error ?? t('errors.checkoutStartFailed'))
         return
       }
       window.location.href = body.url
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Checkout failed')
+      toast.error(err instanceof Error ? err.message : t('errors.checkoutFailed'))
     } finally {
       setIsBuyingCredits(false)
     }
@@ -217,12 +237,12 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
           returnUrl: '/dashboard/billing',
         })
         if (result.error) {
-          toast.error(result.error.message ?? 'Portal unavailable')
+          toast.error(result.error.message ?? t('errors.portalUnavailable'))
           return
         }
         if (result.data?.url) window.location.href = result.data.url
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Portal failed')
+        toast.error(err instanceof Error ? err.message : t('errors.portalFailed'))
       }
     })
   }
@@ -238,7 +258,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
         next.delete(id)
       } else {
         if (cap !== null && next.size >= cap) {
-          toast.error(`Your plan only allows ${cap} active restaurant${cap === 1 ? '' : 's'}.`)
+          toast.error(t('errors.activationLimit', { count: cap }))
           return prev
         }
         next.add(id)
@@ -257,10 +277,10 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
       })
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string }
-        toast.error(body.error ?? 'Could not update activation')
+        toast.error(body.error ?? t('errors.activationFailed'))
         return
       }
-      toast.success('Activation updated')
+      toast.success(t('activation.saved'))
       router.refresh()
     } finally {
       setIsSavingActivation(false)
@@ -283,13 +303,11 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
           <div className="flex items-center gap-2">
             <Lock className="text-accent size-4" aria-hidden="true" />
             <h2 className="text-sm font-semibold tracking-wide uppercase">
-              Some restaurants are read-only
+              {t('activation.title')}
             </h2>
           </div>
           <p className="text-muted-foreground mt-2 text-sm">
-            Your {state.plan.name} plan allows {cap} active restaurant{cap === 1 ? '' : 's'}. Frozen
-            ones still serve their public menus, but their dashboards are view-only until you
-            re-activate them or upgrade.
+            {t('activation.description', { plan: state.plan.name, count: cap ?? 0 })}
           </p>
           <div className="mt-4 space-y-2">
             {state.restaurants.map((r) => {
@@ -310,7 +328,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                   {!checked ? (
                     <span className="text-muted-foreground inline-flex items-center gap-1 text-xs">
                       <Lock className="size-3" aria-hidden="true" />
-                      Read-only
+                      {t('activation.readOnly')}
                     </span>
                   ) : null}
                 </label>
@@ -320,7 +338,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
           {canManage && !isLapsed ? (
             <div className="mt-4 flex items-center gap-2">
               <span className="text-muted-foreground text-xs">
-                {activePicks.size} of {cap} slot{cap === 1 ? '' : 's'} picked
+                {t('activation.picked', { picked: activePicks.size, count: cap ?? 0 })}
               </span>
               <Button
                 size="sm"
@@ -331,7 +349,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                 {isSavingActivation ? (
                   <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
                 ) : null}
-                Save activation
+                {t('activation.save')}
               </Button>
             </div>
           ) : null}
@@ -340,11 +358,8 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
 
       {isLapsed ? (
         <section className="rounded-2xl border border-red-200 bg-red-50 p-5 text-red-950">
-          <h2 className="text-sm font-semibold tracking-wide uppercase">Subscription canceled</h2>
-          <p className="mt-2 text-sm leading-6">
-            Public menus are still live for guests. Dashboard editing, new menus, uploads, and AI
-            photo actions are paused until you pick a plan.
-          </p>
+          <h2 className="text-sm font-semibold tracking-wide uppercase">{t('lapsed.title')}</h2>
+          <p className="mt-2 text-sm leading-6">{t('lapsed.description')}</p>
           <Button
             type="button"
             size="sm"
@@ -355,7 +370,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                 ?.scrollIntoView({ behavior: 'smooth', block: 'start' })
             }}
           >
-            Pick a plan
+            {t('lapsed.cta')}
           </Button>
         </section>
       ) : null}
@@ -366,29 +381,44 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
           <div className="flex items-center gap-2">
             <CreditCard className="text-muted-foreground size-4" aria-hidden="true" />
             <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
-              Current plan
+              {t('currentPlan.title')}
             </h2>
           </div>
           <p className="mt-3 text-2xl font-semibold tracking-tight">{displayPlanName}</p>
           <p className="text-muted-foreground mt-1 text-sm">
-            {isLapsed ? 'Subscription ended' : getSubscriptionSummary(state.subscription)}
+            {isLapsed
+              ? t('currentPlan.subscriptionEnded')
+              : isSetupMode
+                ? t('currentPlan.setupModeDescription')
+                : getSubscriptionSummary(state.subscription, t, locale)}
           </p>
+          {isSetupMode ? (
+            <div className="bg-accent/10 mt-4 rounded-lg px-3 py-2 text-xs">
+              <Sparkles className="mr-1 inline size-3" aria-hidden="true" />
+              {t('currentPlan.setupModeBenefit')}
+            </div>
+          ) : null}
           {scheduledCancellationDate && !isLapsed && !isComped ? (
             <div className="mt-4 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-950">
-              Your subscription has been canceled. Your plan stays active until{' '}
-              {formatDate(scheduledCancellationDate)}.
+              {t('currentPlan.canceledActiveUntil', {
+                date: formatDate(scheduledCancellationDate, locale),
+              })}
             </div>
           ) : null}
           {isTrialing && state.subscription?.trialEnd ? (
             <div className="bg-accent/10 mt-4 rounded-lg px-3 py-2 text-xs">
               <Sparkles className="mr-1 inline size-3" aria-hidden="true" />
-              Trial ends {formatDate(state.subscription.trialEnd)}
+              {t('currentPlan.trialEnds', {
+                date: formatDate(state.subscription.trialEnd, locale),
+              })}
             </div>
           ) : null}
           {isComped ? (
             <div className="bg-accent/10 mt-4 rounded-lg px-3 py-2 text-xs">
               <Gift className="mr-1 inline size-3" aria-hidden="true" />
-              Owner-granted access{state.comp.reason ? ` - ${state.comp.reason}` : ''}
+              {state.comp.reason
+                ? t('currentPlan.ownerGrantedReason', { reason: state.comp.reason })
+                : t('currentPlan.ownerGranted')}
             </div>
           ) : null}
           {canManage && state.subscription && !isComped ? (
@@ -403,7 +433,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                 {isPending ? (
                   <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
                 ) : null}
-                Manage billing
+                {t('currentPlan.manageBilling')}
               </Button>
             </div>
           ) : null}
@@ -413,7 +443,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
           <div className="flex items-center gap-2">
             <Zap className="text-muted-foreground size-4" aria-hidden="true" />
             <h2 className="text-muted-foreground text-sm font-semibold tracking-wide uppercase">
-              AI credits
+              {t('credits.cardTitle')}
             </h2>
           </div>
           <p className="mt-3 text-2xl font-semibold tracking-tight tabular-nums">
@@ -421,17 +451,21 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
           </p>
           <div className="text-muted-foreground mt-2 space-y-0.5 text-xs">
             <div>
-              Monthly bucket: <span className="tabular-nums">{state.credits.monthly}</span>
+              {t('credits.monthlyBucket')}:{' '}
+              <span className="tabular-nums">{state.credits.monthly}</span>
               {state.plan.monthlyCredits !== null ? (
-                <span className="tabular-nums"> of {state.plan.monthlyCredits}</span>
+                <span className="tabular-nums">
+                  {' '}
+                  {t('credits.monthlyOf', { count: state.plan.monthlyCredits })}
+                </span>
               ) : null}
             </div>
             <div>
-              Bonus (never expire): <span className="tabular-nums">{state.credits.bonus}</span>
+              {t('credits.bonus')}: <span className="tabular-nums">{state.credits.bonus}</span>
             </div>
             {creditCycleLabel ? <div>{creditCycleLabel}</div> : null}
           </div>
-          {canManage && !isLapsed ? (
+          {canManage && !isLapsed && !isSetupMode ? (
             <div className="mt-auto pt-4">
               <Button
                 variant="outline"
@@ -443,7 +477,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                 {isBuyingCredits ? (
                   <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
                 ) : null}
-                Buy {CREDIT_PACK_LABEL}
+                {t('credits.buyPack', { pack: creditPackLabel })}
               </Button>
             </div>
           ) : null}
@@ -458,10 +492,12 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
         <div className="mb-4 flex items-center justify-between">
           <h2 className="text-base font-semibold tracking-tight">
             {isLapsed
-              ? 'Choose a plan to keep going'
-              : state.subscription
-                ? 'Change plan'
-                : 'Choose a plan'}
+              ? t('planPicker.chooseToContinue')
+              : isSetupMode
+                ? t('planPicker.startTrialTitle')
+                : state.subscription
+                  ? t('planPicker.changePlan')
+                  : t('planPicker.choosePlan')}
           </h2>
           <div className="border-cream-line inline-flex rounded-full border p-0.5 text-xs">
             <button
@@ -471,7 +507,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                 interval === 'month' ? 'bg-foreground text-background' : 'text-muted-foreground'
               }`}
             >
-              Monthly
+              {t('planPicker.monthly')}
             </button>
             <button
               type="button"
@@ -480,7 +516,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                 interval === 'year' ? 'bg-foreground text-background' : 'text-muted-foreground'
               }`}
             >
-              Yearly
+              {t('planPicker.yearly')}
             </button>
           </div>
         </div>
@@ -502,7 +538,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                 >
                   {isCurrent ? (
                     <span className="bg-foreground text-background absolute top-3 left-3 z-20 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase">
-                      Current
+                      {t('planPicker.current')}
                     </span>
                   ) : null}
                   <div className="relative h-24 overflow-hidden">
@@ -518,7 +554,7 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                     <div className="text-background absolute right-3 bottom-3 left-3 flex items-end justify-between gap-2">
                       <div>
                         <div className="text-background/70 text-[10px] font-semibold tracking-[0.1em] uppercase">
-                          {visual.label}
+                          {t(`visuals.${visual.labelKey}`)}
                         </div>
                         <h3 className="mt-0.5 text-base leading-none font-semibold">{p.name}</h3>
                       </div>
@@ -531,13 +567,18 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                   <div className="flex flex-1 flex-col p-4">
                     <p className="text-2xl font-semibold tracking-tight tabular-nums">
                       {isEnterprise && interval === 'year' ? (
-                        <span className="text-muted-foreground text-base font-normal">Custom</span>
+                        <span className="text-muted-foreground text-base font-normal">
+                          {t('planPicker.custom')}
+                        </span>
                       ) : (
                         <>
                           {formatPrice(priceCents)}
                           <span className="text-muted-foreground text-xs font-normal">
                             {' '}
-                            /{interval === 'year' ? 'yr' : 'mo'}
+                            /
+                            {interval === 'year'
+                              ? t('planPicker.perYear')
+                              : t('planPicker.perMonth')}
                           </span>
                         </>
                       )}
@@ -546,18 +587,18 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                       <li className="flex items-center gap-1.5">
                         <Check className="text-accent-deep size-3" aria-hidden="true" />
                         {p.maxRestaurants === null
-                          ? '6+ restaurants'
-                          : `${p.maxRestaurants} restaurant${p.maxRestaurants === 1 ? '' : 's'}`}
+                          ? t('planFeatures.sixPlusRestaurants')
+                          : t('planFeatures.restaurants', { count: p.maxRestaurants })}
                       </li>
                       <li className="flex items-center gap-1.5">
                         <Check className="text-accent-deep size-3" aria-hidden="true" />
-                        {p.maxMenusPerRestaurant} menus each
+                        {t('planFeatures.menusEach', { count: p.maxMenusPerRestaurant })}
                       </li>
                       <li className="flex items-center gap-1.5">
                         <Check className="text-accent-deep size-3" aria-hidden="true" />
                         {p.monthlyCredits === null
-                          ? 'Custom AI allowance'
-                          : `${p.monthlyCredits} AI credits/mo`}
+                          ? t('planFeatures.customAiAllowance')
+                          : t('planFeatures.aiCreditsPerMonth', { count: p.monthlyCredits })}
                       </li>
                     </ul>
                     {canManage && !isCurrent && !isComped ? (
@@ -570,11 +611,11 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
                         {pendingPlan === p.id ? (
                           <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
                         ) : isEnterprise ? (
-                          'Contact sales'
+                          t('planPicker.contactSales')
                         ) : state.subscription ? (
-                          'Switch to this plan'
+                          t('planPicker.switchPlan')
                         ) : (
-                          'Start 14-day trial'
+                          t('planPicker.startTrial')
                         )}
                       </Button>
                     ) : null}
@@ -585,9 +626,11 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
         </div>
 
         <p className="text-muted-foreground mt-4 text-xs">
-          You're using {state.usage.restaurantCount} active of{' '}
-          {state.plan.maxRestaurants === null ? '∞' : state.plan.maxRestaurants} restaurant
-          {state.plan.maxRestaurants === 1 ? '' : 's'} on your current plan.
+          {t('usage', {
+            active: state.usage.restaurantCount,
+            max: state.plan.maxRestaurants === null ? '∞' : state.plan.maxRestaurants,
+            count: state.plan.maxRestaurants ?? 2,
+          })}
         </p>
       </section>
     </div>

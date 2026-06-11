@@ -13,10 +13,10 @@ import { OtpInput } from '@/components/auth/OtpInput'
 const OTP_LENGTH = 6
 
 const highlights = [
-  { icon: QrCode, label: 'Live QR menus' },
-  { icon: Sparkles, label: 'AI dish photos' },
-  { icon: ShieldCheck, label: 'Beautiful menus in seconds' },
-]
+  { icon: QrCode, key: 'qr' },
+  { icon: Sparkles, key: 'photos' },
+  { icon: ShieldCheck, key: 'menus' },
+] as const
 
 interface LoginFormProps {
   callbackUrl: string
@@ -94,13 +94,13 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
   return (
     <div className="border-cream-line bg-card/75 rounded-[28px] border p-5 shadow-[0_22px_70px_rgba(26,30,23,0.12)] backdrop-blur sm:p-6">
       <div className="mb-6 flex flex-wrap gap-2">
-        {highlights.map(({ icon: Icon, label }) => (
+        {highlights.map(({ icon: Icon, key }) => (
           <span
-            key={label}
+            key={key}
             className="bg-background/80 text-foreground/78 border-cream-line inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium"
           >
             <Icon className="text-pop size-3.5" aria-hidden="true" />
-            {label}
+            {t(`highlights.${key}`)}
           </span>
         ))}
       </div>
@@ -111,9 +111,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
             <h2 className="text-[1.7rem] leading-tight font-semibold tracking-[-0.035em]">
               {t('signIn')}
             </h2>
-            <p className="text-muted-foreground text-sm leading-6">
-              Enter your work email and we&apos;ll send a secure sign-in code.
-            </p>
+            <p className="text-muted-foreground text-sm leading-6">{t('sendCodePrompt')}</p>
           </div>
 
           <div className="space-y-2">
@@ -128,7 +126,7 @@ export function LoginForm({ callbackUrl }: LoginFormProps) {
                 type="email"
                 inputMode="email"
                 autoComplete="email"
-                placeholder="you@restaurant.com"
+                placeholder={t('emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 aria-invalid={error ? true : undefined}

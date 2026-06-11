@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { ArrowUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 const SHOW_AFTER_PX = 400
 
 export function BackToTop() {
+  const t = useTranslations('Landing')
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export function BackToTop() {
     <button
       type="button"
       onClick={scrollToTop}
-      aria-label="Back to top"
+      aria-label={t('backToTop')}
       tabIndex={visible ? 0 : -1}
       aria-hidden={!visible}
       className={cn(

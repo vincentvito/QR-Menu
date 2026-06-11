@@ -1,15 +1,15 @@
 import { headers } from 'next/headers'
-import { getTranslations } from 'next-intl/server'
+import { getLocale, getTranslations } from 'next-intl/server'
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight, Bell, Check, Download, Play, Plus } from 'lucide-react'
 import { auth } from '@/lib/auth'
-import { Button } from '@/components/ui/button'
 import { PillButton } from '@/components/ui/pill-button'
 import { BrandMark } from '@/components/brand/BrandMark'
 import { QRCode } from '@/components/brand/QRCode'
 import { Kicker } from '@/components/ui/kicker'
 import { BackToTop } from '@/components/landing/BackToTop'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 
 // ─────────────────────────────────────────────────────────────────────────
 // Unsplash imagery (same set the design handoff uses).
@@ -29,22 +29,18 @@ const IMG = {
 const PRICING_VISUALS = {
   basic: {
     imageSrc: '/images/pricing-basic-plan.png',
-    label: 'Solo menu',
     overlay: 'from-[#1a1e17]/92 via-[#1a1e17]/50 to-[#1a1e17]/4',
   },
   pro: {
     imageSrc: '/images/pricing-pro-plan.png',
-    label: 'Guest ready',
     overlay: 'from-[#1a1e17]/94 via-[#1a1e17]/42 to-[#1a1e17]/4',
   },
   business: {
     imageSrc: '/images/pricing-business-plan.png',
-    label: 'Multi-location',
     overlay: 'from-[#1a1e17]/92 via-[#1a1e17]/48 to-[#1a1e17]/4',
   },
   enterprise: {
     imageSrc: '/images/pricing-enterprise-plan.png',
-    label: 'Scaled service',
     overlay: 'from-[#1a1e17]/94 via-[#1a1e17]/52 to-[#1a1e17]/4',
   },
 } as const
@@ -55,8 +51,9 @@ const SECTION = 'mx-auto max-w-[1240px] px-[clamp(20px,5vw,80px)]'
 const SECTION_Y = 'py-16 md:py-24'
 
 export default async function LandingPage() {
-  const [t, session] = await Promise.all([
+  const [t, locale, session] = await Promise.all([
     getTranslations('Landing'),
+    getLocale(),
     auth.api.getSession({ headers: await headers() }),
   ])
   const year = new Date().getFullYear()
@@ -71,10 +68,10 @@ export default async function LandingPage() {
         href="#main"
         className="bg-foreground text-background sr-only z-50 rounded-md px-3 py-2 text-sm font-medium focus:not-sr-only focus:fixed focus:top-4 focus:left-4"
       >
-        Skip to content
+        {t('skipToContent')}
       </a>
 
-      <Nav t={t} ctaHref={ctaHref} isAuthed={Boolean(session)} />
+      <Nav t={t} ctaHref={ctaHref} isAuthed={Boolean(session)} locale={locale} />
 
       <main id="main">
         <Hero t={t} ctaHref={ctaHref} />
@@ -98,7 +95,17 @@ type T = Awaited<ReturnType<typeof getTranslations<'Landing'>>>
 // ─────────────────────────────────────────────────────────────────────────
 // NAV
 // ─────────────────────────────────────────────────────────────────────────
-function Nav({ t, ctaHref, isAuthed }: { t: T; ctaHref: string; isAuthed: boolean }) {
+function Nav({
+  t,
+  ctaHref,
+  isAuthed,
+  locale,
+}: {
+  t: T
+  ctaHref: string
+  isAuthed: boolean
+  locale: string
+}) {
   const links = [
     { label: t('nav.howItWorks'), href: '#how-it-works' },
     { label: t('nav.examples'), href: '#examples' },
@@ -108,7 +115,7 @@ function Nav({ t, ctaHref, isAuthed }: { t: T; ctaHref: string; isAuthed: boolea
   // Logged-in visitors see "Dashboard"; anonymous visitors see "Get started".
   // Either way, one CTA — no separate "Sign in" link (we dropped it to keep
   // the nav clean; clicking "Get started" while signed out routes to /auth/login).
-  const ctaLabel = isAuthed ? 'Dashboard' : t('nav.getStarted')
+  const ctaLabel = isAuthed ? t('nav.dashboard') : t('nav.getStarted')
 
   return (
     <header className="bg-background/80 border-cream-line sticky top-0 z-50 border-b backdrop-blur-md">
@@ -129,7 +136,8 @@ function Nav({ t, ctaHref, isAuthed }: { t: T; ctaHref: string; isAuthed: boolea
           ))}
         </nav>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          <LanguageSwitcher currentLocale={locale} />
           <PillButton asChild variant="primary" size="default">
             <Link href={ctaHref}>
               {ctaLabel}
@@ -302,7 +310,7 @@ function PhoneMock({ t }: { t: T }) {
     <div
       className="relative mx-auto flex w-full max-w-[460px] justify-center lg:justify-self-end"
       role="img"
-      aria-label="Example of a published Qtable menu on a phone"
+      aria-label={t('mockup.ariaLabel')}
     >
       <div
         aria-hidden="true"
@@ -673,7 +681,7 @@ function QrDemo({ t, ctaHref }: { t: T; ctaHref: string }) {
                   src="/sea-level-test-2-qr.svg"
                   width={260}
                   height={260}
-                  alt="Scan to open a live Qtable menu"
+                  alt={t('qrDemo.imageAlt')}
                   className="block size-[260px]"
                 />
                 <div className="text-muted-foreground mt-4 text-center text-[13px] font-medium">
@@ -847,6 +855,7 @@ function Pricing({ t, ctaHref }: { t: T; ctaHref: string }) {
             const prefix = t(`pricing.plans.${key}.prefix` as 'pricing.plans.basic.prefix')
             const yearly = t(`pricing.plans.${key}.yearly` as 'pricing.plans.basic.yearly')
             const visual = PRICING_VISUALS[key]
+            const visualLabel = t(`pricing.planVisuals.${key}` as 'pricing.planVisuals.basic')
 
             return (
               <div
@@ -868,7 +877,7 @@ function Pricing({ t, ctaHref }: { t: T; ctaHref: string }) {
                   <div className={`absolute inset-0 bg-gradient-to-t ${visual.overlay}`} />
                   <div className="text-background absolute right-5 bottom-4 left-5">
                     <div className="text-background/70 text-[10px] font-semibold tracking-[0.1em] uppercase">
-                      {visual.label}
+                      {visualLabel}
                     </div>
                   </div>
                 </div>

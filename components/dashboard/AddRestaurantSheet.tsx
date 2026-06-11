@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { AlertTriangle, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -33,16 +34,14 @@ interface AddRestaurantSheetProps {
   }
 }
 
-// Minimal "add another venue" flow. The only required field is a name;
-// currency defaults to USD but is offered up front because it affects
-// every price on the menu — easier to set now than to fix per-item later.
-// On success we redirect to /dashboard/settings so the owner can finish
-// branding (logo, colors, WiFi) before creating a menu.
+// Minimal add-another-venue flow. On success we redirect to Settings so the
+// owner can finish branding before creating a menu.
 export function AddRestaurantSheet({
   open,
   onOpenChange,
   currentRestaurant,
 }: AddRestaurantSheetProps) {
+  const t = useTranslations('Dashboard.restaurants.add')
   const router = useRouter()
   const [name, setName] = useState('')
   const [currency, setCurrency] = useState<CurrencyCode>(DEFAULT_CURRENCY)
@@ -61,11 +60,11 @@ export function AddRestaurantSheet({
   async function submit(mode: 'add' | 'disable') {
     const trimmed = name.trim()
     if (!trimmed) {
-      toast.error('Please enter a restaurant name')
+      toast.error(t('errors.nameRequired'))
       return
     }
     if (mode === 'disable' && !canDisableCurrentRestaurant) {
-      toast.error('Type confirm to disable the current restaurant')
+      toast.error(t('errors.confirmRequired'))
       return
     }
     setSubmitting(mode)
@@ -86,27 +85,24 @@ export function AddRestaurantSheet({
       }
       if (!res.ok) {
         if (body.gate === 'plan-cap') {
-          setCapError(body.error ?? 'Your plan is at its restaurant limit.')
+          setCapError(body.error ?? t('errors.planCap'))
         }
-        toast.error(body.error ?? 'Could not add restaurant')
+        toast.error(body.error ?? t('errors.addFailed'))
         return
       }
       toast.success(
         mode === 'disable'
-          ? `${currentRestaurant.name} disabled and ${trimmed} added`
-          : `${trimmed} added`,
+          ? t('toast.disabledAndAdded', { current: currentRestaurant.name, next: trimmed })
+          : t('toast.added', { name: trimmed }),
       )
       onOpenChange(false)
       reset()
-      // router.refresh() alone would swap the active restaurant in the
-      // sidebar; push + refresh gets them to Settings where they can
-      // finish onboarding the new venue.
       startTransition(() => {
         router.push('/dashboard/settings')
         router.refresh()
       })
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Request failed')
+      toast.error(err instanceof Error ? err.message : t('errors.requestFailed'))
     } finally {
       setSubmitting(null)
     }
@@ -130,15 +126,12 @@ export function AddRestaurantSheet({
     >
       <SheetContent side="right" className="w-full sm:max-w-md">
         <SheetHeader>
-          <SheetTitle>Add a restaurant</SheetTitle>
-          <SheetDescription>
-            Spin up another venue under your account. You&apos;ll finish branding — logo, colors,
-            WiFi — in Settings next.
-          </SheetDescription>
+          <SheetTitle>{t('title')}</SheetTitle>
+          <SheetDescription>{t('description')}</SheetDescription>
         </SheetHeader>
         <form onSubmit={handleSubmit} className="mt-6 space-y-4 px-4">
           <div className="space-y-1.5">
-            <Label htmlFor="restaurant-name">Restaurant name</Label>
+            <Label htmlFor="restaurant-name">{t('nameLabel')}</Label>
             <Input
               id="restaurant-name"
               value={name}
@@ -146,7 +139,7 @@ export function AddRestaurantSheet({
                 setName(e.target.value)
                 setCapError('')
               }}
-              placeholder="e.g. Via Napoli"
+              placeholder={t('namePlaceholder')}
               maxLength={120}
               autoFocus
               required
@@ -154,7 +147,7 @@ export function AddRestaurantSheet({
             />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="restaurant-currency">Currency</Label>
+            <Label htmlFor="restaurant-currency">{t('currencyLabel')}</Label>
             <Select
               value={currency}
               onValueChange={(v) => setCurrency(v as CurrencyCode)}
@@ -177,14 +170,12 @@ export function AddRestaurantSheet({
               <div className="flex items-start gap-2">
                 <AlertTriangle className="text-pop mt-0.5 size-4 shrink-0" aria-hidden="true" />
                 <div className="space-y-2">
-                  <p className="font-medium">Your current plan is full.</p>
+                  <p className="font-medium">{t('planFullTitle')}</p>
                   <p className="text-muted-foreground text-xs leading-5">
-                    Disable {currentRestaurant.name} to clear the active slot and create this new
-                    restaurant. The disabled restaurant is kept in your switcher as read-only, so
-                    you can review it or delete it later from Settings.
+                    {t('planFullDescription', { name: currentRestaurant.name })}
                   </p>
                   <div className="space-y-1.5">
-                    <Label htmlFor="disable-confirmation">Type confirm to continue</Label>
+                    <Label htmlFor="disable-confirmation">{t('confirmLabel')}</Label>
                     <Input
                       id="disable-confirmation"
                       value={confirmation}
@@ -207,12 +198,12 @@ export function AddRestaurantSheet({
               disabled={busy || !name.trim() || !canDisableCurrentRestaurant}
             >
               {submitting === 'disable' ? <Loader2 className="size-3.5 animate-spin" /> : null}
-              Disable current and add
+              {t('disableAndAdd')}
             </Button>
           ) : null}
           <Button type="submit" onClick={handleSubmit} disabled={busy || !name.trim()}>
             {submitting === 'add' ? <Loader2 className="size-3.5 animate-spin" /> : null}
-            Add restaurant
+            {t('submit')}
           </Button>
           <Button
             type="button"
@@ -220,7 +211,7 @@ export function AddRestaurantSheet({
             onClick={() => onOpenChange(false)}
             disabled={busy}
           >
-            Cancel
+            {t('cancel')}
           </Button>
         </SheetFooter>
       </SheetContent>

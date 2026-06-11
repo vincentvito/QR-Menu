@@ -1,18 +1,19 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 
 // Section IDs and labels must mirror the <section id="..."> anchors in
 // SettingsForm.tsx. Extract to a const so both files reference the same
 // list — easy to audit when we add a new section.
 export const SETTINGS_SECTIONS = [
-  { id: 'settings-restaurant', label: 'Restaurant' },
-  { id: 'settings-links', label: 'Links' },
-  { id: 'settings-menu-design', label: 'Menu design' },
-  { id: 'settings-brand', label: 'Brand' },
-  { id: 'settings-qr', label: 'QR code style' },
-  { id: 'settings-wifi', label: 'WiFi' },
+  { id: 'settings-restaurant', labelKey: 'restaurant' },
+  { id: 'settings-links', labelKey: 'links' },
+  { id: 'settings-menu-design', labelKey: 'menuDesign' },
+  { id: 'settings-brand', labelKey: 'brand' },
+  { id: 'settings-qr', labelKey: 'qr' },
+  { id: 'settings-wifi', labelKey: 'wifi' },
 ] as const
 
 // Sticky left-hand quick-nav for the Settings page. Clicking a label
@@ -20,6 +21,7 @@ export const SETTINGS_SECTIONS = [
 // dashboard's sticky header. Scroll-spy highlights whichever section is
 // currently under the top of the viewport.
 export function SettingsSideNav() {
+  const t = useTranslations('Settings')
   const [active, setActive] = useState<string>(SETTINGS_SECTIONS[0].id)
 
   useEffect(() => {
@@ -57,7 +59,7 @@ export function SettingsSideNav() {
   }
 
   return (
-    <nav aria-label="Settings sections" className="flex flex-col gap-1">
+    <nav aria-label={t('sectionsAria')} className="flex flex-col gap-1">
       {SETTINGS_SECTIONS.map((s) => {
         const isActive = active === s.id
         return (
@@ -73,7 +75,7 @@ export function SettingsSideNav() {
                 : 'text-muted-foreground hover:bg-card hover:text-foreground',
             )}
           >
-            {s.label}
+            {t(`sections.${s.labelKey}`)}
           </a>
         )
       })}

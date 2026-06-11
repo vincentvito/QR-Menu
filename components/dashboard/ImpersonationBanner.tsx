@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Eye, Loader2 } from 'lucide-react'
 import { authClient } from '@/lib/auth-client'
 import { Button } from '@/components/ui/button'
@@ -11,6 +12,7 @@ interface ImpersonationBannerProps {
 }
 
 export function ImpersonationBanner({ impersonatedEmail }: ImpersonationBannerProps) {
+  const t = useTranslations('Dashboard.banners.impersonation')
   const router = useRouter()
   const [stopping, setStopping] = useState(false)
 
@@ -29,7 +31,7 @@ export function ImpersonationBanner({ impersonatedEmail }: ImpersonationBannerPr
     <div className="bg-foreground text-background sticky top-0 z-50 flex items-center justify-center gap-3 px-4 py-2 text-xs">
       <Eye className="size-3.5" aria-hidden="true" />
       <span>
-        Impersonating <strong>{impersonatedEmail}</strong>
+        {t('label')} <strong>{impersonatedEmail}</strong>
       </span>
       <Button
         type="button"
@@ -40,7 +42,7 @@ export function ImpersonationBanner({ impersonatedEmail }: ImpersonationBannerPr
         onClick={stop}
       >
         {stopping ? <Loader2 className="size-3 animate-spin" aria-hidden="true" /> : null}
-        Stop
+        {t('stop')}
       </Button>
     </div>
   )

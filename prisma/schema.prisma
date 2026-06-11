@@ -188,6 +188,10 @@ model MenuItem {
   name         String
   description  String    @default("")
   price        Float     @default(0)
+  // Optional size/price variants: [{ label: "Small", price: 12 }, ...].
+  // When non-empty these win over `price` for display; `price` stays as the
+  // single-price fallback so existing items are untouched.
+  variants     Json      @default("[]")
   tags         String[]  @default([])
   badges       String[]  @default([])
   specialUntil DateTime?

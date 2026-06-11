@@ -32,9 +32,7 @@ export function BrandMark({
       <span className={cn('inline-flex items-center justify-center', s.box, fill)}>
         <QRDots size={s.dots} seed={7} />
       </span>
-      {!iconOnly && (
-        <span className={cn('font-semibold tracking-[-0.02em]', s.text)}>Qtable</span>
-      )}
+      {!iconOnly && <span className={cn('font-semibold tracking-[-0.02em]', s.text)}>Qtable</span>}
     </span>
   )
 }

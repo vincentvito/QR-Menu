@@ -2,8 +2,10 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { getLocale, getTranslations } from 'next-intl/server'
 import { getCachedSession } from '@/lib/auth'
 import { BrandMark } from '@/components/brand/BrandMark'
+import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { Kicker } from '@/components/ui/kicker'
 import { LoginForm } from './LoginForm'
 
@@ -15,9 +17,13 @@ type LoginPageProps = {
 
 const HERO_IMAGE = '/images/auth-mobile-menu-hero.png'
 
-export const metadata: Metadata = {
-  title: 'Sign in',
-  robots: { index: false, follow: false },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('Auth')
+
+  return {
+    title: t('metadataTitle'),
+    robots: { index: false, follow: false },
+  }
 }
 
 function normalizeCallbackUrl(raw: string | string[] | undefined) {
@@ -26,7 +32,12 @@ function normalizeCallbackUrl(raw: string | string[] | undefined) {
 }
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
-  const [session, params] = await Promise.all([getCachedSession(), searchParams])
+  const [t, locale, session, params] = await Promise.all([
+    getTranslations('Auth'),
+    getLocale(),
+    getCachedSession(),
+    searchParams,
+  ])
   const callbackUrl = normalizeCallbackUrl(params?.callbackUrl)
 
   if (session) redirect(callbackUrl)
@@ -39,9 +50,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     >
       <section className="flex min-h-screen items-start px-[clamp(20px,6vw,72px)] py-8 lg:py-12">
         <div className="mx-auto flex w-full max-w-[520px] flex-col gap-7">
-          <Link href="/" aria-label="Qtable home" className="self-start">
-            <BrandMark size="lg" />
-          </Link>
+          <div className="flex items-center justify-between gap-4">
+            <Link href="/" aria-label={t('homeAria')} className="self-start">
+              <BrandMark size="lg" />
+            </Link>
+            <LanguageSwitcher currentLocale={locale} />
+          </div>
 
           <div className="border-cream-line bg-foreground relative h-44 overflow-hidden rounded-[28px] border shadow-[0_18px_50px_rgba(26,30,23,0.18)] sm:h-56 lg:hidden">
             <Image
@@ -57,7 +71,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
           <div className="space-y-8">
             <div className="motion-safe:animate-login-copy space-y-4">
-              <Kicker tone="pop">Built for busy service</Kicker>
+              <Kicker tone="pop">{t('hero.kicker')}</Kicker>
               <div className="space-y-3">
                 <h1
                   className="max-w-[12ch] font-semibold"
@@ -67,11 +81,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                     letterSpacing: '-0.035em',
                   }}
                 >
-                  Your menu is already on the <i className="text-pop">table.</i>
+                  {t('hero.titleA')} <i className="text-pop">{t('hero.titleB')}</i>
                 </h1>
                 <p className="text-muted-foreground max-w-md text-base leading-7">
-                  Sign in to polish mobile menus, QR codes, dish photos, and restaurant settings
-                  before guests scan.
+                  {t('hero.description')}
                 </p>
               </div>
             </div>
@@ -87,7 +100,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <div className="bg-foreground motion-safe:animate-login-form sticky top-4 h-[calc(100vh-2rem)] min-h-[640px] overflow-hidden rounded-[36px]">
           <Image
             src={HERO_IMAGE}
-            alt="Restaurant table with QR menu tent and mobile digital menus"
+            alt={t('hero.imageAlt')}
             fill
             priority
             sizes="52vw"
@@ -102,7 +115,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
           <div className="text-background absolute right-8 bottom-8 left-8">
             <div className="border-background/25 max-w-xl border-t pt-6">
-              <Kicker tone="accent">From scan to supper</Kicker>
+              <Kicker tone="accent">{t('side.kicker')}</Kicker>
               <p
                 className="mt-4 max-w-[760px] font-semibold"
                 style={{
@@ -111,7 +124,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
                   letterSpacing: '-0.02em',
                 }}
               >
-                Designed for restaurants that move fast and still care about <i>taste.</i>
+                {t('side.titleA')} <i>{t('side.titleB')}</i>
               </p>
             </div>
           </div>

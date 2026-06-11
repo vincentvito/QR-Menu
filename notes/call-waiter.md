@@ -21,13 +21,15 @@ global QR. When **on**, it also shows a "Generate table QRs" section.
 ## v1 route + auth behavior
 
 **Call button**
-- Only rendered when (a) Table service is on for the restaurant *and*
+
+- Only rendered when (a) Table service is on for the restaurant _and_
   (b) the table cookie is present.
 - POSTs `/api/call-waiter` with `{ tableId, reason? }`.
 - Rate-limited on the server by cookie id + IP + tableId
   (e.g. 1 call / 90 s per table, burst of 3).
 
 **Dashboard — staff inbox**
+
 - New dashboard surface showing incoming calls in real time (start
   with polling every 10 s; upgrade to SSE/WebSocket later if needed).
 - Each call has dismiss / acknowledged / handled states + a small sound
@@ -35,11 +37,13 @@ global QR. When **on**, it also shows a "Generate table QRs" section.
 - Retention: auto-archive after 30 min.
 
 **Table QR generation**
+
 - Extension of the existing per-menu QR page (`/dashboard/menus/[slug]/qr`):
   let owners pick a count (e.g. 1–50), export as PDF or ZIP of SVGs
   with each QR labeled "Table N".
 
 **Abuse model**
+
 - Photographed QR from the street → covered by the rate limit + staff
   dismissal. Acceptable residual risk.
 - No geolocation. Intrusive permission prompt, poor accuracy (10–100 m),
@@ -59,6 +63,7 @@ through the app (Business/Enterprise perk). Restaurant orders a batch,
 we fulfill and bill via Stripe.
 
 **Caveats before committing**:
+
 - $0.30–$1/tag hard cost.
 - ~5–10 % of phones either have NFC off or need the Shortcuts app.
 - Physical fulfillment = operational complexity (stock, shipping,

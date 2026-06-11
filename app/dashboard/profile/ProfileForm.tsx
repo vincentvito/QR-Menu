@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { authClient } from '@/lib/auth-client'
@@ -14,6 +15,7 @@ interface ProfileFormProps {
 }
 
 export function ProfileForm({ initial }: ProfileFormProps) {
+  const t = useTranslations('Profile')
   const router = useRouter()
   const [name, setName] = useState(initial.name)
   const [saving, setSaving] = useState(false)
@@ -24,20 +26,20 @@ export function ProfileForm({ initial }: ProfileFormProps) {
     e.preventDefault()
     const trimmed = name.trim()
     if (!trimmed) {
-      toast.error('Display name can\u2019t be empty')
+      toast.error(t('errors.nameRequired'))
       return
     }
     setSaving(true)
     try {
       const res = await authClient.updateUser({ name: trimmed })
       if (res.error) {
-        toast.error(res.error.message ?? 'Could not save')
+        toast.error(res.error.message ?? t('errors.saveFailed'))
         return
       }
-      toast.success('Profile updated')
+      toast.success(t('toast.updated'))
       router.refresh()
     } catch {
-      toast.error('Network error — please try again')
+      toast.error(t('errors.network'))
     } finally {
       setSaving(false)
     }
@@ -46,34 +48,32 @@ export function ProfileForm({ initial }: ProfileFormProps) {
   return (
     <form onSubmit={save} className="border-cream-line bg-card space-y-5 rounded-2xl border p-8">
       <div className="space-y-2">
-        <Label htmlFor="profile-name">Display name</Label>
+        <Label htmlFor="profile-name">{t('displayName')}</Label>
         <Input
           id="profile-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           maxLength={120}
-          placeholder="Your name"
+          placeholder={t('namePlaceholder')}
           disabled={saving}
         />
-        <p className="text-muted-foreground text-xs">Shown to your teammates and in the sidebar.</p>
+        <p className="text-muted-foreground text-xs">{t('nameHint')}</p>
       </div>
 
       <div className="space-y-2">
-        <Label>Email</Label>
+        <Label>{t('email')}</Label>
         <Input value={initial.email} disabled readOnly />
-        <p className="text-muted-foreground text-xs">
-          Your login email — can&apos;t be changed yet.
-        </p>
+        <p className="text-muted-foreground text-xs">{t('emailHint')}</p>
       </div>
 
       <Button type="submit" disabled={saving || !dirty} className="w-full">
         {saving ? (
           <>
             <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-            <span>Saving…</span>
+            <span>{t('saving')}</span>
           </>
         ) : (
-          <span>Save changes</span>
+          <span>{t('saveChanges')}</span>
         )}
       </Button>
     </form>

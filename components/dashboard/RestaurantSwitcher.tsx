@@ -2,6 +2,7 @@
 
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useState, useTransition } from 'react'
 import { Check, ChevronsUpDown, Plus, Store } from 'lucide-react'
 import {
@@ -30,6 +31,7 @@ interface RestaurantSwitcherProps {
 // which pins it on the session; a router.refresh() brings the dashboard back
 // with the new active restaurant wired through every RSC.
 export function RestaurantSwitcher({ current, restaurants }: RestaurantSwitcherProps) {
+  const t = useTranslations('Dashboard.restaurants')
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [open, setOpen] = useState(false)
@@ -64,7 +66,7 @@ export function RestaurantSwitcher({ current, restaurants }: RestaurantSwitcherP
             type="button"
             disabled={isPending}
             className="border-cream-line hover:bg-muted/50 data-[state=open]:bg-muted/50 flex w-full items-center gap-2 rounded-lg border px-2 py-2 text-left transition-colors group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:border-transparent group-data-[collapsible=icon]:p-0 disabled:opacity-60"
-            aria-label={`Current restaurant: ${current.name}. Click to switch.`}
+            aria-label={t('switcherAria', { name: current.name })}
           >
             {current.logo ? (
               <div className="border-cream-line bg-background relative size-7 shrink-0 overflow-hidden rounded-md border">
@@ -86,7 +88,7 @@ export function RestaurantSwitcher({ current, restaurants }: RestaurantSwitcherP
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="right" className="w-[240px]" sideOffset={6}>
           <DropdownMenuLabel className="text-muted-foreground text-[11px] font-medium tracking-[0.12em] uppercase">
-            Restaurants
+            {t('label')}
           </DropdownMenuLabel>
           {restaurants.map((r) => (
             <DropdownMenuItem
@@ -114,7 +116,7 @@ export function RestaurantSwitcher({ current, restaurants }: RestaurantSwitcherP
             className="gap-2"
           >
             <Plus className="size-3.5" aria-hidden="true" />
-            <span>Add restaurant</span>
+            <span>{t('addRestaurant')}</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

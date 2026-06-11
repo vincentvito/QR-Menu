@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useLocale, useTranslations } from 'next-intl'
 import { Loader2, Mail, Trash2, UserPlus } from 'lucide-react'
 import { toast } from 'sonner'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -38,13 +39,16 @@ interface TeamPanelProps {
   invitations: Invitation[]
 }
 
-const ROLE_LABEL: Record<string, string> = {
-  owner: 'Owner',
-  admin: 'Admin',
-  member: 'Member',
+function roleLabel(role: string, t: ReturnType<typeof useTranslations<'Team'>>) {
+  if (role === 'owner') return t('roles.owner')
+  if (role === 'admin') return t('roles.admin')
+  if (role === 'member') return t('roles.member')
+  return role
 }
 
 export function TeamPanel({ canManage, viewerUserId, members, invitations }: TeamPanelProps) {
+  const t = useTranslations('Team')
+  const locale = useLocale()
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<'admin' | 'member'>('member')
@@ -64,14 +68,14 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
       })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error ?? 'Could not send invite')
+        toast.error(data.error ?? t('errors.sendFailed'))
         return
       }
-      toast.success(`Invitation sent to ${trimmed}`)
+      toast.success(t('toast.inviteSent', { email: trimmed }))
       setEmail('')
       router.refresh()
     } catch {
-      toast.error('Network error — please try again')
+      toast.error(t('errors.network'))
     } finally {
       setSending(false)
     }
@@ -85,12 +89,12 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
-        toast.error(data.error ?? 'Could not cancel')
+        toast.error(data.error ?? t('errors.cancelFailed'))
         return
       }
       router.refresh()
     } catch {
-      toast.error('Network error — please try again')
+      toast.error(t('errors.network'))
     } finally {
       setCancellingId(null)
     }
@@ -100,15 +104,15 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
     <div className="space-y-8">
       {canManage && (
         <section className="border-cream-line bg-card rounded-2xl border p-6">
-          <SectionHeading className="mb-4">Invite someone</SectionHeading>
+          <SectionHeading className="mb-4">{t('invite.title')}</SectionHeading>
           <form onSubmit={sendInvite} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="invite-email">Email</Label>
+              <Label htmlFor="invite-email">{t('invite.email')}</Label>
               <Input
                 id="invite-email"
                 type="email"
                 autoComplete="email"
-                placeholder="teammate@restaurant.com"
+                placeholder={t('invite.emailPlaceholder')}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -116,7 +120,7 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="invite-role">Role</Label>
+              <Label htmlFor="invite-role">{t('invite.role')}</Label>
               <Select
                 value={role}
                 onValueChange={(v) => setRole(v as 'admin' | 'member')}
@@ -126,8 +130,8 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="member">Member</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="member">{t('roles.member')}</SelectItem>
+                  <SelectItem value="admin">{t('roles.admin')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -135,25 +139,29 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
               {sending ? (
                 <>
                   <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                  <span>Sending…</span>
+                  <span>{t('invite.sending')}</span>
                 </>
               ) : (
                 <>
                   <UserPlus className="size-4" aria-hidden="true" />
-                  <span>Send invite</span>
+                  <span>{t('invite.send')}</span>
                 </>
               )}
             </Button>
           </form>
           <p className="text-muted-foreground mt-3 text-xs">
-            <strong>Member</strong> can edit menus. <strong>Admin</strong> can also edit restaurant
-            settings and invite other teammates.
+            {t.rich('invite.helper', {
+              member: (chunks) => <strong>{chunks}</strong>,
+              admin: (chunks) => <strong>{chunks}</strong>,
+            })}
           </p>
         </section>
       )}
 
       <section>
-        <SectionHeading className="mb-3">Members ({members.length})</SectionHeading>
+        <SectionHeading className="mb-3">
+          {t('members.title', { count: members.length })}
+        </SectionHeading>
         <ul className="border-cream-line divide-cream-line bg-card divide-y overflow-hidden rounded-2xl border">
           {members.map((m) => {
             const initials =
@@ -177,12 +185,14 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <span className="truncate">{m.user.name || m.user.email}</span>
-                    {isViewer && <span className="text-muted-foreground text-xs">(you)</span>}
+                    {isViewer && (
+                      <span className="text-muted-foreground text-xs">{t('members.you')}</span>
+                    )}
                   </div>
                   <div className="text-muted-foreground truncate text-xs">{m.user.email}</div>
                 </div>
                 <span className="border-cream-line bg-background text-muted-foreground shrink-0 rounded-full border px-2.5 py-0.5 text-xs">
-                  {ROLE_LABEL[m.role] ?? m.role}
+                  {roleLabel(m.role, t)}
                 </span>
               </li>
             )
@@ -193,7 +203,7 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
       {invitations.length > 0 && (
         <section>
           <SectionHeading className="mb-3">
-            Pending invitations ({invitations.length})
+            {t('pending.title', { count: invitations.length })}
           </SectionHeading>
           <ul className="border-cream-line divide-cream-line bg-card divide-y overflow-hidden rounded-2xl border">
             {invitations.map((inv) => (
@@ -204,18 +214,20 @@ export function TeamPanel({ canManage, viewerUserId, members, invitations }: Tea
                 <div className="min-w-0 flex-1">
                   <div className="truncate text-sm font-medium">{inv.email}</div>
                   <div className="text-muted-foreground truncate text-xs">
-                    Expires {new Date(inv.expiresAt).toLocaleDateString()}
+                    {t('pending.expires', {
+                      date: new Date(inv.expiresAt).toLocaleDateString(locale),
+                    })}
                   </div>
                 </div>
                 <span className="border-cream-line bg-background text-muted-foreground shrink-0 rounded-full border px-2.5 py-0.5 text-xs">
-                  {ROLE_LABEL[inv.role] ?? inv.role}
+                  {roleLabel(inv.role, t)}
                 </span>
                 {canManage && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    aria-label={`Cancel invitation to ${inv.email}`}
+                    aria-label={t('pending.cancelAria', { email: inv.email })}
                     disabled={cancellingId === inv.id}
                     onClick={() => cancelInvite(inv.id)}
                   >

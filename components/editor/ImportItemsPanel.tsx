@@ -1,11 +1,31 @@
 'use client'
 
-import { useRef, useState } from 'react'
-import { FileText, Image as ImageIcon, Loader2, Plus, Sparkles, Upload, X } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
+import {
+  ChevronDown,
+  FileText,
+  Image as ImageIcon,
+  Loader2,
+  Plus,
+  Sparkles,
+  Upload,
+  X,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { PillButton } from '@/components/ui/pill-button'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { VariantPriceChips } from '@/components/menu/VariantPriceChips'
+import { formatMenuPrice } from '@/lib/menus/price-format'
 import { cn } from '@/lib/utils'
 
 const ACCEPTED_IMPORT_MIME = [
@@ -17,6 +37,7 @@ const ACCEPTED_IMPORT_MIME = [
   'application/pdf',
 ]
 const ACCEPT_IMPORT_ATTR = ACCEPTED_IMPORT_MIME.join(',')
+const MAX_IMPORT_FILES = 3
 
 interface EditorItem {
   id: string
@@ -24,6 +45,7 @@ interface EditorItem {
   name: string
   description: string
   price: number
+  variants: { label: string; price: number }[]
   tags: string[]
   badges: string[]
   specialUntil: string | null
@@ -35,22 +57,30 @@ interface ImportPreviewItem {
   category: string
   description: string
   price: number
+  // Size/price variants from extraction — passed through untouched so the
+  // persist call keeps them.
+  variants: { label: string; price: number }[]
   tags: string[]
 }
 
 export function ImportItemsPanel({
   slug,
   category,
+  categoryNames,
+  symbol,
   onCancel,
   onApplied,
 }: {
   slug: string
   category: string | null
+  categoryNames: string[]
+  symbol: string
   onCancel: () => void
   onApplied: (items: EditorItem[]) => void
 }) {
+  const t = useTranslations('Editor.import')
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   const [text, setText] = useState('')
   const [items, setItems] = useState<ImportPreviewItem[]>([])
   const [error, setError] = useState('')
@@ -58,39 +88,69 @@ export function ImportItemsPanel({
   const [isPreviewing, setIsPreviewing] = useState(false)
   const [isApplying, setIsApplying] = useState(false)
   const busy = isPreviewing || isApplying
-  const FileIcon = file?.type === 'application/pdf' ? FileText : ImageIcon
+  const previewCategoryNames = useMemo(() => {
+    const names = new Set(categoryNames)
+    for (const item of items) {
+      const trimmed = item.category.trim()
+      if (trimmed) names.add(trimmed)
+    }
+    return Array.from(names)
+  }, [categoryNames, items])
 
-  function validateAndSetFile(nextFile: File | null) {
-    if (!nextFile) {
-      setFile(null)
+  function sameFile(a: File, b: File) {
+    return a.name === b.name && a.size === b.size && a.lastModified === b.lastModified
+  }
+
+  function validateAndSetFiles(nextFiles: File[]) {
+    // Re-selecting the same file must fire onChange again, and a drop with no
+    // files (e.g. dragged text) must not wipe the current selection.
+    if (fileInputRef.current) fileInputRef.current.value = ''
+    if (nextFiles.length === 0) return
+    const mergedFiles = [...files]
+    for (const file of nextFiles) {
+      if (!mergedFiles.some((existing) => sameFile(existing, file))) {
+        mergedFiles.push(file)
+      }
+    }
+    if (mergedFiles.length > MAX_IMPORT_FILES) {
+      setError(t('errors.tooManyFiles', { limit: MAX_IMPORT_FILES }))
       return
     }
-    if (!ACCEPTED_IMPORT_MIME.includes(nextFile.type)) {
-      setError('Upload a PDF, JPG, PNG, WEBP, HEIC, or HEIF file.')
+    if (mergedFiles.some((file) => !ACCEPTED_IMPORT_MIME.includes(file.type))) {
+      setError(t('errors.badType'))
       return
     }
     setError('')
-    setFile(nextFile)
+    setFiles(mergedFiles)
     setItems([])
   }
 
-  function clearFile() {
-    setFile(null)
+  function clearFiles() {
+    setFiles([])
+    setItems([])
+    setError('')
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  function removeFile(index: number) {
+    setFiles((current) => current.filter((_, i) => i !== index))
+    setItems([])
+    setError('')
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   async function previewImport(e: React.FormEvent) {
     e.preventDefault()
     if (busy) return
-    if (!file && !text.trim()) {
-      setError('Upload a file or paste menu text.')
+    if (files.length === 0 && !text.trim()) {
+      setError(t('errors.empty'))
       return
     }
     setError('')
     setIsPreviewing(true)
     try {
       const formData = new FormData()
-      if (file) formData.append('file', file)
+      for (const file of files) formData.append('file', file)
       if (text.trim()) formData.append('text', text.trim())
       if (category) formData.append('category', category)
       const res = await fetch(`/api/menus/${slug}/imports`, { method: 'POST', body: formData })
@@ -99,12 +159,12 @@ export function ImportItemsPanel({
         error?: string
       }
       if (!res.ok || !data.items) {
-        setError(data.error ?? 'Could not read that menu.')
+        setError(data.error ?? t('errors.readFailed'))
         return
       }
       setItems(data.items)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Import failed')
+      setError(err instanceof Error ? err.message : t('errors.importFailed'))
     } finally {
       setIsPreviewing(false)
     }
@@ -125,16 +185,22 @@ export function ImportItemsPanel({
         error?: string
       }
       if (!res.ok || !data.items) {
-        setError(data.error ?? 'Could not add those items.')
+        setError(data.error ?? t('errors.addFailed'))
         return
       }
-      toast.success(`${data.items.length} item${data.items.length === 1 ? '' : 's'} added`)
+      toast.success(t('toast.added', { count: data.items.length }))
       onApplied(data.items)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Import failed')
+      setError(err instanceof Error ? err.message : t('errors.importFailed'))
     } finally {
       setIsApplying(false)
     }
+  }
+
+  function updateItemCategory(index: number, nextCategory: string) {
+    setItems((cur) =>
+      cur.map((item, i) => (i === index ? { ...item, category: nextCategory } : item)),
+    )
   }
 
   return (
@@ -142,12 +208,10 @@ export function ImportItemsPanel({
       <div className="mb-4 flex items-start justify-between gap-3">
         <div>
           <h3 className="text-sm font-semibold tracking-tight">
-            {category ? `Import items into ${category}` : 'Import more menu items'}
+            {category ? t('titleForCategory', { category }) : t('title')}
           </h3>
           <p className="text-muted-foreground mt-1 text-sm">
-            {category
-              ? 'Everything extracted will be added to this category only.'
-              : 'New categories can be created from the uploaded menu. Existing dishes stay untouched.'}
+            {category ? t('descriptionForCategory') : t('description')}
           </p>
         </div>
         <Button
@@ -155,7 +219,7 @@ export function ImportItemsPanel({
           size="icon-sm"
           variant="ghost"
           onClick={onCancel}
-          aria-label="Close import"
+          aria-label={t('close')}
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </Button>
@@ -163,65 +227,96 @@ export function ImportItemsPanel({
 
       <form onSubmit={previewImport} className="space-y-4">
         <div>
-          {file ? (
-            <div className="border-cream-line bg-background flex items-center gap-3 rounded-[14px] border p-3">
-              <div className="bg-accent text-accent-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-lg">
-                <FileIcon className="h-5 w-5" aria-hidden="true" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium">{file.name}</div>
-                <div className="text-muted-foreground text-xs">{formatBytes(file.size)}</div>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                onClick={clearFile}
-                disabled={busy}
-              >
-                <X className="h-4 w-4" aria-hidden="true" />
-              </Button>
-            </div>
-          ) : (
-            <label
-              htmlFor={`category-import-file-${category ?? 'menu'}`}
-              onDragOver={(e) => {
-                e.preventDefault()
-                setIsDragging(true)
-              }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={(e) => {
-                e.preventDefault()
-                setIsDragging(false)
-                const dropped = e.dataTransfer.files?.[0]
-                if (dropped) validateAndSetFile(dropped)
-              }}
-              className={cn(
-                'flex cursor-pointer items-center gap-3 rounded-[14px] border-2 border-dashed px-3 py-3 transition-colors',
-                isDragging
-                  ? 'border-foreground bg-background'
-                  : 'border-cream-line bg-background/50 hover:border-foreground/40 hover:bg-background',
-              )}
-            >
+          <label
+            htmlFor={`category-import-file-${category ?? 'menu'}`}
+            onDragOver={(e) => {
+              e.preventDefault()
+              setIsDragging(true)
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault()
+              setIsDragging(false)
+              validateAndSetFiles(Array.from(e.dataTransfer.files ?? []))
+            }}
+            className={cn(
+              'block cursor-pointer rounded-[14px] border-2 border-dashed px-3 py-3 transition-colors',
+              isDragging
+                ? 'border-foreground bg-background'
+                : 'border-cream-line bg-background/50 hover:border-foreground/40 hover:bg-background',
+            )}
+          >
+            <div className="flex items-center gap-3">
               <div className="bg-card text-muted-foreground flex h-9 w-9 shrink-0 items-center justify-center rounded-full">
                 <Upload className="h-4 w-4" aria-hidden="true" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium">Upload a PDF or menu photo</div>
-                <div className="text-muted-foreground truncate text-[11px]">
-                  PDF, JPG, PNG, WEBP, HEIC, or HEIF
-                </div>
+                <div className="text-sm font-medium">{t('uploadLabel')}</div>
+                <div className="text-muted-foreground truncate text-[11px]">{t('uploadHint')}</div>
               </div>
-            </label>
-          )}
+            </div>
+
+            {files.length > 0 ? (
+              <div className="mt-3 space-y-2">
+                {files.map((file, index) => {
+                  const FileIcon = file.type === 'application/pdf' ? FileText : ImageIcon
+
+                  return (
+                    <div
+                      key={`${file.name}-${file.size}-${file.lastModified}`}
+                      className="border-cream-line bg-card flex items-center gap-2 rounded-[10px] border px-2.5 py-2"
+                    >
+                      <FileIcon
+                        className="text-muted-foreground h-4 w-4 shrink-0"
+                        aria-hidden="true"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-xs font-medium">{file.name}</div>
+                        <div className="text-muted-foreground text-[11px]">
+                          {formatBytes(file.size)}
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          removeFile(index)
+                        }}
+                        disabled={busy}
+                        aria-label={t('removeFile', { file: file.name })}
+                      >
+                        <X className="h-4 w-4" aria-hidden="true" />
+                      </Button>
+                    </div>
+                  )
+                })}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    clearFiles()
+                  }}
+                  disabled={busy}
+                  className="h-8 px-2"
+                >
+                  {t('clearFiles')}
+                </Button>
+              </div>
+            ) : null}
+          </label>
           <input
             ref={fileInputRef}
             id={`category-import-file-${category ?? 'menu'}`}
             type="file"
+            multiple
             accept={ACCEPT_IMPORT_ATTR}
             className="sr-only"
             disabled={busy}
-            onChange={(e) => validateAndSetFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => validateAndSetFiles(Array.from(e.target.files ?? []))}
           />
         </div>
 
@@ -230,7 +325,7 @@ export function ImportItemsPanel({
             htmlFor={`category-import-text-${category ?? 'menu'}`}
             className="text-muted-foreground text-xs font-semibold"
           >
-            Or paste menu text
+            {t('pasteLabel')}
           </label>
           <Textarea
             id={`category-import-text-${category ?? 'menu'}`}
@@ -241,7 +336,7 @@ export function ImportItemsPanel({
             }}
             disabled={busy}
             rows={4}
-            placeholder="Beer&#10;Lager 7&#10;IPA 8"
+            placeholder={t('pastePlaceholder')}
             className="min-h-[100px]"
           />
         </div>
@@ -256,14 +351,14 @@ export function ImportItemsPanel({
           type="submit"
           variant="outline"
           size="sm"
-          disabled={busy || (!file && !text.trim())}
+          disabled={busy || (files.length === 0 && !text.trim())}
         >
           {isPreviewing ? (
             <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
           ) : (
             <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
           )}
-          Preview items
+          {t('preview')}
         </Button>
       </form>
 
@@ -271,7 +366,7 @@ export function ImportItemsPanel({
         <div className="mt-5 space-y-3">
           <div className="flex items-center justify-between gap-3">
             <h4 className="text-sm font-semibold tracking-tight">
-              {items.length} item{items.length === 1 ? '' : 's'} ready to add
+              {t('itemsReady', { count: items.length })}
             </h4>
             <PillButton
               type="button"
@@ -285,7 +380,7 @@ export function ImportItemsPanel({
               ) : (
                 <Plus className="h-3.5 w-3.5" aria-hidden="true" />
               )}
-              Add to menu
+              {t('addToMenu')}
             </PillButton>
           </div>
           <ul className="border-cream-line max-h-[320px] overflow-auto rounded-[14px] border">
@@ -297,22 +392,61 @@ export function ImportItemsPanel({
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                     <span className="font-semibold tracking-[-0.01em]">{item.name}</span>
-                    <span className="text-muted-foreground text-xs">{item.category}</span>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          disabled={busy}
+                          className="h-7 max-w-[180px] rounded-full px-2 text-xs"
+                          aria-label={t('changeCategory', { item: item.name })}
+                        >
+                          <span className="truncate">{item.category}</span>
+                          <ChevronDown data-icon="inline-end" aria-hidden="true" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="start"
+                        className="max-h-[280px] w-56 overflow-y-auto"
+                      >
+                        <DropdownMenuLabel>{t('moveToCategory')}</DropdownMenuLabel>
+                        <DropdownMenuRadioGroup
+                          value={item.category}
+                          onValueChange={(nextCategory) => updateItemCategory(index, nextCategory)}
+                        >
+                          {previewCategoryNames.map((name) => (
+                            <DropdownMenuRadioItem key={name} value={name}>
+                              {name}
+                            </DropdownMenuRadioItem>
+                          ))}
+                        </DropdownMenuRadioGroup>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                   {item.description ? (
                     <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
                       {item.description}
                     </p>
                   ) : null}
+                  {item.variants.length > 0 ? (
+                    <VariantPriceChips
+                      symbol={symbol}
+                      variants={item.variants}
+                      size="sm"
+                      className="mt-2"
+                    />
+                  ) : null}
                 </div>
-                {item.price > 0 ? (
+                {item.price > 0 && item.variants.length === 0 ? (
                   <span className="bg-pop text-pop-foreground shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold">
-                    {formatPriceInput(item.price)}
+                    {symbol}
+                    {formatMenuPrice(symbol, item.price)}
                   </span>
                 ) : null}
                 <button
                   type="button"
-                  aria-label={`Remove ${item.name}`}
+                  aria-label={t('removeItem', { item: item.name })}
                   onClick={() => setItems((cur) => cur.filter((_, i) => i !== index))}
                   className="text-muted-foreground hover:text-destructive grid size-7 shrink-0 place-items-center rounded-full transition-colors"
                   disabled={busy}
@@ -332,8 +466,4 @@ function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`
   return `${(n / (1024 * 1024)).toFixed(1)} MB`
-}
-
-function formatPriceInput(n: number): string {
-  return Number.isInteger(n) ? String(n) : n.toFixed(2)
 }

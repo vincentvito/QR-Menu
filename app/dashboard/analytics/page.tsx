@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation'
+import { getTranslations } from 'next-intl/server'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import {
   getDailyScans,
@@ -16,9 +17,10 @@ interface PageProps {
 // the sidebar swaps which venue's analytics you see. Restaurant-level
 // staff don't need this view (they shouldn't see business numbers).
 export default async function AnalyticsPage({ searchParams }: PageProps) {
-  const [{ restaurant, scope }, sp] = await Promise.all([
+  const [{ restaurant, scope }, sp, t] = await Promise.all([
     getDashboardContext(),
     searchParams,
+    getTranslations('Analytics'),
   ])
   if (scope === 'restaurant') redirect('/dashboard/menus')
 
@@ -38,18 +40,12 @@ export default async function AnalyticsPage({ searchParams }: PageProps) {
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
       <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Analytics</h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
         <p className="text-muted-foreground mt-1 text-sm">
-          How guests are using your public menu at {restaurant.name}.
+          {t('description', { restaurant: restaurant.name })}
         </p>
       </div>
-      <AnalyticsDashboard
-        range={range}
-        kpis={kpis}
-        daily={daily}
-        peak={peak}
-        social={social}
-      />
+      <AnalyticsDashboard range={range} kpis={kpis} daily={daily} peak={peak} social={social} />
     </main>
   )
 }

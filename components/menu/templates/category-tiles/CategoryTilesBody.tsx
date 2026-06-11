@@ -1,9 +1,12 @@
 'use client'
 
 import { memo, useMemo, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { ArrowLeft, Search, Sparkles, X } from 'lucide-react'
 import { BadgeRow } from '@/components/menu/BadgeRow'
+import { DietaryTagPills } from '@/components/menu/DietaryTagPills'
 import { PriceChip } from '@/components/menu/PriceChip'
+import { VariantPriceChips } from '@/components/menu/VariantPriceChips'
 import { categoryIcon } from '@/lib/menus/category-icon'
 import { cn } from '@/lib/utils'
 import type {
@@ -31,6 +34,7 @@ export function CategoryTilesBody({
   onQueryChange,
   hasQuery,
 }: TemplateBodyProps) {
+  const t = useTranslations('MenuView')
   // null = grid view. SPECIALS_KEY = specials list. Otherwise matches a
   // group id. Preview stays on the grid so the picker shows the tiles.
   const [selectedRaw, setSelected] = useState<string | null>(null)
@@ -77,7 +81,7 @@ export function CategoryTilesBody({
           />
         ) : selected === SPECIALS_KEY ? (
           <CategoryView
-            title="Today's Specials"
+            title={t('todaysSpecials')}
             accent="pop"
             items={specials}
             symbol={symbol}
@@ -148,6 +152,7 @@ interface SpecialsTileProps {
 }
 
 function SpecialsTile({ count, anchorId, onClick, preview }: SpecialsTileProps) {
+  const t = useTranslations('MenuView')
   const className =
     'group bg-pop text-pop-foreground relative block w-full overflow-hidden rounded-[20px] px-5 py-5 text-left transition-transform hover:scale-[1.01] disabled:hover:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground'
   const content = (
@@ -158,12 +163,12 @@ function SpecialsTile({ count, anchorId, onClick, preview }: SpecialsTileProps) 
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[10px] font-semibold tracking-[0.18em] uppercase opacity-80">
-            Don&apos;t miss
+            {t('dontMiss')}
           </p>
-          <h2 className="text-[20px] font-semibold tracking-[-0.01em]">Today&apos;s Specials</h2>
+          <h2 className="text-[20px] font-semibold tracking-[-0.01em]">{t('todaysSpecials')}</h2>
         </div>
         <span className="bg-pop-foreground/15 rounded-full px-3 py-1 text-[11px] font-semibold">
-          {count} {count === 1 ? 'dish' : 'dishes'}
+          {t('dishCount', { count })}
         </span>
       </div>
     </>
@@ -207,6 +212,7 @@ interface CategoryTileProps {
 }
 
 const CategoryTile = memo(function CategoryTile({ group, onClick, preview }: CategoryTileProps) {
+  const t = useTranslations('MenuView')
   const Icon = categoryIcon(group.category, group.iconId)
   const bgImage = group.items.find((i) => i.imageUrl)?.imageUrl ?? null
   const className =
@@ -268,7 +274,7 @@ const CategoryTile = memo(function CategoryTile({ group, onClick, preview }: Cat
               bgImage ? 'opacity-85' : 'text-muted-foreground',
             )}
           >
-            {group.items.length} {group.items.length === 1 ? 'dish' : 'dishes'}
+            {t('dishCount', { count: group.items.length })}
           </p>
         </div>
       </div>
@@ -277,7 +283,10 @@ const CategoryTile = memo(function CategoryTile({ group, onClick, preview }: Cat
 
   if (preview) {
     return (
-      <div aria-label={`${group.category} preview`} className={className}>
+      <div
+        aria-label={t('categoryPreviewAria', { category: group.category })}
+        className={className}
+      >
         {content}
       </div>
     )
@@ -287,7 +296,7 @@ const CategoryTile = memo(function CategoryTile({ group, onClick, preview }: Cat
     <button
       type="button"
       onClick={onClick}
-      aria-label={`Open ${group.category}`}
+      aria-label={t('openCategoryAria', { category: group.category })}
       className={className}
     >
       {content}
@@ -314,13 +323,14 @@ function CategoryView({
   onBack,
   onOpenImage,
 }: CategoryViewProps) {
+  const t = useTranslations('MenuView')
   return (
     <div className="mt-4">
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={onBack}
-          aria-label="Back to all categories"
+          aria-label={t('backToAllCategories')}
           className="border-cream-line bg-card hover:bg-foreground hover:text-background inline-flex size-9 items-center justify-center rounded-full border transition-colors"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
@@ -353,6 +363,7 @@ interface SearchResultsProps {
 }
 
 function SearchResults({ groups, specials, symbol, onOpenImage }: SearchResultsProps) {
+  const t = useTranslations('MenuView')
   // Flatten all visible items while deduping (a dish can appear in both
   // specials and its category — we only want it once in the search list).
   // Memoized so keystroke-driven re-renders don't redo the O(n) walk
@@ -377,7 +388,7 @@ function SearchResults({ groups, specials, symbol, onOpenImage }: SearchResultsP
   return (
     <div className="mt-6">
       <h2 className="text-muted-foreground text-[11px] font-semibold tracking-[0.18em] uppercase">
-        Results
+        {t('results')}
       </h2>
       <ul className="mt-5 space-y-6">
         {items.map((item) => (
@@ -397,13 +408,14 @@ interface DishRowProps {
 }
 
 const DishRow = memo(function DishRow({ item, symbol, onOpenImage }: DishRowProps) {
+  const t = useTranslations('MenuView')
   const imageUrl = item.imageUrl
   return (
     <li className="flex gap-4">
       {imageUrl ? (
         <button
           type="button"
-          aria-label={`Open photo of ${item.name}`}
+          aria-label={t('openPhotoAria', { item: item.name })}
           onClick={() => onOpenImage(imageUrl)}
           className="border-cream-line bg-card focus-visible:ring-foreground size-[84px] shrink-0 overflow-hidden rounded-[14px] border transition-transform hover:scale-[1.03] focus-visible:ring-2 focus-visible:outline-none"
         >
@@ -423,25 +435,17 @@ const DishRow = memo(function DishRow({ item, symbol, onOpenImage }: DishRowProp
           <h3 className="min-w-0 text-[17px] leading-tight font-semibold tracking-[-0.01em]">
             {item.name}
           </h3>
-          <PriceChip symbol={symbol} price={item.price} />
+          {item.variants.length === 0 && <PriceChip symbol={symbol} price={item.price} />}
         </div>
+        {item.variants.length > 0 && (
+          <VariantPriceChips symbol={symbol} variants={item.variants} className="mt-1.5" />
+        )}
         {item.description && (
           <p className="text-muted-foreground mt-1.5 text-[14px] leading-[1.55]">
             {item.description}
           </p>
         )}
-        {item.tags.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {item.tags.map((tag) => (
-              <span
-                key={tag}
-                className="bg-accent/30 text-foreground rounded-[6px] px-2 py-0.5 text-[10px] font-semibold tracking-[0.1em] uppercase"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        <DietaryTagPills tags={item.tags} className="mt-2" />
       </div>
     </li>
   )
@@ -468,6 +472,7 @@ function BottomChrome({
   onQueryChange,
   hasQuery,
 }: BottomChromeProps) {
+  const t = useTranslations('MenuView')
   // Pills hide on the grid landing so the tiles are the undisputed
   // primary wayfinding. They slide up + fade in once the guest opens a
   // category or starts a search — chrome height grows smoothly thanks
@@ -479,7 +484,7 @@ function BottomChrome({
       <div className="bg-background/90 border-cream-line border-t backdrop-blur-md">
         <div className="mx-auto max-w-[720px] px-5 pt-3 pb-3 sm:px-8">
           <label htmlFor="category-tiles-search" className="sr-only">
-            Search dishes
+            {t('searchLabel')}
           </label>
           <div className="relative">
             <Search
@@ -491,7 +496,7 @@ function BottomChrome({
               type="search"
               value={query}
               onChange={(e) => onQueryChange(e.target.value)}
-              placeholder="Search dishes, ingredients, tags..."
+              placeholder={t('searchPlaceholder')}
               className="border-cream-line bg-card focus:border-foreground/40 focus:bg-background h-11 w-full rounded-full border pr-10 pl-10 text-[14px] transition-colors outline-none"
               autoComplete="off"
               autoCorrect="off"
@@ -500,7 +505,7 @@ function BottomChrome({
             {hasQuery && (
               <button
                 type="button"
-                aria-label="Clear search"
+                aria-label={t('searchClear')}
                 onClick={() => onQueryChange('')}
                 className="text-muted-foreground hover:text-foreground absolute top-1/2 right-3 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full"
               >
@@ -510,7 +515,7 @@ function BottomChrome({
           </div>
 
           <nav
-            aria-label="Quick category nav"
+            aria-label={t('quickCategoryNav')}
             aria-hidden={!pillsVisible}
             className={cn(
               'no-scrollbar scroll-fade-x flex gap-2 overflow-x-auto',
@@ -521,13 +526,13 @@ function BottomChrome({
             )}
           >
             <QuickButton
-              label="All"
+              label={t('allCategory')}
               active={!selected && !hasQuery}
               onClick={() => onSelect(null)}
             />
             {specials.length > 0 && (
               <QuickButton
-                label="Specials"
+                label={t('specialsShort')}
                 tone="pop"
                 active={selected === SPECIALS_KEY}
                 onClick={() => onSelect(SPECIALS_KEY)}
@@ -587,6 +592,8 @@ export function CategoryTilesPreviewChrome({
   specials: TemplateItem[]
   selected: string | null
 }) {
+  const t = useTranslations('MenuView')
+
   return (
     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-40">
       <div className="bg-background/90 border-cream-line border-t backdrop-blur-md">
@@ -597,7 +604,7 @@ export function CategoryTilesPreviewChrome({
               aria-hidden="true"
             />
             <div className="border-cream-line bg-card text-muted-foreground flex h-11 items-center rounded-full border pr-4 pl-10 text-[13px]">
-              Search dishes, ingredients, tags...
+              {t('searchPlaceholder')}
             </div>
           </div>
           <div className="no-scrollbar scroll-fade-x mt-3 flex gap-2 overflow-x-auto">
@@ -607,11 +614,11 @@ export function CategoryTilesPreviewChrome({
                 !selected ? 'bg-foreground text-background' : 'bg-card text-foreground',
               )}
             >
-              All
+              {t('allCategory')}
             </span>
             {specials.length > 0 && (
               <span className="bg-pop/15 text-pop shrink-0 rounded-[12px] px-4 py-2 text-[12px] font-semibold whitespace-nowrap">
-                Specials
+                {t('specialsShort')}
               </span>
             )}
             {groups.map((g) => (

@@ -1,12 +1,14 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 
 export function AcceptRestaurantInviteButton({ token }: { token: string }) {
+  const t = useTranslations('Invite')
   const router = useRouter()
   const [accepting, setAccepting] = useState(false)
 
@@ -20,14 +22,14 @@ export function AcceptRestaurantInviteButton({ token }: { token: string }) {
       })
       if (!res.ok) {
         const body = (await res.json().catch(() => ({}))) as { error?: string }
-        toast.error(body.error ?? 'Could not accept invitation')
+        toast.error(body.error ?? t('errors.acceptFailed'))
         setAccepting(false)
         return
       }
       router.push('/dashboard')
       router.refresh()
     } catch {
-      toast.error('Network error — please try again')
+      toast.error(t('errors.network'))
       setAccepting(false)
     }
   }
@@ -37,10 +39,10 @@ export function AcceptRestaurantInviteButton({ token }: { token: string }) {
       {accepting ? (
         <>
           <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-          <span>Accepting…</span>
+          <span>{t('accepting')}</span>
         </>
       ) : (
-        <span>Accept invitation</span>
+        <span>{t('accept')}</span>
       )}
     </Button>
   )

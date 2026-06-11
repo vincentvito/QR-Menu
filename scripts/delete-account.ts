@@ -97,10 +97,14 @@ async function main() {
   console.log(`User:        ${user.email}  (id=${user.id}, name=${user.name ?? '—'})`)
   console.log(`Owned orgs:  ${orgs.length}`)
   for (const o of orgs) {
-    console.log(`  • ${o.name} (id=${o.id}, slug=${o.slug ?? '—'}, stripeCustomer=${o.stripeCustomerId ?? '—'})`)
+    console.log(
+      `  • ${o.name} (id=${o.id}, slug=${o.slug ?? '—'}, stripeCustomer=${o.stripeCustomerId ?? '—'})`,
+    )
   }
   if (nonOwnerOrgIds.length > 0) {
-    console.log(`Non-owner memberships (will be removed via cascade, org kept): ${nonOwnerOrgIds.length}`)
+    console.log(
+      `Non-owner memberships (will be removed via cascade, org kept): ${nonOwnerOrgIds.length}`,
+    )
   }
   console.log(`Restaurants: ${restaurants.length}`)
   for (const r of restaurants) console.log(`  • ${r.name} (slug=${r.slug ?? '—'})`)
@@ -139,7 +143,9 @@ async function main() {
 
   if (ownedOrgIds.length > 0) {
     const r = await prisma.organization.deleteMany({ where: { id: { in: ownedOrgIds } } })
-    console.log(`Deleted ${r.count} owned organizations (cascades restaurants, menus, items, ledger)`)
+    console.log(
+      `Deleted ${r.count} owned organizations (cascades restaurants, menus, items, ledger)`,
+    )
   }
 
   // R2 cleanup is best-effort; deleteByUrl swallows errors.

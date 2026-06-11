@@ -7,6 +7,7 @@ import { isPlanId, resolvePlan, type PlanId } from '@/lib/plans'
 import { resetMonthlyCredits } from '@/lib/plans/credits'
 import { reconcileRestaurantActivation } from '@/lib/plans/reconcile'
 import { ACTIVE_SUBSCRIPTION_STATUSES } from '@/lib/plans/subscription-access'
+import { getTranslations } from 'next-intl/server'
 
 export const runtime = 'nodejs'
 
@@ -23,12 +24,13 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ organizationId: string }> },
 ) {
+  const t = await getTranslations('Api')
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
   if (session.user.role !== 'admin') {
-    return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+    return NextResponse.json({ error: t('common.notAllowed') }, { status: 403 })
   }
 
   const { organizationId } = await params
@@ -36,14 +38,14 @@ export async function PATCH(
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
 
   const nextPlanRaw = body.compPlan === null || body.compPlan === '' ? null : body.compPlan
   let nextPlan: PlanId | null = null
   if (nextPlanRaw !== null) {
     if (!isPlanId(nextPlanRaw) || !COMP_PLAN_IDS.includes(nextPlanRaw)) {
-      return NextResponse.json({ error: 'Unsupported comp plan' }, { status: 400 })
+      return NextResponse.json({ error: t('admin.unsupportedCompPlan') }, { status: 400 })
     }
     nextPlan = nextPlanRaw
   }
@@ -53,7 +55,7 @@ export async function PATCH(
     select: { compPlan: true },
   })
   if (!existing) {
-    return NextResponse.json({ error: 'Organization not found' }, { status: 404 })
+    return NextResponse.json({ error: t('admin.organizationNotFound') }, { status: 404 })
   }
 
   const updated = await prisma.organization.update({

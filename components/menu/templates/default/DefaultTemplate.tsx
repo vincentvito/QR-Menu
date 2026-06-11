@@ -1,6 +1,9 @@
 import { memo } from 'react'
+import { useTranslations } from 'next-intl'
 import { BadgeRow } from '@/components/menu/BadgeRow'
+import { DietaryTagPills } from '@/components/menu/DietaryTagPills'
 import { PriceChip } from '@/components/menu/PriceChip'
+import { VariantPriceChips } from '@/components/menu/VariantPriceChips'
 import { cn } from '@/lib/utils'
 import type {
   TemplateBodyProps,
@@ -19,6 +22,8 @@ function DefaultBody({
   onOpenImage,
   preview,
 }: TemplateBodyProps) {
+  const t = useTranslations('MenuView')
+
   return (
     <>
       {specials.length > 0 && (
@@ -34,7 +39,7 @@ function DefaultBody({
           }}
         >
           <h2 className="bg-pop text-pop-foreground mb-5 inline-flex items-center rounded-full px-3 py-1 text-[11px] font-semibold tracking-[0.18em] uppercase">
-            Today&apos;s Specials
+            {t('todaysSpecials')}
           </h2>
           <ul className="space-y-6">
             {specials.map((item) => (
@@ -91,6 +96,7 @@ const DefaultDishCard = memo(function DefaultDishCard({
   onOpenImage,
   preview,
 }: DishCardProps) {
+  const t = useTranslations('MenuView')
   const imageUrl = item.imageUrl
   return (
     <li className="flex gap-4">
@@ -109,7 +115,7 @@ const DefaultDishCard = memo(function DefaultDishCard({
         ) : (
           <button
             type="button"
-            aria-label={`Open photo of ${item.name}`}
+            aria-label={t('openPhotoAria', { item: item.name })}
             onClick={() => onOpenImage(imageUrl)}
             className="border-cream-line bg-card focus-visible:ring-foreground size-[84px] shrink-0 overflow-hidden rounded-[14px] border transition-transform hover:scale-[1.03] focus-visible:ring-2 focus-visible:outline-none"
           >
@@ -130,25 +136,17 @@ const DefaultDishCard = memo(function DefaultDishCard({
           <h3 className="min-w-0 text-[17px] leading-tight font-semibold tracking-[-0.01em]">
             {item.name}
           </h3>
-          <PriceChip symbol={symbol} price={item.price} />
+          {item.variants.length === 0 && <PriceChip symbol={symbol} price={item.price} />}
         </div>
+        {item.variants.length > 0 && (
+          <VariantPriceChips symbol={symbol} variants={item.variants} className="mt-1.5" />
+        )}
         {item.description && (
           <p className="text-muted-foreground mt-1.5 text-[14px] leading-[1.55]">
             {item.description}
           </p>
         )}
-        {item.tags.length > 0 && (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {item.tags.map((tag) => (
-              <span
-                key={tag}
-                className="bg-accent/30 text-foreground rounded-[6px] px-2 py-0.5 text-[10px] font-semibold tracking-[0.1em] uppercase"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
+        <DietaryTagPills tags={item.tags} className="mt-2" />
       </div>
     </li>
   )

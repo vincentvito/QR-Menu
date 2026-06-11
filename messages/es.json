@@ -1,410 +1,755 @@
 {
   "LanguageSwitcher": {
-    "label": "Language",
+    "label": "Idioma",
     "en": "English",
-    "es": "Spanish"
+    "es": "Español"
+  },
+  "Common": {
+    "qtableHome": "Inicio de Qtable",
+    "qrCodePreview": "Vista previa del código QR"
+  },
+  "Invite": {
+    "homeAria": "Inicio de Qtable",
+    "notFound": "Invitación no encontrada",
+    "alreadyUsed": "Invitación ya usada",
+    "alreadyUsedBody": "Esta invitación ya fue aceptada o cancelada. Pide a tu compañero que envíe una nueva.",
+    "restaurantAlreadyUsedBody": "Esta invitación ya fue aceptada o cancelada. Pide a quien te invitó que envíe una nueva.",
+    "expired": "Invitación caducada",
+    "expiredBody": "Esta invitación caducó. Pide a tu compañero que envíe una nueva.",
+    "restaurantExpiredBody": "Esta invitación caducó. Pide a quien te invitó que envíe una nueva.",
+    "orgInviteIntro": "<inviter></inviter> te invitó a unirte a",
+    "restaurantInviteIntro": "<inviter></inviter> te invitó a trabajar en",
+    "roleLine": "como {role}",
+    "emailMismatch": "Esta invitación es para <invited>{invitedEmail}</invited>, pero iniciaste sesión como <viewer>{viewerEmail}</viewer>.",
+    "differentEmail": "Iniciar sesión con otro email",
+    "backHome": "Volver al inicio",
+    "accept": "Aceptar invitación",
+    "accepting": "Aceptando...",
+    "errors": {
+      "acceptFailed": "No se pudo aceptar la invitación",
+      "network": "Error de red; inténtalo de nuevo"
+    },
+    "metadataTitle": "Aceptar invitación",
+    "restaurantMetadataTitle": "Aceptar invitación del restaurante"
   },
   "Auth": {
-    "signIn": "Sign in",
-    "sendCodePrompt": "Enter your email and we'll send you a code.",
+    "metadataTitle": "Iniciar sesión",
+    "homeAria": "Inicio de Qtable",
+    "hero": {
+      "kicker": "Creado para servicios con ritmo",
+      "titleA": "Tu menú ya está en la",
+      "titleB": "mesa.",
+      "description": "Inicia sesión para pulir menús móviles, códigos QR, fotos de platos y ajustes del restaurante antes de que tus clientes escaneen.",
+      "imageAlt": "Mesa de restaurante con soporte QR y menús digitales en móviles"
+    },
+    "side": {
+      "kicker": "Del escaneo a la cena",
+      "titleA": "Diseñado para restaurantes que se mueven rápido y aún cuidan el",
+      "titleB": "sabor."
+    },
+    "highlights": {
+      "qr": "Menús QR en vivo",
+      "photos": "Fotos de platos con IA",
+      "menus": "Menús bonitos en segundos"
+    },
+    "signIn": "Iniciar sesión",
+    "sendCodePrompt": "Introduce tu email de trabajo y te enviaremos un código seguro para entrar.",
     "emailLabel": "Email",
-    "sendCode": "Send code",
-    "checkEmail": "Check your inbox",
-    "codeSent": "We sent a 6-digit code to <email>{email}</email>.",
-    "back": "Use a different email",
-    "noCode": "Didn't get it?",
-    "resend": "Resend code",
-    "loading": "Loading...",
+    "emailPlaceholder": "tu@restaurante.com",
+    "sendCode": "Enviar código",
+    "checkEmail": "Revisa tu bandeja",
+    "codeSent": "Enviamos un código de 6 dígitos a <email>{email}</email>.",
+    "back": "Usar otro email",
+    "noCode": "¿No llegó?",
+    "resend": "Reenviar código",
+    "loading": "Cargando...",
     "errors": {
-      "sendFailed": "Couldn't send the code. Check your email and try again.",
-      "invalidCode": "That code isn't right. Try again or request a new one.",
-      "verifyFailed": "Couldn't verify that code. Try again or request a new one."
-    }
+      "sendFailed": "No pudimos enviar el código. Revisa tu email e inténtalo de nuevo.",
+      "invalidCode": "Ese código no es correcto. Inténtalo de nuevo o pide uno nuevo.",
+      "verifyFailed": "No pudimos verificar ese código. Inténtalo de nuevo o pide uno nuevo."
+    },
+    "otpDigit": "Dígito {index} de {total}"
   },
   "Dashboard": {
-    "title": "Dashboard",
-    "welcome": "Welcome, {name}",
-    "emptyTitle": "No menus yet",
-    "emptyDescription": "Paste a link to your restaurant's site (or the menu text itself) above — we'll build the digital menu for you.",
-    "signOut": "Sign out",
-    "loading": "Loading...",
+    "metadataTitle": "Panel",
+    "title": "Panel",
+    "welcome": "Bienvenido, {name}",
+    "emptyTitle": "Aún no hay menús",
+    "emptyDescription": "Pega un enlace al sitio de tu restaurante o el texto del menú y crearemos el menú digital por ti.",
+    "signOut": "Cerrar sesión",
+    "loading": "Cargando...",
+    "sidebar": {
+      "homeAria": "Inicio de Qtable",
+      "signOut": "Cerrar sesión",
+      "nav": {
+        "menus": "Menús",
+        "staff": "Personal",
+        "analytics": "Analítica",
+        "team": "Equipo",
+        "settings": "Ajustes",
+        "billing": "Facturación",
+        "admin": "Admin"
+      }
+    },
+    "banners": {
+      "trial": {
+        "daysLeft": "{count, plural, =0 {Tu prueba termina hoy} =1 {Queda 1 día de prueba} other {Quedan # días de prueba}}",
+        "planSuffix": "plan",
+        "manageBilling": "Gestionar facturación"
+      },
+      "setupMode": {
+        "title": "¿Listo para publicar tu menú QR?",
+        "message": "Tu menú está privado mientras lo preparas. Inicia la prueba para ponerlo en vivo y recibir 5 créditos de IA.",
+        "cta": "Iniciar prueba"
+      },
+      "subscriptionLapsed": {
+        "message": "La suscripción terminó. Los menús públicos siguen activos, pero la edición del panel está pausada.",
+        "messageWithDate": "La suscripción terminó el {date}. Los menús públicos siguen activos, pero la edición del panel está pausada.",
+        "cta": "Elegir un plan"
+      },
+      "readOnly": {
+        "message": "<restaurant></restaurant> está en modo solo lectura con tu plan actual. La edición está desactivada hasta que lo reactives o mejores tu plan.",
+        "manageBilling": "Gestionar facturación"
+      },
+      "impersonation": {
+        "label": "Suplantando a",
+        "stop": "Detener"
+      }
+    },
+    "pages": {
+      "menus": {
+        "title": "Menús",
+        "newMenu": "Nuevo menú",
+        "emptyTitle": "Aún no hay menús",
+        "emptyDescription": "Crea tu primer menú desde una URL, foto, PDF o texto pegado."
+      }
+    },
+    "restaurants": {
+      "label": "Restaurantes",
+      "switcherAria": "Restaurante actual: {name}. Haz clic para cambiar.",
+      "addRestaurant": "Añadir restaurante",
+      "add": {
+        "title": "Añadir restaurante",
+        "description": "Crea otro local en tu cuenta. Después terminarás la marca — logo, colores y WiFi — en Ajustes.",
+        "nameLabel": "Nombre del restaurante",
+        "namePlaceholder": "p. ej. Via Napoli",
+        "currencyLabel": "Moneda",
+        "planFullTitle": "Tu plan actual está lleno.",
+        "planFullDescription": "Desactiva {name} para liberar el hueco activo y crear este nuevo restaurante. El restaurante desactivado seguirá en el selector como solo lectura, para que puedas revisarlo o eliminarlo más tarde desde Ajustes.",
+        "confirmLabel": "Escribe confirm para continuar",
+        "disableAndAdd": "Desactivar actual y añadir",
+        "submit": "Añadir restaurante",
+        "cancel": "Cancelar",
+        "toast": {
+          "added": "{name} añadido",
+          "disabledAndAdded": "{current} desactivado y {next} añadido"
+        },
+        "errors": {
+          "nameRequired": "Introduce el nombre del restaurante",
+          "confirmRequired": "Escribe confirm para desactivar el restaurante actual",
+          "planCap": "Tu plan alcanzó el límite de restaurantes.",
+          "addFailed": "No se pudo añadir el restaurante",
+          "requestFailed": "La solicitud falló"
+        }
+      }
+    },
     "newMenu": {
-      "title": "Add a menu",
-      "description": "Upload a photo or PDF, drop in your website, or paste the menu text. We'll extract the dishes and generate your page.",
-      "fileLabel": "Menu photo or PDF",
-      "fileDrop": "Drop a photo or PDF here",
-      "fileOr": "or click to browse",
-      "fileHint": "JPG, PNG, WEBP, HEIC, or PDF",
-      "fileClear": "Remove file",
-      "urlLabel": "Restaurant URL",
-      "urlPlaceholder": "https://your-restaurant.com",
-      "orDivider": "or",
-      "textLabel": "Menu text",
-      "textPlaceholder": "Starters\n  Soupe à l'oignon — 12\n  Escargots de Bourgogne — 16\n\nMains\n  ...",
-      "nameLabel": "Menu name (optional)",
-      "namePlaceholder": "e.g. Dinner, Brunch, Cocktails",
-      "submit": "Create menu",
-      "submitting": "Extracting your menu…",
-      "urlHint": "Public menu page or homepage — anything readable works.",
+      "pageTitle": "Nuevo menú",
+      "pageDescription": "Importa desde una URL, foto, PDF o texto pegado.",
+      "backToMenus": "Volver a menús",
+      "title": "Añadir menú",
+      "description": "Sube una foto o PDF, pega tu web o pega el texto del menú. Extraeremos los platos y generaremos tu página.",
+      "fileLabel": "Foto o PDF del menú",
+      "fileDrop": "Suelta una foto o PDF aquí",
+      "fileOr": "o haz clic para buscar",
+      "fileHint": "Hasta 3 archivos: JPG, PNG, WEBP, HEIC o PDF",
+      "fileClear": "Quitar archivo",
+      "filesClear": "Quitar todos los archivos",
+      "urlLabel": "URL del restaurante",
+      "urlPlaceholder": "https://tu-restaurante.com",
+      "orDivider": "o",
+      "textLabel": "Texto del menú",
+      "textPlaceholder": "Entrantes\n  Sopa de cebolla — 12\n  Croquetas de jamón — 10\n\nPrincipales\n  ...",
+      "nameLabel": "Nombre del menú (opcional)",
+      "namePlaceholder": "p. ej. Cena, Brunch, Cócteles",
+      "submit": "Crear menú",
+      "submitting": "Extrayendo tu menú...",
+      "urlHint": "Página pública del menú o web principal: cualquier página legible sirve.",
+      "paused": {
+        "title": "La creación de menús está pausada",
+        "subscriptionEnded": "Tu suscripción terminó. Los menús públicos siguen activos, pero crear nuevos menús está pausado hasta que elijas un plan.",
+        "readOnly": "Este restaurante está en modo solo lectura con tu plan actual.",
+        "cta": "Elegir un plan"
+      },
       "errors": {
-        "empty": "Upload a file, enter a URL, or paste the menu text.",
-        "tooLarge": "That file is over 20 MB. Try a smaller photo or PDF.",
-        "badType": "That file type isn't supported. Use a JPG, PNG, WEBP, HEIC, or PDF."
+        "empty": "Sube un archivo, introduce una URL o pega el texto del menú.",
+        "tooLarge": "Ese archivo supera los 20 MB. Prueba con una foto o PDF más pequeño.",
+        "badType": "Ese tipo de archivo no está permitido. Usa JPG, PNG, WEBP, HEIC o PDF.",
+        "tooManyFiles": "Sube hasta {limit} archivos.",
+        "generic": "Algo salió mal",
+        "network": "Error de red"
       }
     },
     "menus": {
-      "sectionTitle": "Your menus",
-      "itemsCount": "{count, plural, =0 {no dishes} =1 {1 dish} other {# dishes}}",
-      "edit": "Edit",
-      "viewMenu": "View",
-      "copyLink": "Copy link",
-      "copied": "Copied!"
+      "sectionTitle": "Tus menús",
+      "itemsCount": "{count, plural, =0 {sin platos} =1 {1 plato} other {# platos}}",
+      "edit": "Editar",
+      "qr": "QR",
+      "viewMenu": "Ver",
+      "previewMenu": "Vista previa",
+      "copyLink": "Copiar enlace",
+      "copied": "¡Copiado!"
     }
   },
   "Editor": {
-    "back": "Back to dashboard",
-    "viewPublic": "View public menu",
-    "saving": "Saving…",
-    "saved": "Saved",
-    "saveError": "Couldn't save. Try again.",
-    "menuNameLabel": "Menu name",
-    "itemName": "Dish name",
-    "itemDescription": "Description",
-    "itemPrice": "Price",
-    "addDish": "Add dish",
-    "deleteDish": "Delete dish",
-    "confirmDelete": "Delete this dish? This can't be undone.",
-    "confirmDeleteShort": "Delete",
-    "cancelDelete": "Cancel delete",
-    "newDishTitle": "New dish in {category}",
-    "newDishName": "Dish name",
-    "newDishNamePlaceholder": "Boeuf Bourguignon",
-    "newDishPrice": "Price",
-    "newDishDescription": "Description",
-    "newDishDescriptionPlaceholder": "Short description for your diners",
-    "newDishSave": "Add to menu",
-    "newDishCancel": "Cancel",
-    "newDishHint": "Press Enter to save, Esc to cancel.",
-    "emptyCategory": "No dishes yet in this category.",
-    "searchPlaceholder": "Search dishes…",
-    "searchClear": "Clear search",
-    "categoriesHeading": "Categories",
-    "allCategory": "All",
-    "dishesCount": "{count, plural, =0 {no dishes} =1 {1 dish} other {# dishes}}",
-    "noMatches": "No dishes match \u201C{query}\u201D"
+    "back": "Volver al panel",
+    "viewPublic": "Ver menú público",
+    "preview": "Vista previa del menú",
+    "saving": "Guardando...",
+    "saved": "Guardado",
+    "saveError": "No se pudo guardar. Inténtalo de nuevo.",
+    "menuNameLabel": "Nombre del menú",
+    "itemName": "Nombre del plato",
+    "itemDescription": "Descripción",
+    "itemPrice": "Precio",
+    "itemCategory": "Categoría",
+    "moveToCategory": "Mover a categoría",
+    "addDish": "Añadir plato",
+    "deleteDish": "Eliminar plato",
+    "confirmDelete": "¿Eliminar este plato? Esta acción no se puede deshacer.",
+    "confirmDeleteShort": "Eliminar",
+    "cancelDelete": "Cancelar eliminación",
+    "newDishTitle": "Nuevo plato en {category}",
+    "newDishName": "Nombre del plato",
+    "newDishNamePlaceholder": "Croquetas de jamón",
+    "newDishPrice": "Precio",
+    "newDishDescription": "Descripción",
+    "newDishDescriptionPlaceholder": "Descripción breve para tus clientes",
+    "newDishSave": "Añadir al menú",
+    "newDishCancel": "Cancelar",
+    "newDishHint": "Pulsa Enter para guardar, Esc para cancelar.",
+    "emptyCategory": "Aún no hay platos en esta categoría.",
+    "searchPlaceholder": "Buscar platos...",
+    "searchClear": "Borrar búsqueda",
+    "categoriesHeading": "Categorías",
+    "allCategory": "Todos",
+    "dishesCount": "{count, plural, =0 {sin platos} =1 {1 plato} other {# platos}}",
+    "noMatches": "Ningún plato coincide con “{query}”",
+    "readOnlyReasons": {
+      "subscriptionEnded": "Tu suscripción terminó. Los menús públicos siguen activos, pero la edición está pausada hasta que elijas un plan.",
+      "restaurantReadOnly": "Este restaurante está en modo solo lectura con tu plan actual."
+    },
+    "emptyCategoryTitle": "{category} está vacía",
+    "emptyCategoryDescription": "Añade platos manualmente o importa un PDF, foto o texto del menú en esta categoría.",
+    "importItems": "Importar platos",
+    "renameHint": "Cámbiale el nombre aquí; los cambios se guardan al salir del campo.",
+    "todaysSpecial": "Especial de hoy",
+    "markAsSpecial": "Marcar como especial",
+    "import": {
+      "title": "Importar más platos del menú",
+      "titleForCategory": "Importar platos en {category}",
+      "description": "Se pueden crear nuevas categorías desde el menú subido. Los platos existentes no cambian.",
+      "descriptionForCategory": "Todo lo extraído se añadirá solo a esta categoría.",
+      "close": "Cerrar importación",
+      "uploadLabel": "Sube un PDF o foto del menú",
+      "uploadHint": "Hasta 3 archivos: PDF, JPG, PNG, WEBP, HEIC o HEIF",
+      "pasteLabel": "O pega el texto del menú",
+      "pastePlaceholder": "Cerveza\nLager 7\nIPA 8",
+      "preview": "Previsualizar platos",
+      "itemsReady": "{count, plural, =0 {No hay platos listos} =1 {1 plato listo para añadir} other {# platos listos para añadir}}",
+      "addToMenu": "Añadir al menú",
+      "moveToCategory": "Mover a categoría",
+      "changeCategory": "Cambiar categoría de {item}",
+      "removeItem": "Quitar {item}",
+      "removeFile": "Quitar {file}",
+      "clearFiles": "Quitar todos los archivos",
+      "toast": {
+        "added": "{count, plural, =1 {1 plato añadido} other {# platos añadidos}}"
+      },
+      "errors": {
+        "badType": "Sube un archivo PDF, JPG, PNG, WEBP, HEIC o HEIF.",
+        "tooManyFiles": "Sube hasta {limit} archivos.",
+        "empty": "Sube un archivo o pega el texto del menú.",
+        "readFailed": "No se pudo leer ese menú.",
+        "addFailed": "No se pudieron añadir esos platos.",
+        "importFailed": "La importación falló"
+      }
+    },
+    "importMore": "Importar más",
+    "noDescription": "Sin descripción todavía",
+    "photoUpload": {
+      "label": "Foto",
+      "open": "Abrir foto del plato",
+      "remove": "Quitar foto",
+      "errors": {
+        "badType": "Elige un archivo PNG, JPG o WEBP",
+        "tooLarge": "La foto debe pesar menos de 5 MB",
+        "uploadFailed": "La subida falló",
+        "network": "Error de red; inténtalo de nuevo"
+      }
+    },
+    "aiPhoto": {
+      "buyCredits": "Comprar créditos",
+      "fallbackDish": "tu plato",
+      "view": "Ver",
+      "enhanceCta": "Mejorar foto (1 crédito)",
+      "generateCta": "Generar foto (1 crédito)",
+      "enhanceTitle": "Mejorar foto con IA",
+      "generateTitle": "Generar una foto con IA",
+      "enhanceDescription": "Mantiene el plato exacto y mejora iluminación, fondo y encuadre.",
+      "generateDescription": "Usa el nombre y la descripción del plato. Revísala antes de guardar.",
+      "close": "Cerrar",
+      "extraDirection": "Dirección extra (opcional)",
+      "enhancePlaceholder": "p. ej. salsa más brillante - plato oscuro - más vapor",
+      "generatePlaceholder": "p. ej. servido en plato de pizarra - con microbrotes - vista cenital sobre roble claro",
+      "masterPrompt": "Prompt maestro",
+      "editedSuffix": "(editado)",
+      "adminPromptHint": "Solo admin. Los cambios reemplazan el prompt compuesto para la próxima generación de este plato; útil para diagnosticar resultados inusuales.",
+      "resetPrompt": "Restablecer predeterminado",
+      "cancel": "Cancelar",
+      "processingLine1": "Trabajando en ello; normalmente tarda de 15 a 30 segundos.",
+      "processingLine2": "Puedes seguir editando otros platos mientras se procesa.",
+      "original": "Original",
+      "enhanced": "Mejorada",
+      "generated": "Generada",
+      "keepOriginal": "Mantener original",
+      "discard": "Descartar",
+      "tryAgain": "Intentar de nuevo",
+      "keepEnhanced": "Usar mejorada",
+      "useThisPhoto": "Usar esta foto",
+      "startTrial": "Iniciar prueba",
+      "toast": {
+        "ready": "Foto lista para \"{dish}\""
+      },
+      "errors": {
+        "requestFailed": "La solicitud de IA falló",
+        "startTrialRequired": "Inicia tu prueba para usar la generación de imágenes con IA.",
+        "checkoutStartFailed": "No se pudo iniciar el pago",
+        "checkoutFailed": "El pago falló",
+        "network": "Error de red; inténtalo de nuevo"
+      }
+    },
+    "editingPaused": "Edición pausada",
+    "pickPlan": "Elegir un plan",
+    "outOfCredits": "Te quedaste sin créditos de IA",
+    "outOfCreditsDescription": "Compra más créditos para seguir generando y mejorando fotos de platos, o cambia de plan desde Facturación.",
+    "buyCredits": "Comprar 100 créditos ($15)",
+    "upgradePlan": "Mejorar plan",
+    "styleMenuTitle": "¿Quieres personalizar este menú?",
+    "styleMenuDescription": "Personaliza colores, plantillas, logo, estilo QR, WiFi e imágenes de encabezado en Ajustes.",
+    "openSettings": "Abrir ajustes",
+    "category": "Categoría",
+    "newCategory": "Nueva categoría",
+    "addCategory": "Añadir categoría",
+    "categoryName": "Nombre de la categoría",
+    "changeCategoryIcon": "Cambiar icono de {category}",
+    "foodIcons": "Iconos de comida y bebida",
+    "categoryPlaceholder": "Cerveza",
+    "dietary": "Dietario",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "save": "Guardar",
+    "aiEnhance": "Mejorar con IA",
+    "sizesLabel": "Tamaños y precios",
+    "addSizes": "Añadir tamaños (p. ej. Pequeña / Grande)",
+    "addSize": "Añadir tamaño",
+    "sizeName": "Nombre del tamaño",
+    "sizeNamePlaceholder": "Pequeña",
+    "sizePrice": "Precio del tamaño",
+    "removeSize": "Eliminar tamaño",
+    "errors": {
+      "categoryExists": "Ya existe una categoría con ese nombre.",
+      "dishNameRequired": "El nombre del plato es obligatorio",
+      "priceInvalid": "El precio debe ser un número no negativo",
+      "variantsInvalid": "Cada tamaño necesita un nombre y un precio válido"
+    },
+    "aiCreditsBadge": "{count, plural, =1 {1 crédito de IA} other {# créditos de IA}}",
+    "setupModeBadge": "Prueba no iniciada",
+    "descriptionGenerateFailed": "No se pudo generar una descripción.",
+    "photoActions": {
+      "enhance": "Mejorar",
+      "regen": "Regenerar",
+      "generate": "Generar"
+    }
   },
   "MenuView": {
-    "searchLabel": "Search dishes",
-    "searchPlaceholder": "Search dishes, ingredients, tags…",
-    "searchClear": "Clear search",
-    "noResults": "No dishes match \u201C{query}\u201D",
-    "noResultsHint": "Try a shorter search or a different word."
+    "searchLabel": "Buscar platos",
+    "searchPlaceholder": "Buscar platos, ingredientes, etiquetas...",
+    "searchClear": "Borrar búsqueda",
+    "noResults": "Ningún plato coincide con “{query}”",
+    "noResultsHint": "Prueba con una búsqueda más corta u otra palabra.",
+    "categoryNavLabel": "Categorías del menú",
+    "todaysSpecials": "Especiales de hoy",
+    "otherCategory": "Otros",
+    "matchesCount": "{count, plural, =0 {Sin resultados} =1 {1 resultado} other {# resultados}}",
+    "notFoundTitle": "Menú no encontrado",
+    "metadataTitle": "{venueName} - {menuName}",
+    "metadataDescription": "{menuName} en {venueName}. Explora todos los platos: fotos, precios, especiales e información dietética.",
+    "metadataImageAlt": "Menú de {venueName}",
+    "unpublished": {
+      "title": "Este menú aún no está publicado",
+      "description": "El restaurante todavía está configurando su menú QR. Vuelve cuando esté en vivo.",
+      "cta": "Volver a Qtable"
+    },
+    "dishCount": "{count, plural, =0 {Sin platos} =1 {1 plato} other {# platos}}",
+    "reviewPrompt": "¿Te gustó la comida?",
+    "reviewCta": "Déjanos una reseña en Google",
+    "menuBy": "Menú por",
+    "dontMiss": "No te lo pierdas",
+    "specialsShort": "Especiales",
+    "results": "Resultados",
+    "categoryPreviewAria": "Vista previa de {category}",
+    "openCategoryAria": "Abrir {category}",
+    "backToAllCategories": "Volver a todas las categorías",
+    "openPhotoAria": "Abrir foto de {item}",
+    "quickCategoryNav": "Navegación rápida por categorías",
+    "noPhoto": "Sin foto",
+    "dishPhoto": "Foto del plato",
+    "closePhoto": "Cerrar"
   },
   "Landing": {
+    "skipToContent": "Saltar al contenido",
+    "backToTop": "Volver arriba",
     "nav": {
       "brand": "Qtable",
-      "howItWorks": "How it works",
-      "examples": "Examples",
-      "pricing": "Pricing",
-      "resources": "Resources",
-      "signIn": "Sign in",
-      "getStarted": "Get started",
-      "menu": "Menu",
-      "close": "Close menu"
+      "howItWorks": "Cómo funciona",
+      "examples": "Ejemplos",
+      "pricing": "Precios",
+      "resources": "Recursos",
+      "signIn": "Iniciar sesión",
+      "dashboard": "Panel",
+      "getStarted": "Empezar",
+      "menu": "Menú",
+      "close": "Cerrar menú"
     },
     "hero": {
-      "badge": "New — Auto-parse from any PDF or photo",
-      "h1a": "Your menu,",
-      "h1b": "on every table,",
-      "h1c": "just a scan away.",
-      "description": "Turn your printed menu into a beautiful mobile page and a QR code for your tables. No apps to download, no menus to reprint — edit a dish and it updates everywhere, instantly.",
-      "ctaPrimary": "Start for free",
-      "ctaSecondary": "See a live menu",
-      "trustStars": "4.9 from 340+ reviews",
-      "trustLine": "Trusted by bistros, bars, bakeries and brasseries.",
+      "badge": "Nuevo — Importa automáticamente cualquier PDF o foto",
+      "h1a": "Tu menú,",
+      "h1b": "en cada mesa,",
+      "h1c": "a un escaneo.",
+      "description": "Convierte tu menú impreso en una página móvil elegante y un código QR para tus mesas. Sin apps que descargar ni menús que reimprimir: cambia un plato y se actualiza en todas partes al instante.",
+      "ctaPrimary": "Empieza gratis",
+      "ctaSecondary": "Ver un menú real",
+      "trustStars": "4,9 de 340+ reseñas",
+      "trustLine": "Con la confianza de bistrós, bares, panaderías y brasseries.",
       "stats": {
-        "time": { "value": "2 min", "label": "to go live" },
-        "scans": { "value": "Unlimited", "label": "scans, always" },
-        "app": { "value": "No app", "label": "opens in any browser" },
-        "restaurants": { "value": "1,240+", "label": "restaurants trust us" }
+        "time": {
+          "value": "2 min",
+          "label": "para publicar"
+        },
+        "scans": {
+          "value": "Ilimitados",
+          "label": "escaneos, siempre"
+        },
+        "app": {
+          "value": "Sin app",
+          "label": "abre en cualquier navegador"
+        },
+        "restaurants": {
+          "value": "1.240+",
+          "label": "restaurantes confían en nosotros"
+        }
       }
     },
     "mockup": {
+      "ariaLabel": "Ejemplo de un menú publicado con Qtable en un teléfono",
       "restaurant": "Maison Rustique",
       "address": "12 Rue de la Paix",
-      "rating": "★ 4.8",
-      "tableLabel": "TABLE · 07",
-      "floatingChip": "Live menu, no app",
-      "chefsPick": "Chef's pick",
+      "rating": "★ 4,8",
+      "tableLabel": "MESA · 07",
+      "floatingChip": "Menú en vivo, sin app",
+      "chefsPick": "Selección del chef",
       "tabs": {
-        "starters": "Starters",
-        "mains": "Mains",
-        "desserts": "Desserts",
-        "wine": "Wine"
+        "starters": "Entrantes",
+        "mains": "Principales",
+        "desserts": "Postres",
+        "wine": "Vinos"
       },
       "dishes": {
         "bourguignon": {
           "name": "Boeuf Bourguignon",
           "price": "28",
-          "desc": "6-hour braise, baby carrots, pearl onions."
+          "desc": "Guiso de 6 horas, zanahorias baby y cebollitas perladas."
         },
         "risotto": {
-          "name": "Truffle Risotto",
+          "name": "Risotto de trufa",
           "price": "26",
-          "desc": "Carnaroli rice, 24-month parmigiano, black truffle."
+          "desc": "Arroz carnaroli, parmigiano de 24 meses y trufa negra."
         },
         "tataki": {
-          "name": "Tuna Tataki",
+          "name": "Tataki de atún",
           "price": "22",
-          "desc": "Bluefin loin, ponzu, daikon, fresh wasabi."
+          "desc": "Lomo de atún rojo, ponzu, daikon y wasabi fresco."
         }
       }
     },
     "process": {
-      "kicker": "How it works",
-      "title": "From your menu\nto your table in minutes.",
+      "kicker": "Cómo funciona",
+      "title": "De tu menú\na tu mesa en minutos.",
       "steps": {
         "upload": {
           "n": "01",
-          "title": "Upload your menu",
-          "description": "Send us a PDF, a photo of your printed menu, or even a snapshot on your phone. Wine stains and all — we handle it."
+          "title": "Sube tu menú",
+          "description": "Envíanos un PDF, una foto de tu menú impreso o incluso una captura desde el móvil. Manchas de vino incluidas: nos encargamos."
         },
         "build": {
           "n": "02",
-          "title": "We build your page",
-          "description": "Every dish, price, and description is organized into a beautiful mobile menu. Add photos, allergens, and dietary tags with one click."
+          "title": "Creamos tu página",
+          "description": "Cada plato, precio y descripción queda organizado en un menú móvil precioso. Añade fotos, alérgenos y etiquetas dietéticas con un clic."
         },
         "print": {
           "n": "03",
-          "title": "Print the QR",
-          "description": "Download a print-ready QR card, laminate it, place it on your tables. Diners scan, browse, and order — no download needed."
+          "title": "Imprime el QR",
+          "description": "Descarga una tarjeta QR lista para imprimir, plastifícala y ponla en tus mesas. Tus clientes escanean, navegan y piden sin descargar nada."
         }
       }
     },
     "preview": {
-      "kicker": "What your diners see",
-      "title": "A menu worth\nopening.",
-      "description": "Gorgeous dish photos, clear prices, allergen badges, and a tap-to-call-waiter button. Works on every phone, loads in under a second, and feels like a native app.",
+      "kicker": "Lo que ven tus clientes",
+      "title": "Un menú que apetece\nabrir.",
+      "description": "Fotos de platos cuidadas, precios claros, insignias de alérgenos y un botón para llamar al camarero. Funciona en cualquier teléfono, carga en menos de un segundo y se siente como una app nativa.",
       "features": {
-        "photos": { "title": "Real food photos", "meta": "Upload yours, or use our library" },
-        "allergens": { "title": "Allergen badges", "meta": "All 14 EU-listed allergens" },
-        "diet": { "title": "Diet tags", "meta": "Vegan, veggie, gluten-free" },
-        "waiter": { "title": "Call waiter button", "meta": "One tap on the diner's phone" },
-        "analytics": { "title": "Dish analytics", "meta": "See what sells and when" }
+        "photos": {
+          "title": "Fotos reales de comida",
+          "meta": "Sube las tuyas o usa nuestra biblioteca"
+        },
+        "allergens": {
+          "title": "Insignias de alérgenos",
+          "meta": "Los 14 alérgenos listados por la UE"
+        },
+        "diet": {
+          "title": "Etiquetas dietéticas",
+          "meta": "Vegano, vegetariano, sin gluten"
+        },
+        "waiter": {
+          "title": "Botón para llamar al camarero",
+          "meta": "Un toque en el móvil del cliente"
+        },
+        "analytics": {
+          "title": "Analítica de platos",
+          "meta": "Ve qué se vende y cuándo"
+        }
       },
       "menuCard": {
-        "season": "Spring 2026",
+        "season": "Primavera 2026",
         "restaurant": "Maison Rustique",
         "domain": "maison-rustique.qrmenu.cr",
         "categories": {
-          "starters": "Starters",
-          "mains": "Mains",
-          "desserts": "Desserts",
-          "wine": "Wine",
-          "pairings": "Pairings"
+          "starters": "Entrantes",
+          "mains": "Principales",
+          "desserts": "Postres",
+          "wine": "Vinos",
+          "pairings": "Maridajes"
         },
         "dishes": {
           "bourguignon": {
             "name": "Boeuf Bourguignon",
-            "origin": "France",
+            "origin": "Francia",
             "price": "28",
-            "desc": "Beef braised 6 hours in Burgundy wine, baby carrots, glazed pearl onions, smoked bacon.",
-            "tags": ["Gluten", "Sulfites"]
+            "desc": "Ternera braseada 6 horas en vino de Borgoña, zanahorias baby, cebollitas glaseadas y bacon ahumado.",
+            "tags": ["Gluten", "Sulfitos"]
           },
           "risotto": {
-            "name": "Truffle Risotto",
-            "origin": "Italy",
+            "name": "Risotto de trufa",
+            "origin": "Italia",
             "price": "26",
-            "desc": "Carnaroli rice, Normandy butter, 24-month parmigiano, raw black truffle shavings.",
-            "tags": ["Dairy", "Veggie"]
+            "desc": "Arroz carnaroli, mantequilla de Normandía, parmigiano de 24 meses y láminas de trufa negra.",
+            "tags": ["Lácteos", "Vegetariano"]
           },
           "tataki": {
-            "name": "Tuna Tataki",
+            "name": "Tataki de atún",
             "origin": "Almadraba",
             "price": "22",
-            "desc": "Bluefin loin seared in sesame, house ponzu, daikon, cilantro, fresh wasabi.",
-            "tags": ["Fish", "Sesame"]
+            "desc": "Lomo de atún rojo sellado con sésamo, ponzu de la casa, daikon, cilantro y wasabi fresco.",
+            "tags": ["Pescado", "Sésamo"]
           },
           "tarte": {
             "name": "Tarte Tatin",
-            "origin": "Loire",
+            "origin": "Loira",
             "price": "11",
-            "desc": "Upside-down caramelized reinette apples, butter shortcrust, Tahitian vanilla cream.",
-            "tags": ["Gluten", "Dairy", "Egg"]
+            "desc": "Manzanas reinette caramelizadas al revés, masa quebrada con mantequilla y crema de vainilla tahitiana.",
+            "tags": ["Gluten", "Lácteos", "Huevo"]
           }
         }
       }
     },
     "qrDemo": {
-      "kicker": "Branded QR codes",
-      "titleA": "Not just any QR.",
-      "titleB": "Your",
+      "kicker": "Códigos QR con marca",
+      "titleA": "No es cualquier QR.",
+      "titleB": "Es tu",
       "titleC": "QR.",
-      "description": "Add your logo to the center, pick your colors, and print it on anything — paper, wood, steel, vinyl. We handle the math so it still scans reliably, every time.",
-      "scanLabel": "Scan for the menu",
+      "description": "Añade tu logo en el centro, elige tus colores e imprímelo donde quieras: papel, madera, acero o vinilo. Nosotros cuidamos la parte técnica para que siempre escanee bien.",
+      "imageAlt": "Escanea para abrir un menú real de Qtable",
+      "scanLabel": "Escanea para ver el menú",
       "variants": {
-        "classic": "Classic",
-        "accent": "Accent",
-        "bold": "Bold"
+        "classic": "Clásico",
+        "accent": "Acento",
+        "bold": "Intenso"
       },
-      "cta": "Download a sample QR"
+      "cta": "Descargar QR de muestra"
     },
     "lovedBy": {
-      "kicker": "Loved by restaurants",
-      "titleA": "Restaurants that switched",
-      "titleB": "never looked back.",
+      "kicker": "Restaurantes que nos quieren",
+      "titleA": "Restaurantes que cambiaron",
+      "titleB": "y no miraron atrás.",
       "quotes": {
         "clara": {
           "name": "Clara Domínguez",
-          "role": "Owner, Bar Lolita (Madrid)",
-          "quote": "Our reprints cost us nearly €400 a year. With Qtable, I update a dish from my phone between lunch and dinner."
+          "role": "Propietaria, Bar Lolita (Madrid)",
+          "quote": "Las reimpresiones nos costaban casi 400 € al año. Con Qtable, actualizo un plato desde el móvil entre comida y cena."
         },
         "thomas": {
           "name": "Thomas Renaud",
           "role": "Chef, Brasserie 19 (Lyon)",
-          "quote": "The translation is the killer feature. Our tourists finally order confidently — and upsells on wine are up 18%."
+          "quote": "La traducción es la función estrella. Nuestros turistas por fin piden con confianza, y las ventas de vino subieron un 18 %."
         },
         "sara": {
           "name": "Sara Kouassi",
-          "role": "Manager, Kinteros (Barcelona)",
-          "quote": "Setup took us a single afternoon. Our servers love it — they just point at the QR, the rest is on the diner."
+          "role": "Gerente, Kinteros (Barcelona)",
+          "quote": "Lo dejamos listo en una sola tarde. A nuestros camareros les encanta: señalan el QR y el cliente hace el resto."
         }
       }
     },
     "pricing": {
-      "kicker": "Simple pricing",
-      "title": "Plans that match\nyour floor.",
-      "mostPopular": "Most popular",
-      "allFeatures": "All tiers include all features",
-      "trial": {
-        "title": "14-day trial with card required",
-        "detail": "Start with 5 AI credits before your first paid billing cycle."
+      "kicker": "Precios sencillos",
+      "title": "Planes que encajan\ncon tu sala.",
+      "mostPopular": "Más popular",
+      "allFeatures": "Todos los planes incluyen todas las funciones",
+      "planVisuals": {
+        "basic": "Un solo menú",
+        "pro": "Listo para sala",
+        "business": "Multiubicación",
+        "enterprise": "Servicio a escala"
       },
-      "addOns": "Add-on: extra AI credits are $15 per 100 and never expire.",
+      "trial": {
+        "title": "Prueba de 14 días con tarjeta requerida",
+        "detail": "Empieza con 5 créditos de IA antes de tu primer ciclo de pago."
+      },
+      "addOns": "Extra: los créditos de IA adicionales cuestan 15 $ por cada 100 y no caducan.",
       "plans": {
         "basic": {
           "name": "Basic",
           "prefix": "",
           "price": "14",
-          "unit": "/mo",
-          "yearly": "$135/yr",
-          "tagline": "For one venue getting started",
+          "unit": "/mes",
+          "yearly": "135 $/año",
+          "tagline": "Para un local que empieza",
           "features": [
-            "1 restaurant, 5 menus",
-            "30 AI credits/month",
-            "Unlimited scans",
-            "All menu features included"
+            "1 restaurante, 5 menús",
+            "30 créditos de IA/mes",
+            "Escaneos ilimitados",
+            "Todas las funciones del menú incluidas"
           ],
-          "cta": "Choose Basic"
+          "cta": "Elegir Basic"
         },
         "pro": {
           "name": "Pro",
           "prefix": "",
           "price": "29",
-          "unit": "/mo",
-          "yearly": "$279/yr",
-          "tagline": "Most popular for growing teams",
+          "unit": "/mes",
+          "yearly": "279 $/año",
+          "tagline": "El favorito para equipos en crecimiento",
           "features": [
-            "3 restaurants, 5 menus each",
-            "80 AI credits/month",
-            "Unlimited scans",
-            "All menu features included"
+            "3 restaurantes, 5 menús cada uno",
+            "80 créditos de IA/mes",
+            "Escaneos ilimitados",
+            "Todas las funciones del menú incluidas"
           ],
-          "cta": "Choose Pro"
+          "cta": "Elegir Pro"
         },
         "business": {
           "name": "Business",
           "prefix": "",
           "price": "69",
-          "unit": "/mo",
-          "yearly": "$665/yr",
-          "tagline": "For multi-location operators",
+          "unit": "/mes",
+          "yearly": "665 $/año",
+          "tagline": "Para operadores con varios locales",
           "features": [
-            "Up to 5 restaurants, 5 menus each",
-            "250 AI credits/month",
-            "Unlimited scans",
-            "All menu features included"
+            "Hasta 5 restaurantes, 5 menús cada uno",
+            "250 créditos de IA/mes",
+            "Escaneos ilimitados",
+            "Todas las funciones del menú incluidas"
           ],
-          "cta": "Choose Business"
+          "cta": "Elegir Business"
         },
         "enterprise": {
           "name": "Enterprise",
-          "prefix": "from",
+          "prefix": "desde",
           "price": "149",
-          "unit": "/mo",
-          "yearly": "Yearly plans are custom",
-          "tagline": "For larger groups and custom needs",
+          "unit": "/mes",
+          "yearly": "Los planes anuales son personalizados",
+          "tagline": "Para grupos grandes y necesidades a medida",
           "features": [
-            "6+ restaurants",
-            "Custom AI allowance",
-            "Unlimited scans",
-            "All menu features included"
+            "6+ restaurantes",
+            "Créditos de IA personalizados",
+            "Escaneos ilimitados",
+            "Todas las funciones del menú incluidas"
           ],
-          "cta": "Talk to sales"
+          "cta": "Hablar con ventas"
         }
       }
     },
     "faq": {
-      "kicker": "Questions",
-      "titleA": "The things",
-      "titleB": "we hear",
-      "titleC": "the most.",
-      "helpLine": "Can't find your answer? Email us at hello@qtable.ai — a human replies within an hour, every day of the week.",
+      "kicker": "Preguntas",
+      "titleA": "Lo que",
+      "titleB": "más nos",
+      "titleC": "preguntan.",
+      "helpLine": "¿No encuentras tu respuesta? Escríbenos a hello@qtable.ai: una persona te responde en menos de una hora, todos los días.",
       "items": {
         "savvy": {
-          "q": "Do I need to be tech-savvy?",
-          "a": "Not at all. If you can take a photo with your phone, you can use Qtable. Upload your menu and we do the rest — no training needed."
+          "q": "¿Necesito saber de tecnología?",
+          "a": "Para nada. Si puedes hacer una foto con el móvil, puedes usar Qtable. Sube tu menú y nosotros hacemos el resto, sin formación necesaria."
         },
         "price": {
-          "q": "What if I change a price tomorrow?",
-          "a": "Edit any dish from your phone and it updates instantly. The QR on your tables never changes — it always shows your latest menu."
+          "q": "¿Qué pasa si mañana cambio un precio?",
+          "a": "Edita cualquier plato desde el móvil y se actualiza al instante. El QR de tus mesas no cambia nunca: siempre muestra tu menú más reciente."
         },
         "wifi": {
-          "q": "Does it work without restaurant wifi?",
-          "a": "Yes. Your diners use their own phone data or your wifi. Our menus are tiny and load in under a second, even on a weak signal."
+          "q": "¿Funciona sin wifi del restaurante?",
+          "a": "Sí. Tus clientes usan sus datos móviles o tu wifi. Nuestros menús son ligeros y cargan en menos de un segundo, incluso con poca señal."
         },
         "scans": {
-          "q": "Do you charge per scan?",
-          "a": "Never. Every tier comes with unlimited scans."
+          "q": "¿Cobráis por escaneo?",
+          "a": "Nunca. Todos los planes incluyen escaneos ilimitados."
         },
         "expired": {
-          "q": "What happens if my subscription expires?",
-          "a": "Your public menus stay live, so guests scanning existing QR codes can still view them. Dashboard editing, new menus, uploads, and AI photo tools pause until you pick a plan again."
+          "q": "¿Qué pasa si caduca mi suscripción?",
+          "a": "Tus menús públicos siguen activos, así que los clientes que escaneen los QR existentes podrán verlos. La edición del panel, nuevos menús, subidas y herramientas de fotos con IA se pausan hasta que elijas un plan otra vez."
         },
         "domain": {
-          "q": "Can I use my own domain?",
-          "a": "Yes. Point your domain to us and we handle the rest, including the secure certificate."
+          "q": "¿Puedo usar mi propio dominio?",
+          "a": "Sí. Apunta tu dominio hacia nosotros y nos encargamos del resto, incluido el certificado seguro."
         }
       }
     },
     "footerCta": {
-      "kicker": "Ready when you are",
-      "titleA": "Your first digital menu,",
-      "titleB": "in two minutes.",
-      "description": "Start a 14-day trial with 5 AI credits, then pick the plan that fits your restaurant.",
-      "ctaPrimary": "Start for free",
-      "ctaSecondary": "Talk to sales"
+      "kicker": "Cuando quieras",
+      "titleA": "Tu primer menú digital,",
+      "titleB": "en dos minutos.",
+      "description": "Empieza una prueba de 14 días con 5 créditos de IA y luego elige el plan que encaje con tu restaurante.",
+      "ctaPrimary": "Empieza gratis",
+      "ctaSecondary": "Hablar con ventas"
     },
     "footer": {
-      "tagline": "Digital menus and QR codes, built for restaurants. Made in Madrid, served worldwide.",
+      "tagline": "Menús digitales y códigos QR creados para restaurantes. Hecho en Madrid, servido en todo el mundo.",
       "copyright": "© {year} Qtable SL",
-      "madeWith": "Made with care by",
+      "madeWith": "Hecho con cariño por",
       "columns": {
         "product": {
-          "title": "Product",
-          "links": ["How it works", "Pricing", "Templates", "What's new"]
+          "title": "Producto",
+          "links": ["Cómo funciona", "Precios", "Plantillas", "Novedades"]
         },
         "for": {
-          "title": "For",
-          "links": ["Bistros", "Bars", "Food trucks", "Hotels"]
+          "title": "Para",
+          "links": ["Bistrós", "Bares", "Food trucks", "Hoteles"]
         },
         "resources": {
-          "title": "Resources",
-          "links": ["Blog", "Guides", "Help center", "Contact"]
+          "title": "Recursos",
+          "links": ["Blog", "Guías", "Centro de ayuda", "Contacto"]
         },
         "legal": {
           "title": "Legal",
-          "links": ["Terms", "Privacy", "Cookies", "GDPR"]
+          "links": ["Términos", "Privacidad", "Cookies", "RGPD"]
         }
       }
     }
@@ -422,5 +767,724 @@
     },
     "moreHistory": "Looking for more history?",
     "viewGithub": "View full changelog on GitHub"
+  },
+  "MenuQR": {
+    "backToMenus": "Volver a menús",
+    "title": "Código QR - {menuName}",
+    "descriptionBefore": "Descarga como SVG (escala sin límites) o PNG (para compartir rápido). Personaliza el estilo en",
+    "settingsLink": "Ajustes",
+    "descriptionAfter": ".",
+    "publishGate": {
+      "title": "Inicia la prueba para publicar este menú",
+      "description": "Tu código QR lleva a los clientes al menú en vivo. Inicia la prueba primero para que solo escaneen un menú publicado.",
+      "cta": "Iniciar prueba"
+    },
+    "panel": {
+      "menuUrl": "URL del menú",
+      "copyAria": "Copiar URL del menú",
+      "copied": "Copiado al portapapeles",
+      "download": "Descargar",
+      "downloadHint": "SVG escala a cualquier tamaño sin perder calidad: ideal para impresión. PNG es práctico para enviar por chat o email.",
+      "errors": {
+        "notReady": "El código QR aún no está listo; inténtalo de nuevo en un momento",
+        "copyFailed": "No se pudo copiar la URL"
+      }
+    }
+  },
+  "Settings": {
+    "title": "Ajustes",
+    "description": "Edita los detalles del restaurante, marca, estilo QR y moneda predeterminada.",
+    "sectionsAria": "Secciones de ajustes",
+    "readOnly": "Solo propietarios y administradores pueden editar estos ajustes.",
+    "sections": {
+      "restaurant": "Restaurante",
+      "links": "Enlaces",
+      "menuDesign": "Diseño del menú",
+      "brand": "Marca",
+      "qr": "Estilo del código QR",
+      "wifi": "WiFi"
+    },
+    "actions": {
+      "saving": "Guardando...",
+      "saveSection": "Guardar sección",
+      "saved": "Guardado",
+      "saveAll": "Guardar todos los cambios pendientes",
+      "allSaved": "Todos los cambios guardados"
+    },
+    "restaurant": {
+      "name": "Nombre del restaurante *",
+      "descriptionLabel": "Descripción breve",
+      "website": "Sitio web",
+      "currency": "Moneda",
+      "currencyHint": "Se aplica a todos los menús de este restaurante, incluidos los existentes."
+    },
+    "links": {
+      "description": "Se muestran en el pie del menú para que los clientes puedan dejar reseñas o seguirte. Deja cualquier campo vacío para ocultarlo.",
+      "googleReview": "Enlace de reseñas de Google",
+      "googleReviewHint": "Pega el enlace de reseñas de tu perfil de Google Business. No hace falta escribir \"https://\"; lo añadiremos.",
+      "instagram": "Instagram",
+      "tiktok": "TikTok",
+      "facebook": "Facebook",
+      "handlePlaceholder": "tuusuario",
+      "pagePlaceholder": "tupagina"
+    },
+    "toast": {
+      "sectionSaved": "{section} guardado",
+      "saved": "Guardado",
+      "deleted": "{name} eliminado"
+    },
+    "errors": {
+      "nameRequired": "El nombre del restaurante es obligatorio",
+      "saveFailed": "No se pudo guardar",
+      "network": "Error de red; inténtalo de nuevo",
+      "confirmDelete": "Escribe confirm para eliminar este restaurante",
+      "deleteFailed": "No se pudo eliminar el restaurante"
+    },
+    "menuDesign": {
+      "description": "Elige cómo se muestra tu menú público. La vista previa muestra {preview} y se actualiza al cambiar plantillas o colores de marca.",
+      "actualMenu": "tu menú real",
+      "sampleMenu": "un menú de ejemplo (crea uno real para verlo aquí)",
+      "layout": "Diseño",
+      "templateAria": "Plantilla del menú",
+      "theme": "Tema",
+      "themeAria": "Tema del menú",
+      "seasonalTouch": "Toque de temporada",
+      "seasonalAria": "Efecto de temporada",
+      "restaurantNameColor": "Color del nombre del restaurante",
+      "restaurantNameColorHint": "Sobrescribe el color del nombre del restaurante en el menú público. Déjalo vacío para usar el color del tema.",
+      "menuNameColor": "Color del nombre del menú",
+      "menuNameColorHint": "Sobrescribe el color de la etiqueta pequeña del menú para que se lea bien sobre cualquier imagen o tema.",
+      "headerVisibility": "Visibilidad del encabezado",
+      "visibility": {
+        "logo": "Logo",
+        "logoDescription": "Muestra el logo del restaurante en el encabezado del menú público.",
+        "restaurantName": "Nombre del restaurante",
+        "restaurantNameDescription": "Muestra el nombre del restaurante en la parte superior del menú público.",
+        "menuName": "Nombre del menú",
+        "menuNameDescription": "Muestra etiquetas como Cena, Brunch o Cócteles sobre el nombre del restaurante.",
+        "dishCount": "Cantidad de platos",
+        "dishCountDescription": "Muestra el total de platos bajo los nombres del encabezado.",
+        "categoryIcons": "Iconos de categorías",
+        "categoryIconsDescription": "Muestra el icono de cada categoría en los filtros del menú público."
+      }
+    },
+    "brand": {
+      "logo": "Logo",
+      "headerImage": "Imagen de encabezado",
+      "headerImageHint": "Se muestra detrás del nombre del restaurante en la parte superior del menú. Las fotos horizontales amplias funcionan mejor (aprox. 1600x900). Déjalo vacío para mantener el degradado de marca.",
+      "mainColor": "Color principal",
+      "accentColor": "Color de acento"
+    },
+    "qr": {
+      "description": "Se aplica a todos los QR de menú que generes. La vista previa usa tu menú más reciente.",
+      "dotStyle": "Estilo de puntos",
+      "cornerStyle": "Estilo de esquinas",
+      "foreground": "Primer plano",
+      "background": "Fondo",
+      "useBrandColors": "Usar mis colores de marca",
+      "createMenuToDownload": "Crea un menú para descargar un QR.",
+      "startTrialToDownload": "Inicia la prueba para descargar el QR del menú.",
+      "startTrial": "Iniciar prueba",
+      "dotStyles": {
+        "square": "Cuadrado",
+        "rounded": "Redondeado",
+        "dots": "Puntos",
+        "classy": "Elegante",
+        "classy-rounded": "Elegante redondeado",
+        "extra-rounded": "Extra redondeado"
+      },
+      "cornerStyles": {
+        "square": "Cuadrado",
+        "dot": "Punto",
+        "extra-rounded": "Extra redondeado"
+      }
+    },
+    "wifi": {
+      "description": "Los clientes ven un botón \"Mostrar WiFi\" en tu menú para revelar y copiar la contraseña. Descarga el QR WiFi para tarjetas de mesa; los teléfonos modernos se conectan al escanearlo con la cámara.",
+      "ssid": "Nombre de la red (SSID)",
+      "ssidPlaceholder": "p. ej. Bistro-Invitados",
+      "security": "Seguridad",
+      "openNetwork": "Ninguna (red abierta)",
+      "password": "Contraseña",
+      "passwordHint": "Se guarda para que puedas actualizarla; en el menú solo se muestra cuando un cliente toca para revelarla.",
+      "enterNetwork": "Introduce un nombre de red para generar un QR WiFi."
+    },
+    "danger": {
+      "title": "Zona peligrosa",
+      "description": "Elimina permanentemente este restaurante y todos sus menús, accesos de personal, ajustes y analítica. Esta acción no se puede deshacer.",
+      "confirmLabel": "Escribe confirm para eliminar",
+      "deleteButton": "Eliminar restaurante"
+    },
+    "center": {
+      "label": "Contenido central",
+      "none": "Ninguno",
+      "logo": "Logo",
+      "text": "Texto",
+      "logoMissing": "Añade primero un logo del restaurante",
+      "textPlaceholder": "p. ej. JR",
+      "textHint": "Hasta 4 caracteres para que el QR siga siendo escaneable."
+    },
+    "visibility": {
+      "visible": "Visible",
+      "hidden": "Oculto"
+    },
+    "upload": {
+      "logo": {
+        "uploading": "Subiendo...",
+        "drop": "Suelta tu logo",
+        "browseHint": "o haz clic para buscar - PNG, JPG, WEBP, SVG hasta 2 MB",
+        "remove": "Quitar logo",
+        "toast": {
+          "uploaded": "Logo subido"
+        },
+        "dialog": {
+          "title": "¿Quitar logo?",
+          "description": "Tus códigos QR de restaurante y menú dejarán de mostrar el logo hasta que subas uno nuevo. El archivo queda en el almacenamiento; nada se elimina permanentemente.",
+          "cancel": "Cancelar"
+        },
+        "errors": {
+          "badType": "Elige un archivo PNG, JPG, WEBP o SVG",
+          "tooLarge": "El logo debe pesar menos de 2 MB",
+          "uploadFailed": "La subida falló",
+          "network": "Error de red; inténtalo de nuevo"
+        }
+      },
+      "headerImage": {
+        "uploading": "Subiendo...",
+        "replace": "Reemplazar imagen de encabezado",
+        "drop": "Suelta tu imagen de encabezado",
+        "browseHint": "o haz clic para buscar - PNG, JPG, WEBP hasta 20 MB",
+        "remove": "Quitar imagen de encabezado",
+        "toast": {
+          "uploaded": "Imagen de encabezado subida"
+        },
+        "dialog": {
+          "title": "¿Quitar imagen de encabezado?",
+          "description": "Tu menú público volverá al degradado de marca detrás del nombre del restaurante. El archivo queda en el almacenamiento; nada se elimina permanentemente.",
+          "cancel": "Cancelar"
+        },
+        "errors": {
+          "badType": "Elige un archivo PNG, JPG o WEBP",
+          "tooLarge": "La imagen de encabezado debe pesar menos de 20 MB",
+          "uploadFailed": "La subida falló",
+          "network": "Error de red; inténtalo de nuevo"
+        }
+      }
+    }
+  },
+  "Profile": {
+    "title": "Tu perfil",
+    "description": "Cómo te ve el resto de tu equipo.",
+    "displayName": "Nombre visible",
+    "namePlaceholder": "Tu nombre",
+    "nameHint": "Se muestra a tus compañeros y en la barra lateral.",
+    "email": "Email",
+    "emailHint": "Tu email de inicio de sesión no se puede cambiar todavía.",
+    "saving": "Guardando...",
+    "saveChanges": "Guardar cambios",
+    "toast": {
+      "updated": "Perfil actualizado"
+    },
+    "errors": {
+      "nameRequired": "El nombre visible no puede estar vacío",
+      "saveFailed": "No se pudo guardar",
+      "network": "Error de red; inténtalo de nuevo"
+    }
+  },
+  "Analytics": {
+    "title": "Analítica",
+    "description": "Cómo usan los clientes el menú público de {restaurant}.",
+    "ranges": {
+      "7d": "Últimos 7 días",
+      "30d": "Últimos 30 días"
+    },
+    "kpis": {
+      "scans": "Escaneos",
+      "uniqueGuests": "Clientes únicos",
+      "reviewClicks": "Clics en reseñas",
+      "wifiReveals": "WiFi revelado"
+    },
+    "hints": {
+      "scans": "Cargas de la página del menú",
+      "uniqueGuests": "Sesiones anónimas distintas",
+      "reviewClicks": "{percent} de los escaneos",
+      "wifiReveals": "Clientes que tocaron el botón de WiFi"
+    },
+    "charts": {
+      "scansOverTime": "Escaneos en el tiempo",
+      "peakHours": "Horas pico",
+      "peakHoursDescription": "Cuándo los clientes escanearon tu QR en este rango.",
+      "socialClicks": "Clics sociales",
+      "socialClicksTotal": "{count, plural, =0 {Sin clics totales en enlaces sociales} =1 {1 clic total en enlaces sociales} other {# clics totales en enlaces sociales}}",
+      "noSocialClicks": "Aún no hay clics sociales."
+    }
+  },
+  "Team": {
+    "title": "Equipo",
+    "description": "Quién puede acceder a {organization}.",
+    "roles": {
+      "owner": "Propietario",
+      "admin": "Admin",
+      "member": "Miembro"
+    },
+    "invite": {
+      "title": "Invitar a alguien",
+      "email": "Email",
+      "role": "Rol",
+      "sending": "Enviando...",
+      "send": "Enviar invitación",
+      "helper": "<member>Miembro</member> puede editar menús. <admin>Admin</admin> también puede editar ajustes del restaurante e invitar compañeros.",
+      "emailPlaceholder": "equipo@restaurante.com"
+    },
+    "members": {
+      "title": "Miembros ({count})",
+      "you": "(tú)"
+    },
+    "pending": {
+      "title": "Invitaciones pendientes ({count})",
+      "expires": "Caduca el {date}",
+      "cancelAria": "Cancelar invitación a {email}"
+    },
+    "toast": {
+      "inviteSent": "Invitación enviada a {email}"
+    },
+    "errors": {
+      "sendFailed": "No se pudo enviar la invitación",
+      "cancelFailed": "No se pudo cancelar",
+      "network": "Error de red; inténtalo de nuevo"
+    }
+  },
+  "Staff": {
+    "title": "Personal",
+    "description": "Invita managers y camareros que puedan ver y editar los menús de este restaurante.",
+    "roles": {
+      "manager": "Manager",
+      "waiter": "Camarero"
+    },
+    "invite": {
+      "title": "Invitar personal",
+      "email": "Email",
+      "role": "Rol",
+      "send": "Enviar invitación",
+      "emailPlaceholder": "equipo@ejemplo.com"
+    },
+    "current": {
+      "title": "Personal actual",
+      "empty": "Aún no hay personal a nivel restaurante. Propietarios y admins de la cuenta siempre tienen acceso.",
+      "removeAria": "Quitar {name}"
+    },
+    "pending": {
+      "title": "Invitaciones pendientes",
+      "expires": "Caduca el {date}",
+      "revokeAria": "Revocar invitación para {email}"
+    },
+    "confirmRemove": "¿Quitar a {name} de este restaurante?",
+    "toast": {
+      "inviteSent": "Invitación enviada a {email}",
+      "revoked": "Invitación revocada",
+      "removed": "{name} eliminado"
+    },
+    "errors": {
+      "sendFailed": "No se pudo enviar la invitación",
+      "revokeFailed": "No se pudo revocar la invitación",
+      "removeFailed": "No se pudo quitar el miembro"
+    }
+  },
+  "Onboarding": {
+    "homeAria": "Inicio de Qtable",
+    "title": "Configura tu restaurante",
+    "description": "Agrega tu sitio web y extraeremos el nombre, descripción, logo y colores de marca. También puedes completarlo a mano.",
+    "websiteHint": "Extraeremos detalles de marca desde la página. Aún no se guarda nada.",
+    "fields": {
+      "yourName": "Tu nombre",
+      "yourNamePlaceholder": "Cómo te verán tus compañeros",
+      "website": "Sitio web del restaurante",
+      "restaurantName": "Nombre del restaurante *",
+      "description": "Descripción breve",
+      "descriptionPlaceholder": "Pizzería de barrio con pizzas al horno de leña desde 2012.",
+      "logo": "Logo",
+      "mainColor": "Color principal",
+      "accentColor": "Color de acento",
+      "currency": "Moneda predeterminada"
+    },
+    "actions": {
+      "continue": "Continuar",
+      "back": "Atrás",
+      "extracting": "Extrayendo marca...",
+      "extract": "Extraer marca",
+      "skipManual": "Omitir; lo completaré a mano",
+      "creating": "Creando...",
+      "create": "Crear restaurante"
+    },
+    "errors": {
+      "extractFailed": "No se pudo extraer la marca desde esa URL",
+      "network": "Error de red; inténtalo de nuevo",
+      "nameRequired": "Introduce tu nombre",
+      "restaurantNameRequired": "El nombre del restaurante es obligatorio",
+      "createFailed": "No se pudo crear el restaurante"
+    },
+    "visuals": {
+      "name": {
+        "eyebrow": "El servicio empieza con el equipo",
+        "title": "Perfiles listos para invitar antes de publicar el primer menú.",
+        "caption": "Tu nombre aparece en ajustes del restaurante, acciones de personal y avisos de propietario."
+      },
+      "url": {
+        "eyebrow": "Extracción de marca",
+        "title": "Convierte el sitio del restaurante en un punto de partida pulido.",
+        "caption": "Extrae colores, logo, descripción y contexto del menú antes de guardar nada."
+      },
+      "details": {
+        "eyebrow": "Base del menú",
+        "title": "Confirma la identidad que verán los clientes al escanear.",
+        "caption": "Logo, colores, descripción y moneda se vuelven la base de cada menú QR."
+      }
+    },
+    "preview": {
+      "sampleRestaurant": "Olive & Ember",
+      "sampleUrl": "restaurante.com",
+      "profile": "Perfil",
+      "website": "Sitio web",
+      "menu": "Menú",
+      "live": "Vista previa",
+      "owner": "Propietario del restaurante",
+      "ownerProfile": "Perfil del propietario",
+      "ready": "Listo para acciones de equipo",
+      "brandSource": "Fuente de marca",
+      "logo": "Logo",
+      "colors": "Colores",
+      "copy": "Texto",
+      "guestIdentity": "Identidad del menú público",
+      "chefSpecial": "Especial del chef",
+      "seasonalMain": "Principal de temporada",
+      "dessert": "Postre"
+    }
+  },
+  "StartTrial": {
+    "homeAria": "Inicio de Qtable",
+    "title": "Inicia tu prueba gratis de 14 días",
+    "description": "Elige un plan para publicar tu menú QR. Guardaremos una tarjeta, iniciaremos la prueba de 14 días y añadiremos 5 créditos de IA para que pruebes la generación de imágenes de inmediato.",
+    "recommended": "Recomendado",
+    "visuals": {
+      "basic": "Menú individual",
+      "pro": "Más popular",
+      "business": "Multiubicación"
+    },
+    "afterTrial": "/mes después de la prueba",
+    "features": {
+      "restaurants": "{count, plural, =1 {1 restaurante} other {# restaurantes}}",
+      "aiCredits": "{count} créditos de IA / mes",
+      "menus": "{count} menús por restaurante"
+    },
+    "redirecting": "Redirigiendo...",
+    "start": "Iniciar prueba gratis",
+    "finePrint": "El reloj de la prueba empieza después del checkout. No se cobra la tarjeta durante 14 días y puedes cancelar cuando quieras desde Facturación.",
+    "skip": "Crear mi menú primero",
+    "errors": {
+      "checkoutUnavailable": "Checkout no disponible. Revisa la configuración de Stripe.",
+      "checkoutFailed": "El pago falló"
+    },
+    "metadataTitle": "Inicia tu prueba"
+  },
+  "WifiReveal": {
+    "trigger": "WiFi",
+    "title": "Acceso WiFi",
+    "description": "Toca para revelar y copiar la contraseña.",
+    "network": "Red",
+    "password": "Contraseña",
+    "hide": "Ocultar",
+    "show": "Mostrar",
+    "passwordAria": "Contraseña WiFi",
+    "passwordHiddenAria": "Contraseña WiFi oculta",
+    "copied": "Copiada",
+    "copyPassword": "Copiar contraseña",
+    "openNetwork": "Esta red está abierta; no necesita contraseña.",
+    "toast": {
+      "copied": "Contraseña copiada",
+      "copyFailed": "No se pudo copiar; toca la contraseña para seleccionarla"
+    }
+  },
+  "Billing": {
+    "title": "Facturación",
+    "description": "Gestiona tu plan, créditos de IA y datos de pago.",
+    "visuals": {
+      "trial": "Vista de prueba",
+      "basic": "Menú individual",
+      "pro": "Listo para clientes",
+      "business": "Multiubicación",
+      "enterprise": "Servicio a escala"
+    },
+    "credits": {
+      "packLabel": "100 créditos · $15",
+      "packPurchased": "{pack} comprado; los créditos aparecerán en unos segundos.",
+      "packCanceled": "Compra de créditos cancelada.",
+      "cardTitle": "Créditos de IA",
+      "monthlyBucket": "Bolsa mensual",
+      "monthlyOf": "de {count}",
+      "bonus": "Bono (no caduca)",
+      "buyPack": "Comprar {pack}",
+      "availableUntil": "Créditos mensuales disponibles hasta el {date}",
+      "nextReset": "Próximo reinicio mensual {date}",
+      "lastReset": "Último reinicio mensual {date}"
+    },
+    "errors": {
+      "checkoutUnavailable": "Checkout no disponible. Revisa la configuración de Stripe.",
+      "checkoutFailed": "El pago falló",
+      "checkoutStartFailed": "No se pudo iniciar el pago",
+      "portalUnavailable": "Portal no disponible",
+      "portalFailed": "El portal falló",
+      "activationLimit": "Tu plan solo permite {count, plural, =1 {1 restaurante activo} other {# restaurantes activos}}.",
+      "activationFailed": "No se pudo actualizar la activación"
+    },
+    "activation": {
+      "title": "Algunos restaurantes están en solo lectura",
+      "description": "Tu plan {plan} permite {count, plural, =1 {1 restaurante activo} other {# restaurantes activos}}. Los locales congelados siguen sirviendo sus menús públicos, pero sus paneles son solo lectura hasta que los reactives o mejores el plan.",
+      "readOnly": "Solo lectura",
+      "picked": "{picked} de {count, plural, =1 {1 espacio} other {# espacios}} elegidos",
+      "save": "Guardar activación",
+      "saved": "Activación actualizada"
+    },
+    "lapsed": {
+      "title": "Suscripción cancelada",
+      "description": "Los menús públicos siguen activos para los clientes. La edición del panel, nuevos menús, subidas y acciones de fotos con IA están pausadas hasta que elijas un plan.",
+      "cta": "Elegir un plan"
+    },
+    "currentPlan": {
+      "title": "Plan actual",
+      "notSubscribed": "Aún no hay suscripción",
+      "setupMode": "Modo de configuración",
+      "setupModeDescription": "Aún no ha empezado ninguna prueba. Puedes crear tu primer menú antes de añadir una tarjeta.",
+      "setupModeBenefit": "Inicia una prueba para publicar tu menú QR en vivo, desbloquear el plan elegido y recibir 5 créditos de IA para generar imágenes.",
+      "subscriptionEnded": "La suscripción terminó",
+      "cancellationScheduled": "Cancelación programada · el acceso termina el {date}",
+      "renews": "{status} · renueva el {date}",
+      "canceledActiveUntil": "Tu suscripción fue cancelada. Tu plan sigue activo hasta el {date}.",
+      "trialEnds": "La prueba termina el {date}",
+      "complimentary": "{plan} de cortesía",
+      "ownerGranted": "Acceso otorgado por el propietario",
+      "ownerGrantedReason": "Acceso otorgado por el propietario - {reason}",
+      "manageBilling": "Gestionar facturación"
+    },
+    "planPicker": {
+      "chooseToContinue": "Elige un plan para continuar",
+      "startTrialTitle": "Inicia tu prueba",
+      "changePlan": "Cambiar plan",
+      "choosePlan": "Elegir un plan",
+      "monthly": "Mensual",
+      "yearly": "Anual",
+      "current": "Actual",
+      "custom": "Personalizado",
+      "perYear": "año",
+      "perMonth": "mes",
+      "contactSales": "Contactar ventas",
+      "switchPlan": "Cambiar a este plan",
+      "startTrial": "Iniciar prueba de 14 días"
+    },
+    "planFeatures": {
+      "sixPlusRestaurants": "6+ restaurantes",
+      "restaurants": "{count, plural, =1 {1 restaurante} other {# restaurantes}}",
+      "menusEach": "{count} menús cada uno",
+      "aiCreditsPerMonth": "{count} créditos de IA/mes",
+      "customAiAllowance": "Créditos de IA personalizados"
+    },
+    "usage": "Estás usando {active} activos de {max} {count, plural, =1 {restaurante} other {restaurantes}} en tu plan actual."
+  },
+  "Badges": {
+    "best-seller": "Más vendido",
+    "chefs-pick": "Elección del chef",
+    "signature": "Especialidad",
+    "new": "Nuevo",
+    "spicy": "Picante"
+  },
+  "DietaryTags": {
+    "V": "Vegetariano",
+    "VG": "Vegano",
+    "GF": "Sin gluten",
+    "DF": "Sin lácteos",
+    "NF": "Sin frutos secos"
+  },
+  "Email": {
+    "common": {
+      "tagline": "Menús QR digitales para restaurantes",
+      "acceptInvitation": "Aceptar invitación",
+      "copyLink": "O copia este enlace en tu navegador:",
+      "ignoreInvitation": "Si no esperabas esta invitación, puedes ignorar este email sin problema.",
+      "footer": "Convierte cualquier menú en una experiencia QR hermosa."
+    },
+    "orgInvite": {
+      "subject": "{inviterName} te invitó a {restaurantName} en Qtable",
+      "body": "{inviterName} te invitó a unirte a {restaurantName} en Qtable para ayudar a gestionar los menús."
+    },
+    "restaurantInvite": {
+      "subject": "{inviterName} te invitó a trabajar en {restaurantName}",
+      "body": "{inviterName} te invitó a unirte a {restaurantName} como {role}. Podrás ver y gestionar los menús de este restaurante desde tu propia cuenta.",
+      "roles": {
+        "manager": "manager",
+        "waiter": "mesero"
+      }
+    },
+    "otp": {
+      "subject": {
+        "signIn": "Tu código de acceso de Qtable",
+        "emailVerification": "Verifica tu email de Qtable",
+        "forgetPassword": "Restablece tu contraseña de Qtable",
+        "changeEmail": "Verifica tu email de Qtable"
+      },
+      "action": {
+        "signIn": "Usa este código para iniciar sesión en Qtable:",
+        "emailVerification": "Usa este código para verificar tu email:",
+        "forgetPassword": "Usa este código para restablecer tu contraseña:",
+        "changeEmail": "Usa este código para confirmar tu nuevo email:"
+      },
+      "expires": "Este código vence en 5 minutos.",
+      "ignore": "Si no solicitaste este código, puedes ignorar este email sin problema."
+    }
+  },
+  "Api": {
+    "common": {
+      "notSignedIn": "No has iniciado sesión",
+      "notAllowed": "No tienes permiso",
+      "invalidBody": "Solicitud no válida",
+      "noActiveRestaurant": "No hay un restaurante activo",
+      "noActiveOrganization": "No hay una organización activa",
+      "noFieldsToUpdate": "No hay campos para actualizar",
+      "menuNotFound": "Menú no encontrado",
+      "dishNotFound": "Plato no encontrado",
+      "restaurantNotFound": "Restaurante no encontrado",
+      "memberNotFound": "Miembro no encontrado",
+      "invitationNotFound": "Invitación no encontrada",
+      "unsupportedFileType": "Tipo de archivo no compatible: {type}",
+      "noFileProvided": "No se proporcionó ningún archivo",
+      "updateFailed": "No se pudo actualizar",
+      "somethingWentWrong": "Algo salió mal"
+    },
+    "gates": {
+      "subscriptionLapsed": "Tu suscripción terminó. Los menús públicos siguen activos, pero la edición está pausada hasta que elijas un plan.",
+      "restaurantReadOnly": "Este restaurante está en modo solo lectura con tu plan actual. Actívalo desde Facturación o mejora tu plan.",
+      "menuRestaurantReadOnly": "Este restaurante está en modo solo lectura porque tu plan no lo cubre. Actívalo desde Facturación o mejora tu plan.",
+      "restaurantCap": "Tu plan {plan} permite hasta {limit, plural, =1 {1 restaurante} other {# restaurantes}}. Mejora tu plan para añadir más.",
+      "menuCap": "Cada restaurante admite hasta {limit} menús en tu plan."
+    },
+    "billing": {
+      "startTrialBeforeCredits": "Inicia una prueba antes de comprar créditos extra de IA.",
+      "checkoutNotConfigured": "La compra de créditos no está configurada en este entorno.",
+      "checkoutNoUrl": "Stripe no devolvió una URL de pago"
+    },
+    "admin": {
+      "creditAmountRange": "El importe debe estar entre 1 y {max}",
+      "organizationNotFound": "Organización no encontrada",
+      "unsupportedCompPlan": "Plan comp no compatible"
+    },
+    "analytics": {
+      "unknownEventType": "Tipo de evento desconocido",
+      "menuSlugRequired": "Falta menuSlug",
+      "payloadObject": "El payload debe ser un objeto",
+      "payloadTooLarge": "El payload es demasiado grande"
+    },
+    "invitations": {
+      "invalidEmail": "Email no válido",
+      "invalidRole": "Rol no válido",
+      "inviteFailed": "No se pudo enviar la invitación",
+      "cancelFailed": "No se pudo cancelar",
+      "alreadyPending": "Ya hay una invitación pendiente para este email",
+      "alreadyMember": "Esa persona ya forma parte de este restaurante",
+      "alreadyUsed": "La invitación ya fue usada o cancelada",
+      "expired": "La invitación ha expirado",
+      "differentEmail": "Esta invitación se envió a otro email"
+    },
+    "menus": {
+      "setUpFirst": "Primero configura tu restaurante",
+      "provideSource": "Proporciona una URL, pega el texto del menú o sube un archivo.",
+      "uploadOrPaste": "Sube un archivo o pega el texto del menú.",
+      "textTooLong": "El texto del menú es demasiado largo (máx. {limit, number} caracteres).",
+      "tooManyFiles": "Sube hasta {limit} archivos.",
+      "nameEmpty": "El nombre del menú no puede estar vacío",
+      "noItemsToAdd": "No hay elementos para añadir",
+      "categoryNamesRequired": "Los nombres de categoría son obligatorios",
+      "categoryIconInvalid": "Elige un icono de categoría válido",
+      "categoryNameRequired": "El nombre de la categoría es obligatorio",
+      "categoryRequired": "La categoría es obligatoria",
+      "dishNameRequired": "El nombre del plato es obligatorio",
+      "itemNameEmpty": "El nombre del plato no puede estar vacío",
+      "descriptionInvalid": "Descripción no válida",
+      "priceInvalid": "El precio debe ser cero o mayor",
+      "variantsInvalid": "Precios por tamaño no válidos",
+      "categoryEmpty": "La categoría no puede estar vacía",
+      "tagsInvalid": "Etiquetas no válidas",
+      "badgesInvalid": "Insignias no válidas",
+      "imageUrlInvalid": "URL de imagen no válida",
+      "specialUntilInvalid": "Fecha de especial no válida",
+      "aiEnhanceNotConfigured": "La mejora de imágenes con IA no está configurada",
+      "aiGenerateNotConfigured": "La generación de imágenes con IA no está configurada",
+      "noPhotoToEnhance": "Este plato aún no tiene foto para mejorar",
+      "startTrialForImages": "Inicia tu prueba para usar la generación de imágenes con IA.",
+      "outOfCredits": "Sin créditos de IA. Compra más o mejora tu plan.",
+      "sourceImageFetchFailed": "No se pudo obtener la imagen original ({status})",
+      "enhancementFailed": "La mejora falló",
+      "generationFailed": "La generación falló",
+      "extractionFailed": "No se pudo extraer el menú",
+      "descriptionFailed": "No se pudo generar la descripción",
+      "imageUrlRequired": "Falta la URL de la imagen",
+      "urlNotOwned": "La URL no pertenece a este plato"
+    },
+    "onboarding": {
+      "alreadyBelong": "Ya perteneces a un restaurante",
+      "nameRequired": "El nombre del restaurante es obligatorio",
+      "createFailed": "No se pudo crear el restaurante",
+      "urlRequired": "Falta la URL del sitio web",
+      "invalidUrl": "URL no válida",
+      "extractFailed": "No se pudo extraer la información"
+    },
+    "organizations": {
+      "invalidName": "Nombre no válido",
+      "nameEmpty": "El nombre no puede estar vacío",
+      "invalidLogoUrl": "URL del logo no válida",
+      "invalidDescription": "Descripción no válida",
+      "invalidHeaderImageUrl": "URL de la imagen de cabecera no válida",
+      "invalidWebsiteUrl": "URL del sitio web no válida",
+      "invalidPrimaryColor": "Color primario no válido",
+      "invalidSecondaryColor": "Color secundario no válido",
+      "invalidHeaderTextColor": "Color del texto de cabecera no válido",
+      "invalidMenuNameColor": "Color del nombre del menú no válido",
+      "invalidLogoVisibility": "Visibilidad del logo no válida",
+      "invalidRestaurantNameVisibility": "Visibilidad del nombre del restaurante no válida",
+      "invalidMenuNameVisibility": "Visibilidad del nombre del menú no válida",
+      "invalidDishCountVisibility": "Visibilidad del número de platos no válida",
+      "invalidCategoryIconVisibility": "Visibilidad de los iconos de categoría no válida",
+      "unsupportedCurrency": "Moneda no compatible",
+      "invalidQrDotStyle": "Estilo de puntos del QR no válido",
+      "invalidQrCornerStyle": "Estilo de esquinas del QR no válido",
+      "invalidQrForegroundColor": "Color de primer plano del QR no válido",
+      "invalidQrBackgroundColor": "Color de fondo del QR no válido",
+      "invalidQrCenterType": "Tipo de centro del QR no válido",
+      "invalidQrCenterText": "Texto del centro del QR no válido",
+      "invalidWifiSsid": "SSID de WiFi no válido",
+      "invalidWifiPassword": "Contraseña de WiFi no válida",
+      "invalidWifiEncryption": "Cifrado de WiFi no válido",
+      "invalidWifiQrCenterType": "Tipo de centro del QR de WiFi no válido",
+      "invalidWifiQrCenterText": "Texto del centro del QR de WiFi no válido",
+      "invalidGoogleReviewUrl": "URL de reseña de Google no válida",
+      "invalidSocialHandle": "Enlace social no válido",
+      "invalidTemplate": "Plantilla no válida",
+      "invalidTheme": "Tema no válido",
+      "invalidSeasonalOverlay": "Decoración de temporada no válida"
+    },
+    "restaurants": {
+      "nameRequired": "El nombre del restaurante es obligatorio",
+      "planCapAdd": "Tu plan {plan} permite {limit, plural, =1 {1 restaurante} other {# restaurantes}}. Mejora tu plan o desactiva un restaurante existente para añadir otro.",
+      "disableOnlyAtLimit": "Desactivar un restaurante solo está disponible cuando tu plan está en su límite",
+      "disableTargetNotFound": "No se encontró el restaurante a desactivar",
+      "confirmDelete": "Escribe confirm para eliminar este restaurante",
+      "noActiveToDelete": "No hay un restaurante activo para eliminar",
+      "createBeforeDelete": "Crea otro restaurante antes de eliminar tu único restaurante.",
+      "unknownActiveRestaurant": "Restaurante desconocido en la lista de activación",
+      "activationCap": "Tu plan {plan} solo permite {limit, plural, =1 {1 restaurante activo} other {# restaurantes activos}}."
+    },
+    "upload": {
+      "logoTooLarge": "El logo debe pesar menos de 2 MB",
+      "headerTooLarge": "La imagen de cabecera debe pesar menos de 20 MB",
+      "photoTooLarge": "La foto debe pesar menos de 5 MB",
+      "uploadFailed": "No se pudo subir el archivo"
+    }
   }
 }

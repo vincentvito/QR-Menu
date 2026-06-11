@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Loader2, Trash2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -35,17 +36,18 @@ export function HeaderImageUploader({
   onChange,
   disabled = false,
 }: HeaderImageUploaderProps) {
+  const t = useTranslations('Settings.upload.headerImage')
   const inputRef = useRef<HTMLInputElement | null>(null)
   const [uploading, setUploading] = useState(false)
   const [dragging, setDragging] = useState(false)
 
   async function uploadFile(file: File) {
     if (!file.type.startsWith('image/')) {
-      toast.error('Pick a PNG, JPG, or WEBP file')
+      toast.error(t('errors.badType'))
       return
     }
     if (file.size > MAX_BYTES) {
-      toast.error('Header image must be under 20 MB')
+      toast.error(t('errors.tooLarge'))
       return
     }
     setUploading(true)
@@ -55,13 +57,13 @@ export function HeaderImageUploader({
       const res = await fetch(ENDPOINT, { method: 'POST', body: form })
       const data = await res.json()
       if (!res.ok) {
-        toast.error(data.error ?? 'Upload failed')
+        toast.error(data.error ?? t('errors.uploadFailed'))
         return
       }
       onChange(data.url)
-      toast.success('Header image uploaded')
+      toast.success(t('toast.uploaded'))
     } catch {
-      toast.error('Network error — please try again')
+      toast.error(t('errors.network'))
     } finally {
       setUploading(false)
       if (inputRef.current) inputRef.current.value = ''
@@ -126,7 +128,7 @@ export function HeaderImageUploader({
             <div className="bg-foreground/60 absolute inset-0 flex items-center justify-center opacity-0 transition-opacity hover:opacity-100">
               <span className="text-background inline-flex items-center gap-2 text-sm font-semibold">
                 <Upload className="size-4" aria-hidden="true" />
-                Replace header image
+                {t('replace')}
               </span>
             </div>
           </>
@@ -135,7 +137,7 @@ export function HeaderImageUploader({
             {uploading ? (
               <span className="text-muted-foreground inline-flex items-center gap-2 text-sm">
                 <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                Uploading…
+                {t('uploading')}
               </span>
             ) : (
               <>
@@ -143,10 +145,8 @@ export function HeaderImageUploader({
                   <Upload className="size-5" aria-hidden="true" />
                 </div>
                 <div className="space-y-0.5">
-                  <div className="text-foreground text-sm font-medium">Drop your header image</div>
-                  <div className="text-muted-foreground text-xs">
-                    or click to browse · PNG, JPG, WEBP up to 20 MB
-                  </div>
+                  <div className="text-foreground text-sm font-medium">{t('drop')}</div>
+                  <div className="text-muted-foreground text-xs">{t('browseHint')}</div>
                 </div>
               </>
             )}
@@ -165,25 +165,22 @@ export function HeaderImageUploader({
               className="text-destructive hover:text-destructive hover:bg-destructive/5 ml-auto flex"
             >
               <Trash2 className="size-3.5" aria-hidden="true" />
-              Remove header image
+              {t('remove')}
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Remove header image?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Your public menu will fall back to the brand-color gradient behind your restaurant
-                name. The file stays in storage — nothing is permanently deleted.
-              </AlertDialogDescription>
+              <AlertDialogTitle>{t('dialog.title')}</AlertDialogTitle>
+              <AlertDialogDescription>{t('dialog.description')}</AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogCancel>{t('dialog.cancel')}</AlertDialogCancel>
               <AlertDialogAction
                 variant="outline"
                 onClick={() => onChange('')}
                 className="text-destructive hover:text-destructive hover:bg-destructive/5"
               >
-                Remove header image
+                {t('remove')}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

@@ -43,10 +43,7 @@ export async function enhanceDishImage(
 ): Promise<GeneratedImage> {
   const response = await ai.models.generateContent({
     model: MODEL,
-    contents: [
-      { inlineData: { data: sourceBase64, mimeType: sourceMimeType } },
-      { text: prompt },
-    ],
+    contents: [{ inlineData: { data: sourceBase64, mimeType: sourceMimeType } }, { text: prompt }],
   })
   return extractImage(response)
 }

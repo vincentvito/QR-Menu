@@ -1,6 +1,7 @@
 // Shared price chip. Every template must use this — locks in the brand
 // treatment (bg-pop + text-pop-foreground) so templates can't diverge on
 // the color and org brand-color overrides flow through the CSS vars.
+import { formatMenuPrice } from '@/lib/menus/price-format'
 
 interface PriceChipProps {
   symbol: string
@@ -24,7 +25,7 @@ export function PriceChip({ symbol, price, size = 'md', className }: PriceChipPr
       }`}
     >
       {symbol}
-      {Number.isInteger(price) ? price : price.toFixed(2)}
+      {formatMenuPrice(symbol, price)}
     </span>
   )
 }

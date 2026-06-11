@@ -1,5 +1,6 @@
 import { NextResponse, after } from 'next/server'
 import { headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { deleteByUrl } from '@/lib/storage/r2'
@@ -16,9 +17,10 @@ interface RouteContext {
 // item's own bucket prefix so a member can't use this to delete arbitrary
 // R2 objects even inside their org.
 export async function POST(request: Request, { params }: RouteContext) {
+  const t = await getTranslations('Api')
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
 
   const { slug, itemId } = await params
@@ -28,10 +30,10 @@ export async function POST(request: Request, { params }: RouteContext) {
     const body = (await request.json()) as { url?: unknown }
     if (typeof body.url === 'string') url = body.url
   } catch {
-    return NextResponse.json({ error: 'Invalid body' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
   if (!url) {
-    return NextResponse.json({ error: 'url is required' }, { status: 400 })
+    return NextResponse.json({ error: t('menus.imageUrlRequired') }, { status: 400 })
   }
 
   let access
@@ -39,7 +41,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     access = await requireMenuAccess(slug, session.user.id)
   } catch (err) {
     const status = (err as { status?: number }).status ?? 500
-    return NextResponse.json({ error: 'Not allowed' }, { status })
+    return NextResponse.json({ error: t('common.notAllowed') }, { status })
   }
 
   const item = await prisma.menuItem.findFirst({
@@ -47,7 +49,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     select: { id: true },
   })
   if (!item) {
-    return NextResponse.json({ error: 'Dish not found' }, { status: 404 })
+    return NextResponse.json({ error: t('common.dishNotFound') }, { status: 404 })
   }
 
   // Safety: only allow deleting URLs that live under this item's folder.
@@ -57,10 +59,10 @@ export async function POST(request: Request, { params }: RouteContext) {
   try {
     const parsed = new URL(url)
     if (!parsed.pathname.startsWith(itemPrefix)) {
-      return NextResponse.json({ error: 'URL not owned by this dish' }, { status: 400 })
+      return NextResponse.json({ error: t('menus.urlNotOwned') }, { status: 400 })
     }
   } catch {
-    return NextResponse.json({ error: 'Invalid url' }, { status: 400 })
+    return NextResponse.json({ error: t('menus.imageUrlInvalid') }, { status: 400 })
   }
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

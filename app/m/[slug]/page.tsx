@@ -1,9 +1,15 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Image from 'next/image'
-import { getMenuBySlug } from '@/lib/menus/get'
+import Link from 'next/link'
+import { headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
+import { auth } from '@/lib/auth'
+import { getMenuBySlug, requireMenuAccess } from '@/lib/menus/get'
+import { isOrganizationPublished } from '@/lib/menus/publication'
 import { parseCategoryIconOverrides } from '@/lib/menus/category-icon'
 import { currencySymbol } from '@/lib/menus/currency'
+import { parseVariants } from '@/lib/menus/variants'
 import { PublicMenuBody } from '@/components/menu/PublicMenuBody'
 import { WifiReveal } from '@/components/menu/WifiReveal'
 import { SeasonalOverlay } from '@/components/menu/SeasonalOverlay'
@@ -18,41 +24,43 @@ import { SITE_URL } from '@/lib/site'
 
 interface PageProps {
   params: Promise<{ slug: string }>
+  searchParams?: Promise<{ preview?: string }>
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params
-  const menu = await getMenuBySlug(slug)
+  const [menu, t] = await Promise.all([getMenuBySlug(slug), getTranslations('MenuView')])
   if (!menu || !menu.restaurant) {
-    return { title: 'Menu not found', robots: { index: false, follow: false } }
+    return { title: t('notFoundTitle'), robots: { index: false, follow: false } }
   }
   const restaurant = menu.restaurant
   const venueName = restaurant.name
   const description =
-    restaurant.description?.trim() ||
-    `${menu.name} at ${venueName}. Browse every dish — photos, prices, specials, and dietary info.`
+    restaurant.description?.trim() || t('metadataDescription', { menuName: menu.name, venueName })
   const canonical = `/m/${slug}`
   const image = `${canonical}/opengraph-image`
+  const title = t('metadataTitle', { menuName: menu.name, venueName })
+  const published = await isOrganizationPublished(menu.organizationId)
   return {
-    title: `${venueName} — ${menu.name}`,
+    title,
     description,
+    robots: published ? undefined : { index: false, follow: false },
     alternates: { canonical },
     openGraph: {
       type: 'website',
-      title: `${venueName} — ${menu.name}`,
+      title,
       description,
       url: canonical,
-      images: [{ url: image, width: 1200, height: 630, alt: `${venueName} menu` }],
+      images: [{ url: image, width: 1200, height: 630, alt: t('metadataImageAlt', { venueName }) }],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${venueName} — ${menu.name}`,
+      title,
       description,
       images: [image],
     },
   }
 }
-
 function SocialLink({
   href,
   label,
@@ -82,9 +90,50 @@ function SocialLink({
   )
 }
 
-export default async function PublicMenuPage({ params }: PageProps) {
+async function canPreviewMenu(slug: string) {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session) return false
+  try {
+    await requireMenuAccess(slug, session.user.id)
+    return true
+  } catch {
+    return false
+  }
+}
+
+function UnpublishedNotice({
+  venueName,
+  title,
+  description,
+  cta,
+}: {
+  venueName: string
+  title: string
+  description: string
+  cta: string
+}) {
+  return (
+    <main className="bg-background text-foreground flex min-h-screen items-center justify-center px-5 py-12">
+      <section className="border-cream-line bg-card w-full max-w-[520px] rounded-[24px] border p-7 text-center shadow-[0_20px_60px_-46px_rgba(26,30,23,0.45)] sm:p-9">
+        <p className="text-muted-foreground text-xs font-semibold tracking-[0.16em] uppercase">
+          {venueName}
+        </p>
+        <h1 className="mt-3 text-2xl font-semibold tracking-tight">{title}</h1>
+        <p className="text-muted-foreground mt-3 text-sm leading-6">{description}</p>
+        <Link
+          href="/"
+          className="bg-foreground text-background hover:bg-foreground/90 focus-visible:ring-foreground mt-6 inline-flex h-9 items-center justify-center rounded-full px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        >
+          {cta}
+        </Link>
+      </section>
+    </main>
+  )
+}
+
+export default async function PublicMenuPage({ params, searchParams }: PageProps) {
   const { slug } = await params
-  const menu = await getMenuBySlug(slug)
+  const [menu, t] = await Promise.all([getMenuBySlug(slug), getTranslations('MenuView')])
   if (!menu) notFound()
 
   // `restaurant` is the source of truth for branding/template/wifi/socials.
@@ -94,6 +143,21 @@ export default async function PublicMenuPage({ params }: PageProps) {
   if (!menu.restaurant) notFound()
   const restaurant = menu.restaurant
   const org = menu.organization
+  const [query, published] = await Promise.all([
+    searchParams,
+    isOrganizationPublished(menu.organizationId),
+  ])
+  const previewAllowed = query?.preview === '1' ? await canPreviewMenu(slug) : false
+  if (!published && !previewAllowed) {
+    return (
+      <UnpublishedNotice
+        venueName={restaurant.name}
+        title={t('unpublished.title')}
+        description={t('unpublished.description')}
+        cta={t('unpublished.cta')}
+      />
+    )
+  }
   const symbol = currencySymbol(restaurant.currency)
   const categoryIcons = parseCategoryIconOverrides(menu.categoryIcons)
 
@@ -147,20 +211,30 @@ export default async function PublicMenuPage({ params }: PageProps) {
       hasMenuSection: Array.from(sectionMap.entries()).map(([sectionName, items]) => ({
         '@type': 'MenuSection',
         name: sectionName,
-        hasMenuItem: items.map((i) => ({
-          '@type': 'MenuItem',
-          name: i.name,
-          description: i.description || undefined,
-          image: i.imageUrl ?? undefined,
-          offers:
-            i.price > 0
-              ? {
-                  '@type': 'Offer',
-                  price: i.price,
-                  priceCurrency: restaurant.currency,
-                }
-              : undefined,
-        })),
+        hasMenuItem: items.map((i) => {
+          const variants = parseVariants(i.variants)
+          return {
+            '@type': 'MenuItem',
+            name: i.name,
+            description: i.description || undefined,
+            image: i.imageUrl ?? undefined,
+            offers:
+              variants.length > 0
+                ? variants.map((v) => ({
+                    '@type': 'Offer',
+                    name: v.label,
+                    price: v.price,
+                    priceCurrency: restaurant.currency,
+                  }))
+                : i.price > 0
+                  ? {
+                      '@type': 'Offer',
+                      price: i.price,
+                      priceCurrency: restaurant.currency,
+                    }
+                  : undefined,
+          }
+        }),
       })),
     },
   }
@@ -256,7 +330,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
               ) : null}
               {restaurant.showDishCount ? (
                 <p className="text-background/70 mt-2 text-xs sm:text-sm">
-                  {menu.items.length} {menu.items.length === 1 ? 'dish' : 'dishes'}
+                  {t('dishCount', { count: menu.items.length })}
                 </p>
               ) : null}
             </div>
@@ -276,6 +350,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
           name: i.name,
           description: i.description,
           price: i.price,
+          variants: parseVariants(i.variants),
           tags: i.tags,
           badges: i.badges,
           imageUrl: i.imageUrl,
@@ -285,7 +360,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
       <footer className="mx-auto mt-8 max-w-[720px] px-5 pb-12 sm:px-8">
         {restaurant.googleReviewUrl ? (
           <div className="mb-8 flex flex-col items-center gap-2 text-center">
-            <p className="text-muted-foreground text-xs">Enjoyed your meal?</p>
+            <p className="text-muted-foreground text-xs">{t('reviewPrompt')}</p>
             <TrackedExternalLink
               menuSlug={slug}
               trackType="google_review_click"
@@ -296,7 +371,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
               className="bg-foreground text-background hover:bg-foreground/90 inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-semibold shadow-sm transition-colors"
             >
               <GoogleIcon className="size-4" aria-hidden={true} />
-              Leave us a Google review
+              {t('reviewCta')}
             </TrackedExternalLink>
           </div>
         ) : null}
@@ -322,7 +397,7 @@ export default async function PublicMenuPage({ params }: PageProps) {
         )}
 
         <p className="text-muted-foreground text-center text-xs">
-          Menu by{' '}
+          {t('menuBy')}{' '}
           <a href="/" className="underline-offset-4 hover:underline">
             Qtable
           </a>

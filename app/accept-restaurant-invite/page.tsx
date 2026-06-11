@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
 import Link from 'next/link'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
@@ -12,14 +13,22 @@ interface PageProps {
   searchParams: Promise<{ token?: string }>
 }
 
-export const metadata: Metadata = {
-  title: 'Accept restaurant invite',
-  robots: { index: false, follow: false },
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('Invite')
+  return {
+    title: t('restaurantMetadataTitle'),
+    robots: { index: false, follow: false },
+  }
 }
 
 export default async function AcceptRestaurantInvitePage({ searchParams }: PageProps) {
+  const t = await getTranslations('Invite')
   const { token } = await searchParams
-  if (!token) return <InviteMessage title="Invitation not found" />
+  if (!token) {
+    return (
+      <InviteMessage title={t('notFound')} backLabel={t('backHome')} homeAria={t('homeAria')} />
+    )
+  }
 
   const [invitation, session] = await Promise.all([
     prisma.restaurantInvitation.findUnique({
@@ -32,20 +41,28 @@ export default async function AcceptRestaurantInvitePage({ searchParams }: PageP
     auth.api.getSession({ headers: await headers() }),
   ])
 
-  if (!invitation) return <InviteMessage title="Invitation not found" />
+  if (!invitation) {
+    return (
+      <InviteMessage title={t('notFound')} backLabel={t('backHome')} homeAria={t('homeAria')} />
+    )
+  }
   if (invitation.status !== 'pending') {
     return (
       <InviteMessage
-        title="Invitation already used"
-        body="This invitation has already been accepted or canceled. Ask whoever invited you to send a new one."
+        title={t('alreadyUsed')}
+        body={t('restaurantAlreadyUsedBody')}
+        backLabel={t('backHome')}
+        homeAria={t('homeAria')}
       />
     )
   }
   if (invitation.expiresAt < new Date()) {
     return (
       <InviteMessage
-        title="Invitation expired"
-        body="This invitation has expired. Ask whoever invited you to send a new one."
+        title={t('expired')}
+        body={t('restaurantExpiredBody')}
+        backLabel={t('backHome')}
+        homeAria={t('homeAria')}
       />
     )
   }
@@ -62,12 +79,16 @@ export default async function AcceptRestaurantInvitePage({ searchParams }: PageP
   const emailMatches = viewerEmail === invitedEmail
 
   return (
-    <InviteShell>
+    <InviteShell homeAria={t('homeAria')}>
       <p className="text-muted-foreground text-sm">
-        <strong className="text-foreground">{inviterName}</strong> invited you to work at
+        {t.rich('restaurantInviteIntro', {
+          inviter: () => <strong className="text-foreground">{inviterName}</strong>,
+        })}
       </p>
       <h1 className="mt-2 text-3xl font-semibold tracking-tight">{invitation.restaurant.name}</h1>
-      <p className="text-muted-foreground mt-1 text-xs">as {invitation.role}</p>
+      <p className="text-muted-foreground mt-1 text-xs">
+        {t('roleLine', { role: invitation.role })}
+      </p>
 
       {emailMatches ? (
         <div className="mt-8">
@@ -76,11 +97,15 @@ export default async function AcceptRestaurantInvitePage({ searchParams }: PageP
       ) : (
         <div className="mt-8 space-y-3">
           <p className="bg-background/50 border-cream-line text-muted-foreground rounded-lg border p-3 text-sm">
-            This invite is for <strong className="text-foreground">{invitedEmail}</strong>, but
-            you&apos;re signed in as <strong className="text-foreground">{viewerEmail}</strong>.
+            {t.rich('emailMismatch', {
+              invitedEmail,
+              viewerEmail,
+              invited: (chunks) => <strong className="text-foreground">{chunks}</strong>,
+              viewer: (chunks) => <strong className="text-foreground">{chunks}</strong>,
+            })}
           </p>
           <Button asChild variant="outline" className="w-full">
-            <Link href="/auth/login">Sign in with a different email</Link>
+            <Link href="/auth/login">{t('differentEmail')}</Link>
           </Button>
         </div>
       )}
@@ -88,12 +113,12 @@ export default async function AcceptRestaurantInvitePage({ searchParams }: PageP
   )
 }
 
-function InviteShell({ children }: { children: React.ReactNode }) {
+function InviteShell({ children, homeAria }: { children: React.ReactNode; homeAria: string }) {
   return (
     <main className="bg-background flex min-h-screen items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 flex justify-center">
-          <Link href="/" aria-label="Qtable home">
+          <Link href="/" aria-label={homeAria}>
             <BrandMark size="lg" />
           </Link>
         </div>
@@ -105,13 +130,23 @@ function InviteShell({ children }: { children: React.ReactNode }) {
   )
 }
 
-function InviteMessage({ title, body }: { title: string; body?: string }) {
+function InviteMessage({
+  title,
+  body,
+  backLabel,
+  homeAria,
+}: {
+  title: string
+  body?: string
+  backLabel: string
+  homeAria: string
+}) {
   return (
-    <InviteShell>
+    <InviteShell homeAria={homeAria}>
       <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
       {body ? <p className="text-muted-foreground mt-2 text-sm">{body}</p> : null}
       <Button asChild variant="outline" className="mt-6 w-full">
-        <Link href="/">Back to home</Link>
+        <Link href="/">{backLabel}</Link>
       </Button>
     </InviteShell>
   )

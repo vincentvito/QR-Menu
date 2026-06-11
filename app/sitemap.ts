@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { ACTIVE_SUBSCRIPTION_STATUSES } from '@/lib/plans/subscription-access'
 import { SITE_URL } from '@/lib/site'
 
 export const revalidate = 3600
@@ -27,7 +28,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     const { default: prisma } = await import('@/lib/prisma')
+    const subscriptions = await prisma.subscription.findMany({
+      where: { status: { in: [...ACTIVE_SUBSCRIPTION_STATUSES] } },
+      select: { referenceId: true },
+    })
+    const publishedOrganizationIds = subscriptions.map((subscription) => subscription.referenceId)
     const menus = await prisma.menu.findMany({
+      where: {
+        OR: [
+          { organizationId: { in: publishedOrganizationIds } },
+          { organization: { compPlan: { not: null } } },
+        ],
+      },
       select: { slug: true, updatedAt: true },
     })
 

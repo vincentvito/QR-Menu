@@ -5,6 +5,8 @@ import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { extFromMimeType, keyForMenuItemImage, uploadBuffer } from '@/lib/storage/r2'
 import { canWriteRestaurant } from '@/lib/plans/subscription-access'
+import { getTranslations } from 'next-intl/server'
+import { translatedApiError } from '@/lib/api/errors'
 
 export const runtime = 'nodejs'
 
@@ -14,9 +16,10 @@ const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp'])
 const MAX_BYTES = 5 * 1024 * 1024
 
 export async function POST(request: Request) {
+  const t = await getTranslations('Api')
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
 
   let file: File | null = null
@@ -28,23 +31,23 @@ export async function POST(request: Request) {
     const rawId = form.get('itemId')
     if (typeof rawId === 'string') itemId = rawId
   } catch {
-    return NextResponse.json({ error: 'Invalid upload body' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
 
   if (!itemId) {
-    return NextResponse.json({ error: 'itemId is required' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
   if (!file || file.size === 0) {
-    return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+    return NextResponse.json({ error: t('common.noFileProvided') }, { status: 400 })
   }
   if (!ALLOWED_MIME.has(file.type)) {
     return NextResponse.json(
-      { error: `Unsupported file type: ${file.type || 'unknown'}` },
+      { error: t('common.unsupportedFileType', { type: file.type || 'unknown' }) },
       { status: 400 },
     )
   }
   if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: 'Photo must be under 5 MB' }, { status: 413 })
+    return NextResponse.json({ error: t('upload.photoTooLarge') }, { status: 413 })
   }
 
   // Authorize: the dish must belong to a menu in an org the viewer is a
@@ -65,12 +68,20 @@ export async function POST(request: Request) {
     },
   })
   if (!item) {
-    return NextResponse.json({ error: 'Dish not found' }, { status: 404 })
+    return NextResponse.json({ error: t('common.dishNotFound') }, { status: 404 })
   }
 
   const writeGate = await canWriteRestaurant(item.menu.organizationId, item.menu.restaurantId)
   if (!writeGate.allowed) {
-    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
+    return NextResponse.json(
+      {
+        error: writeGate.reason
+          ? t(writeGate.reason.key, writeGate.reason.params)
+          : t('gates.subscriptionLapsed'),
+        gate: writeGate.gate,
+      },
+      { status: 402 },
+    )
   }
 
   const buffer = Buffer.from(await file.arrayBuffer())
@@ -86,7 +97,7 @@ export async function POST(request: Request) {
     })
     return NextResponse.json({ url })
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Upload failed'
+    const message = translatedApiError(t, err, 'upload.uploadFailed')
     console.error('[api/upload/menu-item-image] failed:', err)
     return NextResponse.json({ error: message }, { status: 500 })
   }

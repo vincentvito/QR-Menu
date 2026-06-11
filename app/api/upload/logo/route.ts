@@ -6,6 +6,8 @@ import prisma from '@/lib/prisma'
 import { getActiveOrganization } from '@/lib/organizations/get-active-org'
 import { extFromMimeType, keyForOrgLogo, keyForUserLogo, uploadBuffer } from '@/lib/storage/r2'
 import { canWriteDashboard } from '@/lib/plans/subscription-access'
+import { getTranslations } from 'next-intl/server'
+import { translatedApiError } from '@/lib/api/errors'
 
 export const runtime = 'nodejs'
 
@@ -14,9 +16,10 @@ const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/sv
 const MAX_BYTES = 2 * 1024 * 1024
 
 export async function POST(request: Request) {
+  const t = await getTranslations('Api')
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
 
   // Two contexts for this endpoint:
@@ -33,11 +36,19 @@ export async function POST(request: Request) {
       select: { role: true },
     })
     if (!membership || !['owner', 'admin'].includes(membership.role)) {
-      return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+      return NextResponse.json({ error: t('common.notAllowed') }, { status: 403 })
     }
     const writeGate = await canWriteDashboard(org.id)
     if (!writeGate.allowed) {
-      return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
+      return NextResponse.json(
+        {
+          error: writeGate.reason
+            ? t(writeGate.reason.key, writeGate.reason.params)
+            : t('gates.subscriptionLapsed'),
+          gate: writeGate.gate,
+        },
+        { status: 402 },
+      )
     }
   }
 
@@ -47,20 +58,20 @@ export async function POST(request: Request) {
     const raw = form.get('file')
     if (raw instanceof File) file = raw
   } catch {
-    return NextResponse.json({ error: 'Invalid upload body' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
 
   if (!file || file.size === 0) {
-    return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+    return NextResponse.json({ error: t('common.noFileProvided') }, { status: 400 })
   }
   if (!ALLOWED_MIME.has(file.type)) {
     return NextResponse.json(
-      { error: `Unsupported file type: ${file.type || 'unknown'}` },
+      { error: t('common.unsupportedFileType', { type: file.type || 'unknown' }) },
       { status: 400 },
     )
   }
   if (file.size > MAX_BYTES) {
-    return NextResponse.json({ error: 'Logo must be under 2 MB' }, { status: 413 })
+    return NextResponse.json({ error: t('upload.logoTooLarge') }, { status: 413 })
   }
 
   const buffer = Buffer.from(await file.arrayBuffer())
@@ -76,7 +87,7 @@ export async function POST(request: Request) {
     })
     return NextResponse.json({ url })
   } catch (err) {
-    const message = err instanceof Error ? err.message : 'Upload failed'
+    const message = translatedApiError(t, err, 'upload.uploadFailed')
     console.error('[api/upload/logo] failed:', err)
     return NextResponse.json({ error: message }, { status: 500 })
   }

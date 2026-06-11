@@ -8,6 +8,7 @@ export const CURRENCIES = [
   { code: 'AUD', symbol: 'A$', label: 'Australian dollar' },
   { code: 'AED', symbol: 'AED', label: 'UAE dirham' },
   { code: 'MXN', symbol: 'MX$', label: 'Mexican peso' },
+  { code: 'COP', symbol: 'COL$', label: 'Colombian peso' },
   { code: 'BRL', symbol: 'R$', label: 'Brazilian real' },
   { code: 'JPY', symbol: '¥', label: 'Japanese yen' },
   { code: 'CHF', symbol: 'Fr', label: 'Swiss franc' },

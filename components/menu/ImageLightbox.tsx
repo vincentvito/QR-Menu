@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { X } from 'lucide-react'
 
 interface ImageLightboxProps {
@@ -11,6 +12,7 @@ interface ImageLightboxProps {
 // Full-screen image viewer. Opens when `src` is a string; closes on backdrop
 // click, close button, or Escape. Locks body scroll while open.
 export function ImageLightbox({ src, onClose }: ImageLightboxProps) {
+  const t = useTranslations('MenuView')
   // Parents usually pass an inline onClose; stashing it in a ref keeps the
   // effect's dep list down to `src` so the body-scroll lock and keydown
   // listener don't teardown+setup on every parent re-render (e.g. while the
@@ -38,7 +40,7 @@ export function ImageLightbox({ src, onClose }: ImageLightboxProps) {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Dish photo"
+      aria-label={t('dishPhoto')}
       onClick={onClose}
       className="bg-foreground/85 animate-in fade-in-0 fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 p-4 backdrop-blur-sm duration-150"
     >
@@ -55,7 +57,7 @@ export function ImageLightbox({ src, onClose }: ImageLightboxProps) {
         className="bg-background text-foreground hover:bg-background/90 inline-flex items-center gap-1.5 rounded-full px-5 py-2.5 text-sm font-semibold shadow-lg transition-colors"
       >
         <X className="size-4" aria-hidden="true" />
-        Close
+        {t('closePhoto')}
       </button>
     </div>
   )

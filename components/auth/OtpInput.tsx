@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
+import { useTranslations } from 'next-intl'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
@@ -29,6 +30,7 @@ export function OtpInput({
   describedBy,
   invalid,
 }: OtpInputProps) {
+  const t = useTranslations('Auth')
   const refs = useRef<(HTMLInputElement | null)[]>([])
 
   function writeDigits(startIndex: number, digits: string[]) {
@@ -85,7 +87,7 @@ export function OtpInput({
           maxLength={length}
           // Lets iOS / Android auto-fill the code from SMS or email.
           autoComplete={i === 0 ? 'one-time-code' : 'off'}
-          aria-label={`Digit ${i + 1} of ${length}`}
+          aria-label={t('otpDigit', { index: i + 1, total: length })}
           aria-invalid={invalid || undefined}
           value={digit}
           disabled={disabled}

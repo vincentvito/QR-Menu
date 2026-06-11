@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
 import { revalidatePath } from 'next/cache'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
@@ -32,10 +33,11 @@ function cleanName(value: unknown): string | null {
 // activeRestaurantId to the new id, and returns the slug so the client
 // can navigate.
 export async function POST(request: Request) {
+  const t = await getTranslations('Api')
   const requestHeaders = await headers()
   const session = await auth.api.getSession({ headers: requestHeaders })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
 
   const org = await getActiveOrganization({
@@ -43,7 +45,7 @@ export async function POST(request: Request) {
     activeOrganizationId: session.session.activeOrganizationId,
   })
   if (!org) {
-    return NextResponse.json({ error: 'No active organization' }, { status: 409 })
+    return NextResponse.json({ error: t('common.noActiveOrganization') }, { status: 409 })
   }
 
   // Membership + plan/cap fan-out in parallel. Each is independent and
@@ -73,23 +75,31 @@ export async function POST(request: Request) {
   ])
 
   if (!membership || !['owner', 'admin'].includes(membership.role)) {
-    return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+    return NextResponse.json({ error: t('common.notAllowed') }, { status: 403 })
   }
   const writeGate = await canWriteDashboard(org.id)
   if (!writeGate.allowed) {
-    return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
+    return NextResponse.json(
+      {
+        error: writeGate.reason
+          ? t(writeGate.reason.key, writeGate.reason.params)
+          : t('gates.subscriptionLapsed'),
+        gate: writeGate.gate,
+      },
+      { status: 402 },
+    )
   }
 
   let body: { name?: unknown; currency?: unknown; disableRestaurantId?: unknown }
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
 
   const name = cleanName(body.name)
   if (!name) {
-    return NextResponse.json({ error: 'Restaurant name is required' }, { status: 400 })
+    return NextResponse.json({ error: t('restaurants.nameRequired') }, { status: 400 })
   }
 
   const currencyRaw =
@@ -103,9 +113,10 @@ export async function POST(request: Request) {
   if (atRestaurantCap && !disableRestaurantId) {
     return NextResponse.json(
       {
-        error: `Your ${plan.name} plan allows ${plan.maxRestaurants} restaurant${
-          plan.maxRestaurants === 1 ? '' : 's'
-        }. Upgrade or disable an existing restaurant to add another.`,
+        error: t('restaurants.planCapAdd', {
+          plan: plan.name,
+          limit: plan.maxRestaurants as number,
+        }),
         gate: 'plan-cap',
       },
       { status: 409 },
@@ -115,7 +126,7 @@ export async function POST(request: Request) {
   if (disableRestaurantId) {
     if (!atRestaurantCap) {
       return NextResponse.json(
-        { error: 'Disabling a restaurant is only available when your plan is at its limit' },
+        { error: t('restaurants.disableOnlyAtLimit') },
         { status: 400 },
       )
     }
@@ -125,7 +136,7 @@ export async function POST(request: Request) {
       select: { id: true },
     })
     if (!disableTarget) {
-      return NextResponse.json({ error: 'Restaurant to disable was not found' }, { status: 404 })
+      return NextResponse.json({ error: t('restaurants.disableTargetNotFound') }, { status: 404 })
     }
   }
 
@@ -175,10 +186,11 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const t = await getTranslations('Api')
   const requestHeaders = await headers()
   const session = await auth.api.getSession({ headers: requestHeaders })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
 
   const org = await getActiveOrganization({
@@ -186,18 +198,18 @@ export async function DELETE(request: Request) {
     activeOrganizationId: session.session.activeOrganizationId,
   })
   if (!org) {
-    return NextResponse.json({ error: 'No active organization' }, { status: 409 })
+    return NextResponse.json({ error: t('common.noActiveOrganization') }, { status: 409 })
   }
 
   let body: { confirmation?: unknown }
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
 
   if (body.confirmation !== 'confirm') {
-    return NextResponse.json({ error: 'Type confirm to delete this restaurant' }, { status: 400 })
+    return NextResponse.json({ error: t('restaurants.confirmDelete') }, { status: 400 })
   }
 
   const activeRestaurantId = (session.session as { activeRestaurantId?: string | null })
@@ -211,11 +223,11 @@ export async function DELETE(request: Request) {
   ])
 
   if (!member || !['owner', 'admin'].includes(member.role)) {
-    return NextResponse.json({ error: 'Not allowed' }, { status: 403 })
+    return NextResponse.json({ error: t('common.notAllowed') }, { status: 403 })
   }
 
   if (!restaurant) {
-    return NextResponse.json({ error: 'No active restaurant to delete' }, { status: 409 })
+    return NextResponse.json({ error: t('restaurants.noActiveToDelete') }, { status: 409 })
   }
 
   const fallback = await prisma.restaurant.findFirst({
@@ -225,7 +237,7 @@ export async function DELETE(request: Request) {
   })
   if (!fallback) {
     return NextResponse.json(
-      { error: 'Create another restaurant before deleting your only restaurant.' },
+      { error: t('restaurants.createBeforeDelete') },
       { status: 409 },
     )
   }

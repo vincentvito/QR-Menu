@@ -1,12 +1,15 @@
 import { NextResponse, after } from 'next/server'
 import { headers } from 'next/headers'
+import { getTranslations } from 'next-intl/server'
 import { auth } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 import { requireMenuAccess } from '@/lib/menus/get'
 import { isBadgeKey } from '@/lib/menus/badges'
 import { deleteByUrl } from '@/lib/storage/r2'
 import { canWriteRestaurant } from '@/lib/plans/subscription-access'
+import { translatedApiError } from '@/lib/api/errors'
 import type { DietaryTag } from '@/lib/ai/gemini'
+import { minVariantPrice, parseVariants, type MenuItemVariant } from '@/lib/menus/variants'
 
 export const runtime = 'nodejs'
 
@@ -21,7 +24,8 @@ async function ensureOwnership(slug: string, itemId: string, userId: string) {
     select: { id: true, menuId: true },
   })
   if (!item || item.menuId !== access.id) {
-    throw Object.assign(new Error('Item not found'), { status: 404 })
+    const t = await getTranslations('Api')
+    throw Object.assign(new Error(t('common.dishNotFound')), { status: 404 })
   }
   return {
     menuId: access.id,
@@ -32,9 +36,10 @@ async function ensureOwnership(slug: string, itemId: string, userId: string) {
 }
 
 export async function PATCH(request: Request, { params }: RouteContext) {
+  const t = await getTranslations('Api')
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
   const { slug, itemId } = await params
 
@@ -42,6 +47,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     name?: unknown
     description?: unknown
     price?: unknown
+    variants?: unknown
     category?: unknown
     tags?: unknown
     badges?: unknown
@@ -51,13 +57,14 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    return NextResponse.json({ error: t('common.invalidBody') }, { status: 400 })
   }
 
   const updates: {
     name?: string
     description?: string
     price?: number
+    variants?: MenuItemVariant[]
     category?: string
     tags?: string[]
     badges?: string[]
@@ -67,32 +74,43 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
   if (body.name !== undefined) {
     if (typeof body.name !== 'string' || !body.name.trim()) {
-      return NextResponse.json({ error: 'name must be a non-empty string' }, { status: 400 })
+      return NextResponse.json({ error: t('menus.itemNameEmpty') }, { status: 400 })
     }
     updates.name = body.name.trim().slice(0, 200)
   }
   if (body.description !== undefined) {
     if (typeof body.description !== 'string') {
-      return NextResponse.json({ error: 'description must be a string' }, { status: 400 })
+      return NextResponse.json({ error: t('menus.descriptionInvalid') }, { status: 400 })
     }
     updates.description = body.description.slice(0, 1000)
   }
   if (body.price !== undefined) {
     const p = typeof body.price === 'number' ? body.price : parseFloat(String(body.price))
     if (!Number.isFinite(p) || p < 0) {
-      return NextResponse.json({ error: 'price must be a non-negative number' }, { status: 400 })
+      return NextResponse.json({ error: t('menus.priceInvalid') }, { status: 400 })
     }
     updates.price = Math.round(p * 100) / 100
   }
+  if (body.variants !== undefined) {
+    if (!Array.isArray(body.variants)) {
+      return NextResponse.json({ error: t('menus.variantsInvalid') }, { status: 400 })
+    }
+    // A lone variant is just a price; only 2+ entries count as a size list.
+    const variants = parseVariants(body.variants)
+    updates.variants = variants.length > 1 ? variants : []
+    // Keep `price` (used for sorting/JSON-LD fallback) pinned to the
+    // cheapest size whenever variants are present.
+    if (updates.variants.length > 0) updates.price = minVariantPrice(updates.variants)
+  }
   if (body.category !== undefined) {
     if (typeof body.category !== 'string' || !body.category.trim()) {
-      return NextResponse.json({ error: 'category must be a non-empty string' }, { status: 400 })
+      return NextResponse.json({ error: t('menus.categoryEmpty') }, { status: 400 })
     }
     updates.category = body.category.trim().slice(0, 80)
   }
   if (body.tags !== undefined) {
     if (!Array.isArray(body.tags)) {
-      return NextResponse.json({ error: 'tags must be an array' }, { status: 400 })
+      return NextResponse.json({ error: t('menus.tagsInvalid') }, { status: 400 })
     }
     updates.tags = Array.from(
       new Set(
@@ -104,7 +122,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   }
   if (body.badges !== undefined) {
     if (!Array.isArray(body.badges)) {
-      return NextResponse.json({ error: 'badges must be an array' }, { status: 400 })
+      return NextResponse.json({ error: t('menus.badgesInvalid') }, { status: 400 })
     }
     updates.badges = Array.from(new Set(body.badges.filter(isBadgeKey)))
   }
@@ -115,10 +133,10 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       try {
         updates.imageUrl = new URL(body.imageUrl).toString()
       } catch {
-        return NextResponse.json({ error: 'imageUrl must be a valid URL' }, { status: 400 })
+        return NextResponse.json({ error: t('menus.imageUrlInvalid') }, { status: 400 })
       }
     } else {
-      return NextResponse.json({ error: 'imageUrl must be a string or null' }, { status: 400 })
+      return NextResponse.json({ error: t('menus.imageUrlInvalid') }, { status: 400 })
     }
   }
   if (body.specialUntil !== undefined) {
@@ -127,28 +145,30 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     } else if (typeof body.specialUntil === 'string') {
       const d = new Date(body.specialUntil)
       if (Number.isNaN(d.getTime())) {
-        return NextResponse.json(
-          { error: 'specialUntil must be an ISO date string' },
-          { status: 400 },
-        )
+        return NextResponse.json({ error: t('menus.specialUntilInvalid') }, { status: 400 })
       }
       updates.specialUntil = d
     } else {
-      return NextResponse.json(
-        { error: 'specialUntil must be ISO string or null' },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: t('menus.specialUntilInvalid') }, { status: 400 })
     }
   }
   if (Object.keys(updates).length === 0) {
-    return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
+    return NextResponse.json({ error: t('common.noFieldsToUpdate') }, { status: 400 })
   }
 
   try {
     const ownership = await ensureOwnership(slug, itemId, session.user.id)
     const writeGate = await canWriteRestaurant(ownership.organizationId, ownership.restaurantId)
     if (!writeGate.allowed) {
-      return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
+      return NextResponse.json(
+        {
+          error: writeGate.reason
+            ? t(writeGate.reason.key, writeGate.reason.params)
+            : t('gates.subscriptionLapsed'),
+          gate: writeGate.gate,
+        },
+        { status: 402 },
+      )
     }
 
     const [prev, item] =
@@ -185,16 +205,17 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     return NextResponse.json(item)
   } catch (err) {
     const status = (err as { status?: number })?.status ?? 500
-    const message = err instanceof Error ? err.message : 'Update failed'
+    const message = translatedApiError(t, err, 'common.updateFailed')
     console.error('[api/menus/[slug]/items/[itemId]] patch failed:', err)
     return NextResponse.json({ error: message }, { status })
   }
 }
 
 export async function DELETE(_request: Request, { params }: RouteContext) {
+  const t = await getTranslations('Api')
   const session = await auth.api.getSession({ headers: await headers() })
   if (!session) {
-    return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
+    return NextResponse.json({ error: t('common.notSignedIn') }, { status: 401 })
   }
   const { slug, itemId } = await params
 
@@ -202,7 +223,15 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     const ownership = await ensureOwnership(slug, itemId, session.user.id)
     const writeGate = await canWriteRestaurant(ownership.organizationId, ownership.restaurantId)
     if (!writeGate.allowed) {
-      return NextResponse.json({ error: writeGate.reason, gate: writeGate.gate }, { status: 402 })
+      return NextResponse.json(
+        {
+          error: writeGate.reason
+            ? t(writeGate.reason.key, writeGate.reason.params)
+            : t('gates.subscriptionLapsed'),
+          gate: writeGate.gate,
+        },
+        { status: 402 },
+      )
     }
     // Look up the image before deleting so we can clean up R2 afterwards.
     const existing = await prisma.menuItem.findUnique({
@@ -216,7 +245,7 @@ export async function DELETE(_request: Request, { params }: RouteContext) {
     return new NextResponse(null, { status: 204 })
   } catch (err) {
     const status = (err as { status?: number })?.status ?? 500
-    const message = err instanceof Error ? err.message : 'Delete failed'
+    const message = translatedApiError(t, err, 'common.somethingWentWrong')
     console.error('[api/menus/[slug]/items/[itemId]] delete failed:', err)
     return NextResponse.json({ error: message }, { status })
   }

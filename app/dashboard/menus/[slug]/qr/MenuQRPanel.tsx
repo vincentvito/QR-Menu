@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
 import { Copy, Download } from 'lucide-react'
 import type QRCodeStylingType from 'qr-code-styling'
 import { toast } from 'sonner'
@@ -27,7 +28,6 @@ interface MenuQRPanelProps {
   }
 }
 
-// Slug-safe filename: strip anything that isn't alphanum/dash/underscore.
 function toFileStem(name: string): string {
   return (
     name
@@ -40,6 +40,7 @@ function toFileStem(name: string): string {
 }
 
 export function MenuQRPanel({ menuName, publicUrl, qr }: MenuQRPanelProps) {
+  const t = useTranslations('MenuQR.panel')
   const qrRef = useRef<QRCodeStylingType | null>(null)
   const [copied, setCopied] = useState(false)
 
@@ -49,7 +50,7 @@ export function MenuQRPanel({ menuName, publicUrl, qr }: MenuQRPanelProps) {
 
   function handleDownload(ext: 'svg' | 'png') {
     if (!qrRef.current) {
-      toast.error('QR code is not ready yet — try again in a moment')
+      toast.error(t('errors.notReady'))
       return
     }
     downloadQR(qrRef.current, `${toFileStem(menuName)}-qr`, ext)
@@ -61,7 +62,7 @@ export function MenuQRPanel({ menuName, publicUrl, qr }: MenuQRPanelProps) {
       setCopied(true)
       setTimeout(() => setCopied(false), 1500)
     } catch {
-      toast.error('Could not copy URL')
+      toast.error(t('errors.copyFailed'))
     }
   }
 
@@ -91,7 +92,7 @@ export function MenuQRPanel({ menuName, publicUrl, qr }: MenuQRPanelProps) {
         <div className="space-y-5">
           <div className="space-y-1">
             <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-              Menu URL
+              {t('menuUrl')}
             </p>
             <div className="bg-background border-cream-line flex items-center gap-2 rounded-lg border px-3 py-2">
               <code className="truncate text-xs">{publicUrl}</code>
@@ -100,17 +101,17 @@ export function MenuQRPanel({ menuName, publicUrl, qr }: MenuQRPanelProps) {
                 variant="ghost"
                 size="icon-sm"
                 onClick={copyUrl}
-                aria-label="Copy menu URL"
+                aria-label={t('copyAria')}
               >
                 <Copy className="size-3.5" aria-hidden="true" />
               </Button>
             </div>
-            {copied && <p className="text-muted-foreground text-xs">Copied to clipboard</p>}
+            {copied && <p className="text-muted-foreground text-xs">{t('copied')}</p>}
           </div>
 
           <div className="space-y-2">
             <p className="text-muted-foreground text-[11px] font-semibold tracking-[0.14em] uppercase">
-              Download
+              {t('download')}
             </p>
             <div className="flex flex-wrap gap-2">
               <Button type="button" onClick={() => handleDownload('svg')}>
@@ -122,10 +123,7 @@ export function MenuQRPanel({ menuName, publicUrl, qr }: MenuQRPanelProps) {
                 PNG
               </Button>
             </div>
-            <p className="text-muted-foreground text-xs">
-              SVG scales to any size without loss — best for printing. PNG is handy for sending in
-              chat or email.
-            </p>
+            <p className="text-muted-foreground text-xs">{t('downloadHint')}</p>
           </div>
         </div>
       </div>
