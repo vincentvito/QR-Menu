@@ -1546,7 +1546,7 @@ function DraftItemForm({
             ) : (
               <Wand2 className="h-3.5 w-3.5" aria-hidden="true" />
             )}
-            AI enhance
+            {t('aiEnhance')}
           </Button>
         </div>
         <Textarea
