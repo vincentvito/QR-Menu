@@ -6,6 +6,19 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.31.0',
+    date: '2026-06-13',
+    title: 'Italian localization',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Italian is now available across the landing page, login, dashboard, editor, public menus, billing, onboarding, invites, emails, and API messages',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.30.0',
     date: '2026-06-12',
     title: 'Multiple prices per dish and easier category fixes',

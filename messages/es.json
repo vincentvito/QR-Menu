@@ -2,7 +2,8 @@
   "LanguageSwitcher": {
     "label": "Idioma",
     "en": "English",
-    "es": "Español"
+    "es": "Español",
+    "it": "Italiano"
   },
   "Common": {
     "qtableHome": "Inicio de Qtable",

@@ -9,6 +9,7 @@ import { locales, type Locale } from '@/i18n/locales'
 const LOCALE_LABELS: Record<Locale, string> = {
   en: 'EN',
   es: 'ES',
+  it: 'IT',
 }
 
 export default function LanguageSwitcher({ currentLocale }: { currentLocale: string }) {
