@@ -43,5 +43,3 @@ next-env.d.ts
 /lib/generated/prisma
 .claude/statusline.sh
 .claude/settings.local.json
-.claude/settings.local.json
-.claude/settings.local.json

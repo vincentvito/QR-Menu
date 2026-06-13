@@ -6,6 +6,19 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.31.1',
+    date: '2026-06-13',
+    title: 'Settings preview fix',
+    changes: [
+      {
+        type: 'fixed' as const,
+        items: [
+          'Category Tiles preview now opens correctly from Settings in every supported language',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.31.0',
     date: '2026-06-13',
     title: 'Italian localization',

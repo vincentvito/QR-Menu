@@ -380,6 +380,7 @@
     "noResults": "Nessun piatto corrisponde a “{query}”",
     "noResultsHint": "Prova una ricerca più breve o una parola diversa.",
     "categoryNavLabel": "Categorie del menu",
+    "allCategory": "Tutti",
     "todaysSpecials": "Speciali del giorno",
     "otherCategory": "Altro",
     "matchesCount": "{count, plural, =0 {Nessun risultato} =1 {1 risultato} other {# risultati}}",

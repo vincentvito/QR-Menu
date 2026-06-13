@@ -380,6 +380,7 @@
     "noResults": "No dishes match “{query}”",
     "noResultsHint": "Try a shorter search or a different word.",
     "categoryNavLabel": "Menu categories",
+    "allCategory": "All",
     "todaysSpecials": "Today's Specials",
     "otherCategory": "Other",
     "matchesCount": "{count, plural, =0 {No matches} =1 {1 match} other {# matches}}",
