@@ -178,6 +178,10 @@ export default async function PublicMenuPage({ params, searchParams }: PageProps
     .filter((i) => i.specialUntil && i.specialUntil.getTime() > now)
     .map((i) => i.id)
 
+  // Parse the JSON variants column once per item; reused by both the
+  // schema.org offers below and the PublicMenuBody props.
+  const itemVariants = new Map(menu.items.map((i) => [i.id, parseVariants(i.variants)]))
+
   const logo = restaurant.logo
   const instaHref = restaurant.instagramUrl ? socialUrl('instagram', restaurant.instagramUrl) : null
   const tiktokHref = restaurant.tiktokUrl ? socialUrl('tiktok', restaurant.tiktokUrl) : null
@@ -212,7 +216,7 @@ export default async function PublicMenuPage({ params, searchParams }: PageProps
         '@type': 'MenuSection',
         name: sectionName,
         hasMenuItem: items.map((i) => {
-          const variants = parseVariants(i.variants)
+          const variants = itemVariants.get(i.id) ?? []
           return {
             '@type': 'MenuItem',
             name: i.name,
@@ -350,7 +354,7 @@ export default async function PublicMenuPage({ params, searchParams }: PageProps
           name: i.name,
           description: i.description,
           price: i.price,
-          variants: parseVariants(i.variants),
+          variants: itemVariants.get(i.id) ?? [],
           tags: i.tags,
           badges: i.badges,
           imageUrl: i.imageUrl,
