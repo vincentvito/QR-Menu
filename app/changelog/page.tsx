@@ -29,6 +29,7 @@ const changelog = [
           'Dishes can now have multiple sizes with their own prices (e.g. Small / Medium / Large pizzas), shown inline on the public menu',
           'Menu imports now detect size-based pricing automatically from photos, PDFs, and pasted text',
           'Dishes can now be moved to a different category from the editor',
+          'A brand-styled Feedback button now appears in the app so owners can report issues or share suggestions from any dashboard page',
         ],
       },
       {

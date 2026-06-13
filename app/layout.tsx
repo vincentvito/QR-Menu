@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from 'next-intl'
 import { getLocale, getMessages } from 'next-intl/server'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from '@/components/ui/sonner'
+import { FeedbackWidget } from '@/components/feedback/FeedbackWidget'
 import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, OG_IMAGE, SITE_NAME, SITE_URL } from '@/lib/site'
 import './globals.css'
 
@@ -103,6 +104,7 @@ export default async function RootLayout({
       <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
           <TooltipProvider>{children}</TooltipProvider>
+          <FeedbackWidget />
           <Toaster
             toastOptions={{
               classNames: {
