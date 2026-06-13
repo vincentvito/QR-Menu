@@ -549,41 +549,28 @@
             "origin": "Francia",
             "price": "28",
             "desc": "Manzo brasato 6 ore nel vino di Borgogna, carotine novelle, cipolline perlate glassate, pancetta affumicata.",
-            "tags": [
-              "Glutine",
-              "Solfiti"
-            ]
+            "tags": ["Glutine", "Solfiti"]
           },
           "risotto": {
             "name": "Risotto al Tartufo",
             "origin": "Italia",
             "price": "26",
             "desc": "Riso Carnaroli, burro di Normandia, parmigiano 24 mesi, scaglie di tartufo nero fresco.",
-            "tags": [
-              "Latticini",
-              "Vegetariano"
-            ]
+            "tags": ["Latticini", "Vegetariano"]
           },
           "tataki": {
             "name": "Tataki di Tonno",
             "origin": "Almadraba",
             "price": "22",
             "desc": "Lombo di tonno rosso scottato al sesamo, ponzu della casa, daikon, coriandolo, wasabi fresco.",
-            "tags": [
-              "Pesce",
-              "Sesamo"
-            ]
+            "tags": ["Pesce", "Sesamo"]
           },
           "tarte": {
             "name": "Tarte Tatin",
             "origin": "Loira",
             "price": "11",
             "desc": "Mele reinette caramellate capovolte, pasta frolla al burro, crema alla vaniglia di Tahiti.",
-            "tags": [
-              "Glutine",
-              "Latticini",
-              "Uovo"
-            ]
+            "tags": ["Glutine", "Latticini", "Uovo"]
           }
         }
       }
@@ -752,39 +739,19 @@
       "columns": {
         "product": {
           "title": "Prodotto",
-          "links": [
-            "Come funziona",
-            "Prezzi",
-            "Modelli",
-            "Novità"
-          ]
+          "links": ["Come funziona", "Prezzi", "Modelli", "Novità"]
         },
         "for": {
           "title": "Per",
-          "links": [
-            "Bistrot",
-            "Bar",
-            "Food truck",
-            "Hotel"
-          ]
+          "links": ["Bistrot", "Bar", "Food truck", "Hotel"]
         },
         "resources": {
           "title": "Risorse",
-          "links": [
-            "Blog",
-            "Guide",
-            "Centro assistenza",
-            "Contatti"
-          ]
+          "links": ["Blog", "Guide", "Centro assistenza", "Contatti"]
         },
         "legal": {
           "title": "Legale",
-          "links": [
-            "Termini",
-            "Privacy",
-            "Cookie",
-            "GDPR"
-          ]
+          "links": ["Termini", "Privacy", "Cookie", "GDPR"]
         }
       }
     }

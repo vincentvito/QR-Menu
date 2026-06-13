@@ -13,11 +13,7 @@ const KNOWN_ERROR_KEYS = new Map<string, string>([
 
 type ApiTranslator = (key: string, values?: Record<string, string | number>) => string
 
-export function translatedApiError(
-  t: ApiTranslator,
-  err: unknown,
-  fallbackKey: string,
-): string {
+export function translatedApiError(t: ApiTranslator, err: unknown, fallbackKey: string): string {
   if (err instanceof Error) {
     const knownKey = KNOWN_ERROR_KEYS.get(err.message)
     if (knownKey) return t(knownKey)

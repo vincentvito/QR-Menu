@@ -118,10 +118,7 @@ export async function POST(request: Request) {
   }
 
   if (!url && !text && files.length === 0) {
-    return NextResponse.json(
-      { error: t('menus.provideSource') },
-      { status: 400 },
-    )
+    return NextResponse.json({ error: t('menus.provideSource') }, { status: 400 })
   }
 
   try {

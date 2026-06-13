@@ -190,7 +190,10 @@ export async function PATCH(request: Request) {
   if ('headerTextColor' in body) {
     const cleaned = cleanHex(body.headerTextColor)
     if (cleaned === undefined) {
-      return NextResponse.json({ error: t('organizations.invalidHeaderTextColor') }, { status: 400 })
+      return NextResponse.json(
+        { error: t('organizations.invalidHeaderTextColor') },
+        { status: 400 },
+      )
     }
     restaurantUpdates.headerTextColor = cleaned
   }
@@ -212,28 +215,40 @@ export async function PATCH(request: Request) {
 
   if ('showRestaurantName' in body) {
     if (typeof body.showRestaurantName !== 'boolean') {
-      return NextResponse.json({ error: t('organizations.invalidRestaurantNameVisibility') }, { status: 400 })
+      return NextResponse.json(
+        { error: t('organizations.invalidRestaurantNameVisibility') },
+        { status: 400 },
+      )
     }
     restaurantUpdates.showRestaurantName = body.showRestaurantName
   }
 
   if ('showMenuName' in body) {
     if (typeof body.showMenuName !== 'boolean') {
-      return NextResponse.json({ error: t('organizations.invalidMenuNameVisibility') }, { status: 400 })
+      return NextResponse.json(
+        { error: t('organizations.invalidMenuNameVisibility') },
+        { status: 400 },
+      )
     }
     restaurantUpdates.showMenuName = body.showMenuName
   }
 
   if ('showDishCount' in body) {
     if (typeof body.showDishCount !== 'boolean') {
-      return NextResponse.json({ error: t('organizations.invalidDishCountVisibility') }, { status: 400 })
+      return NextResponse.json(
+        { error: t('organizations.invalidDishCountVisibility') },
+        { status: 400 },
+      )
     }
     restaurantUpdates.showDishCount = body.showDishCount
   }
 
   if ('showCategoryIcons' in body) {
     if (typeof body.showCategoryIcons !== 'boolean') {
-      return NextResponse.json({ error: t('organizations.invalidCategoryIconVisibility') }, { status: 400 })
+      return NextResponse.json(
+        { error: t('organizations.invalidCategoryIconVisibility') },
+        { status: 400 },
+      )
     }
     restaurantUpdates.showCategoryIcons = body.showCategoryIcons
   }
@@ -262,7 +277,10 @@ export async function PATCH(request: Request) {
   if ('qrForegroundColor' in body) {
     const cleaned = cleanHex(body.qrForegroundColor)
     if (cleaned === undefined || cleaned === null) {
-      return NextResponse.json({ error: t('organizations.invalidQrForegroundColor') }, { status: 400 })
+      return NextResponse.json(
+        { error: t('organizations.invalidQrForegroundColor') },
+        { status: 400 },
+      )
     }
     restaurantUpdates.qrForegroundColor = cleaned
   }
@@ -270,7 +288,10 @@ export async function PATCH(request: Request) {
   if ('qrBackgroundColor' in body) {
     const cleaned = cleanHex(body.qrBackgroundColor)
     if (cleaned === undefined || cleaned === null) {
-      return NextResponse.json({ error: t('organizations.invalidQrBackgroundColor') }, { status: 400 })
+      return NextResponse.json(
+        { error: t('organizations.invalidQrBackgroundColor') },
+        { status: 400 },
+      )
     }
     restaurantUpdates.qrBackgroundColor = cleaned
   }
@@ -317,7 +338,10 @@ export async function PATCH(request: Request) {
 
   if ('wifiCenterType' in body) {
     if (typeof body.wifiCenterType !== 'string' || !VALID_CENTER_TYPES.has(body.wifiCenterType)) {
-      return NextResponse.json({ error: t('organizations.invalidWifiQrCenterType') }, { status: 400 })
+      return NextResponse.json(
+        { error: t('organizations.invalidWifiQrCenterType') },
+        { status: 400 },
+      )
     }
     restaurantUpdates.wifiCenterType = body.wifiCenterType
   }
@@ -328,14 +352,20 @@ export async function PATCH(request: Request) {
     } else if (typeof body.wifiCenterText === 'string') {
       restaurantUpdates.wifiCenterText = body.wifiCenterText.trim().slice(0, 4)
     } else {
-      return NextResponse.json({ error: t('organizations.invalidWifiQrCenterText') }, { status: 400 })
+      return NextResponse.json(
+        { error: t('organizations.invalidWifiQrCenterText') },
+        { status: 400 },
+      )
     }
   }
 
   if ('googleReviewUrl' in body) {
     const cleaned = cleanUrl(body.googleReviewUrl)
     if (cleaned === undefined) {
-      return NextResponse.json({ error: t('organizations.invalidGoogleReviewUrl') }, { status: 400 })
+      return NextResponse.json(
+        { error: t('organizations.invalidGoogleReviewUrl') },
+        { status: 400 },
+      )
     }
     restaurantUpdates.googleReviewUrl = cleaned
   }
@@ -369,7 +399,10 @@ export async function PATCH(request: Request) {
 
   if ('seasonalOverlay' in body) {
     if (!isSeasonalOverlayId(body.seasonalOverlay)) {
-      return NextResponse.json({ error: t('organizations.invalidSeasonalOverlay') }, { status: 400 })
+      return NextResponse.json(
+        { error: t('organizations.invalidSeasonalOverlay') },
+        { status: 400 },
+      )
     }
     restaurantUpdates.seasonalOverlay = body.seasonalOverlay
   }

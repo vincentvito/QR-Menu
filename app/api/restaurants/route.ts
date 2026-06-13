@@ -125,10 +125,7 @@ export async function POST(request: Request) {
 
   if (disableRestaurantId) {
     if (!atRestaurantCap) {
-      return NextResponse.json(
-        { error: t('restaurants.disableOnlyAtLimit') },
-        { status: 400 },
-      )
+      return NextResponse.json({ error: t('restaurants.disableOnlyAtLimit') }, { status: 400 })
     }
 
     const disableTarget = await prisma.restaurant.findFirst({
@@ -236,10 +233,7 @@ export async function DELETE(request: Request) {
     select: { id: true },
   })
   if (!fallback) {
-    return NextResponse.json(
-      { error: t('restaurants.createBeforeDelete') },
-      { status: 409 },
-    )
+    return NextResponse.json({ error: t('restaurants.createBeforeDelete') }, { status: 409 })
   }
 
   await prisma.$transaction([

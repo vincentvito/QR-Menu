@@ -93,20 +93,14 @@ export async function POST(request: Request) {
     select: { id: true },
   })
   if (existingInvite) {
-    return NextResponse.json(
-      { error: t('invitations.alreadyPending') },
-      { status: 409 },
-    )
+    return NextResponse.json({ error: t('invitations.alreadyPending') }, { status: 409 })
   }
   const existingMember = await prisma.restaurantMember.findFirst({
     where: { restaurantId: restaurant.id, user: { email } },
     select: { id: true },
   })
   if (existingMember) {
-    return NextResponse.json(
-      { error: t('invitations.alreadyMember') },
-      { status: 409 },
-    )
+    return NextResponse.json({ error: t('invitations.alreadyMember') }, { status: 409 })
   }
 
   const token = randomBytes(24).toString('base64url')

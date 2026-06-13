@@ -42,10 +42,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: t('invitations.expired') }, { status: 410 })
   }
   if (invitation.email.toLowerCase() !== session.user.email.toLowerCase()) {
-    return NextResponse.json(
-      { error: t('invitations.differentEmail') },
-      { status: 403 },
-    )
+    return NextResponse.json({ error: t('invitations.differentEmail') }, { status: 403 })
   }
 
   await prisma.$transaction([
