@@ -127,35 +127,15 @@ async function handleSubscriptionLifecycle(subscription: {
   status: string
   periodStart?: Date | null
 }) {
-  // TEMP debug — remove after the full clean-room test confirms the flow.
-  console.log('[handleSubscriptionLifecycle] entered', {
-    referenceId: subscription.referenceId,
-    plan: subscription.plan,
-    status: subscription.status,
-    periodStart: subscription.periodStart,
-  })
   if (subscription.status === 'active') {
     const isRenewal = await isRenewalEvent(subscription.referenceId, subscription.periodStart)
-    console.log('[handleSubscriptionLifecycle] active branch', {
-      isRenewal,
-      planLookup: PLANS[subscription.plan as keyof typeof PLANS]?.id ?? 'NOT FOUND',
-      monthlyCredits: PLANS[subscription.plan as keyof typeof PLANS]?.monthlyCredits,
-    })
     if (isRenewal) {
       const planDef = PLANS[subscription.plan as keyof typeof PLANS]
       const amount = planDef?.monthlyCredits ?? 0
       if (amount > 0 && subscription.periodStart) {
-        console.log('[handleSubscriptionLifecycle] granting', { amount })
         await resetMonthlyCredits(subscription.referenceId, amount, subscription.periodStart)
-      } else {
-        console.log('[handleSubscriptionLifecycle] skipped grant', {
-          amount,
-          hasPeriodStart: !!subscription.periodStart,
-        })
       }
     }
-  } else {
-    console.log('[handleSubscriptionLifecycle] non-active status, skipping grant')
   }
   // Any plan change may shift the restaurant cap — reconcile readOnly flags
   // against the current cap regardless of period state.
@@ -296,7 +276,6 @@ export const auth = betterAuth({
                   periodStart?: Date | null
                 }
               }) => {
-                console.log('[onSubscriptionComplete] fired')
                 await handleSubscriptionLifecycle(subscription)
               },
               // Belt-and-braces: fires when a Stripe subscription is created
@@ -312,7 +291,6 @@ export const auth = betterAuth({
                   periodStart?: Date | null
                 }
               }) => {
-                console.log('[onSubscriptionCreated] fired')
                 await handleSubscriptionLifecycle(subscription)
               },
               // Fired by Better Auth on `customer.subscription.updated`. Covers

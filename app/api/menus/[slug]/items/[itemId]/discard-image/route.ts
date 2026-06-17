@@ -65,7 +65,6 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: t('menus.imageUrlInvalid') }, { status: 400 })
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   after(() => deleteByUrl(url!))
   return NextResponse.json({ ok: true })
 }

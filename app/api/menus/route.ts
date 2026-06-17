@@ -64,7 +64,7 @@ export async function POST(request: Request) {
   let url = ''
   let text = ''
   let name: string | undefined
-  let files: { base64: string; mimeType: string }[] = []
+  const files: { base64: string; mimeType: string }[] = []
 
   try {
     if (contentType.startsWith('multipart/form-data')) {

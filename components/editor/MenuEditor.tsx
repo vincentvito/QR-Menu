@@ -833,7 +833,7 @@ export function MenuEditor({ slug, isAdmin = false, initial }: MenuEditorProps) 
 
           {/* Items */}
           {visibleGroups.length === 0 ? (
-            <EmptyState query={query} selectedCategory={selectedCategory} t={t} />
+            <EmptyState query={query} t={t} />
           ) : (
             <div className="space-y-10">
               {visibleGroups.map(({ name: cat, items: rows }) => {
@@ -2161,11 +2161,9 @@ function SpecialToggle({
 
 function EmptyState({
   query,
-  selectedCategory,
   t,
 }: {
   query: string
-  selectedCategory: string
   t: ReturnType<typeof useTranslations<'Editor'>>
 }) {
   if (query.trim()) {

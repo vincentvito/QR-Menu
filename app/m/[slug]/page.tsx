@@ -142,7 +142,6 @@ export default async function PublicMenuPage({ params, searchParams }: PageProps
   // can still render instead of crashing.
   if (!menu.restaurant) notFound()
   const restaurant = menu.restaurant
-  const org = menu.organization
   const [query, published] = await Promise.all([
     searchParams,
     isOrganizationPublished(menu.organizationId),
@@ -402,9 +401,9 @@ export default async function PublicMenuPage({ params, searchParams }: PageProps
 
         <p className="text-muted-foreground text-center text-xs">
           {t('menuBy')}{' '}
-          <a href="/" className="underline-offset-4 hover:underline">
+          <Link href="/" className="underline-offset-4 hover:underline">
             Qtable
-          </a>
+          </Link>
         </p>
       </footer>
     </div>

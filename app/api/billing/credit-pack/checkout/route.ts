@@ -15,7 +15,7 @@ export const runtime = 'nodejs'
 // one-time purchase flow is implemented directly against Stripe here. On
 // success the webhook in lib/auth.ts `onEvent` reads `metadata.organizationId`
 // + `metadata.kind` and grants the credits via `grantBonusCredits`.
-export async function POST(request: Request) {
+export async function POST() {
   const t = await getTranslations('Api')
   const secretKey = process.env.STRIPE_SECRET_KEY
   const priceId = process.env.STRIPE_PRICE_CREDIT_PACK_100

@@ -1,166 +1,127 @@
-# Next.js Starter Template
+# Qtable
 
-A production-ready Next.js starter template with authentication, database, and internationalization pre-configured.
+Qtable turns printed restaurant menus into mobile-friendly public menus and QR codes. Restaurant owners can import a menu from a PDF/photo/text, edit dishes and categories, publish a branded public menu, generate dish photos with AI credits, manage restaurant settings, invite staff, and track public-menu activity.
 
-## Tech Stack
+## Stack
 
-| Technology                                   | Version | Purpose                         |
-| -------------------------------------------- | ------- | ------------------------------- |
-| [Next.js](https://nextjs.org)                | 16.1.6  | React framework with App Router |
-| [React](https://react.dev)                   | 19.2.3  | UI library                      |
-| [TypeScript](https://www.typescriptlang.org) | 5.x     | Type safety                     |
-| [Tailwind CSS](https://tailwindcss.com)      | 4.x     | Styling                         |
-| [Prisma](https://www.prisma.io)              | 7.3.0   | Database ORM                    |
-| [Better Auth](https://www.better-auth.com)   | 1.4.18  | Authentication                  |
-| [next-intl](https://next-intl.dev)           | 4.8.1   | Internationalization            |
-| [shadcn/ui](https://ui.shadcn.com)           | -       | UI components (Radix UI based)  |
-| [Lucide React](https://lucide.dev)           | 0.563.0 | Icons                           |
+- Next.js 16 App Router with React 19 and TypeScript
+- Tailwind CSS 4 and shadcn/ui primitives
+- Prisma 7 with PostgreSQL
+- Better Auth for OTP sign-in, organizations, admin, and Stripe integration
+- Stripe subscriptions, trials, webhooks, and one-time AI credit packs
+- next-intl for English, Spanish, and Italian localization
+- Google Gemini for menu extraction and dish image generation
+- Cloudflare R2 for uploaded logos, headers, and dish photos
+- ZeptoMail for OTP and invitation email delivery
+- FeedbackBasket for in-app feedback collection
 
-## Features
+## Core Flows
 
-- **Authentication** - Email/password and Google OAuth via Better Auth
-- **Database** - PostgreSQL with Prisma ORM (includes User, Session, Account, Verification models)
-- **Internationalization** - Multi-language support with next-intl (English and Spanish included)
-- **UI Components** - Button and Avatar components from shadcn/ui
-- **Styling** - Tailwind CSS v4 with dark mode support
-- **Type Safety** - Full TypeScript configuration
+- Onboarding creates a restaurant and lets owners build in setup mode before starting a trial.
+- Starting a trial goes through Stripe, captures payment details, unlocks public publishing, and grants 5 bonus AI credits.
+- Plan limits control restaurant count, read-only states, and monthly AI credits.
+- Public menus stay private until an active trial, paid subscription, or complimentary plan is present.
+- Menu imports can detect categories, item descriptions, dietary tags, and size-based prices.
+- Customer-facing menu templates support editorial, photo grid, and category tiles layouts.
 
-## Getting Started
+## Local Setup
 
-### 1. Clone and Install
+Install dependencies:
 
 ```bash
-git clone <your-repo-url>
-cd nextjs-starter-template
 npm install
 ```
 
-### 2. Environment Setup
-
-Copy the example environment file:
+Create your local environment file:
 
 ```bash
 cp .env.example .env
 ```
 
-Configure your environment variables:
-
-```env
-# Auth secret (generate with: openssl rand -base64 32)
-SECRET=your-secret-key
-
-# Google OAuth (optional - get from Google Cloud Console)
-GOOGLE_CLIENT_ID=your-google-client-id
-GOOGLE_CLIENT_SECRET=your-google-client-secret
-
-# PostgreSQL database URL
-DATABASE_URL=postgresql://user:password@localhost:5432/mydb
-```
-
-### 3. Database Setup
+Generate Prisma client and run migrations:
 
 ```bash
-# Generate Prisma client
 npx prisma generate
-
-# Run migrations
 npx prisma migrate dev
 ```
 
-### 4. Run Development Server
+Start the dev server:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see your app.
+The local app runs on [http://localhost:3001](http://localhost:3001).
 
-## Project Structure
+## Environment
 
-```
-├── app/
-│   ├── api/auth/[...all]/    # Better Auth API routes
-│   ├── auth/                  # Auth pages (login, etc.)
-│   ├── dashboard/             # Protected dashboard
-│   ├── changelog/             # Changelog page
-│   ├── layout.tsx             # Root layout with next-intl provider
-│   ├── page.tsx               # Landing page
-│   └── globals.css            # Global styles
-├── components/
-│   ├── ui/                    # shadcn/ui components
-│   └── LanguageSwitcher.tsx   # Language toggle component
-├── lib/
-│   ├── auth.ts                # Better Auth configuration
-│   ├── auth-client.ts         # Auth client for frontend
-│   ├── prisma.ts              # Prisma client instance
-│   ├── utils.ts               # Utility functions (cn)
-│   └── generated/prisma/      # Generated Prisma client
-├── i18n/
-│   └── request.ts             # next-intl configuration
-├── messages/
-│   ├── en.json                # English translations
-│   └── es.json                # Spanish translations
-├── prisma/
-│   └── schema.prisma          # Database schema
-└── public/                    # Static assets
-```
+See `.env.example` for the full list. Production deploys must set at least:
 
-## Authentication
+- `NEXT_PUBLIC_APP_URL` and `BETTER_AUTH_URL` to the production domain.
+- `SECRET` to a strong random value.
+- `DATABASE_URL` for runtime database access and `DIRECT_URL` for migrations.
+- Stripe keys, webhook secret, plan price IDs, and credit-pack price ID.
+- `GOOGLE_GENERATIVE_AI_API_KEY` for menu extraction and AI photo generation.
+- Cloudflare R2 credentials and public asset URL.
+- ZeptoMail credentials and sender identity.
+- `PLATFORM_ADMIN_EMAILS` for owner/admin bootstrap accounts.
 
-This template uses [Better Auth](https://www.better-auth.com) with:
+Do not deploy with localhost URLs in production. They affect auth redirects, invitation links, public QR URLs, and checkout return URLs.
 
-- Email/password authentication (enabled)
-- Google OAuth (requires credentials)
-- Session management with database storage
-- PostgreSQL adapter via Prisma
+## Database
 
-To add more social providers, update `lib/auth.ts`.
+Runtime Prisma uses `DATABASE_URL`. In hosted Supabase-style setups, use the pooled connection string for runtime and `DIRECT_URL` for migrations.
 
-## Internationalization
-
-Languages are managed via JSON files in `/messages`. The current locale is stored in a cookie.
-
-To add a new language:
-
-1. Create `messages/{locale}.json`
-2. Update the language switcher component
-
-## Adding UI Components
-
-This template includes shadcn/ui. Add more components with:
+Development:
 
 ```bash
-npx shadcn@latest add [component-name]
+npx prisma migrate dev
 ```
 
-## Scripts
+Production:
 
 ```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run start    # Start production server
-npm run lint     # Run ESLint
+npx prisma migrate deploy
 ```
 
-## Customization
+The current schema includes `MenuItem.variants` for multi-price dishes such as pizza sizes. Make sure all migrations are applied before launching menu imports or public menus.
 
-1. Update `app/layout.tsx` metadata with your app name
-2. Replace landing page content in `app/page.tsx`
-3. Modify translations in `messages/`
-4. Add your database models to `prisma/schema.prisma`
-5. Configure additional auth providers in `lib/auth.ts`
+## Billing And Credits
 
-## Deployment
+Stripe powers trials, subscriptions, plan changes, and credit packs. Required launch checks:
 
-Deploy on [Vercel](https://vercel.com) or any platform supporting Next.js:
+- Stripe webhook points at the deployed Better Auth endpoint.
+- Trial start grants the one-time 5-credit bonus.
+- Trial-to-active conversion grants the monthly plan credits.
+- Monthly renewal resets the monthly credit bucket.
+- Credit-pack checkout grants 100 bonus credits once, idempotently.
+- Owners/admins can manage billing; staff cannot.
+
+## Useful Scripts
 
 ```bash
-npm run build
-npm run start
+npm run dev            # Start local dev server on port 3001
+npm run build          # Production build
+npm run lint           # ESLint
+npm run format:check   # Prettier check
+npx prisma generate    # Generate Prisma client
+npx prisma migrate dev # Run local migrations
 ```
 
-Remember to set all environment variables in your deployment platform.
+Account cleanup for clean-room testing:
 
-## License
+```bash
+npx tsx scripts/delete-account.ts user@example.com
+npx tsx scripts/delete-account.ts user@example.com --confirm
+```
 
-MIT
+## Launch Checklist
+
+- Run `npm run lint`, `npm run format:check`, and `npm run build`.
+- Run `npx prisma migrate deploy` against production.
+- Verify signup, OTP email, onboarding, setup mode, trial checkout, and Stripe webhook delivery.
+- Verify AI menu import, AI photo generation, out-of-credits states, and credit-pack checkout.
+- Verify public QR URLs use the production domain.
+- Scan a real QR code on a phone and test each public menu template.
+- Confirm Cloudflare R2 assets load publicly.
+- Confirm database backups and Stripe live/test mode are intentional.
