@@ -21,6 +21,7 @@ interface AIPhotoPanelProps {
   currentImageUrl: string | null
   onApply: (url: string) => void
   onClose: () => void
+  onReturnFocus?: () => void
   onCreditSpent?: () => void
   canBuyCredits: boolean
   // Admins get an editable prompt textarea for diagnostics; everyone else
@@ -52,6 +53,7 @@ export function AIPhotoPanel({
   currentImageUrl,
   onApply,
   onClose,
+  onReturnFocus,
   onCreditSpent,
   canBuyCredits,
   isAdmin = false,
@@ -211,7 +213,10 @@ export function AIPhotoPanel({
         </div>
         <button
           type="button"
-          onClick={onClose}
+          onClick={() => {
+            onClose()
+            onReturnFocus?.()
+          }}
           aria-label={t('close')}
           disabled={status === 'processing'}
           className="text-muted-foreground hover:text-foreground rounded-full p-1 transition-colors disabled:opacity-30"
@@ -273,7 +278,15 @@ export function AIPhotoPanel({
           ) : null}
 
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="ghost" size="sm" onClick={onClose}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onClose()
+                onReturnFocus?.()
+              }}
+            >
               {t('cancel')}
             </Button>
             <Button type="button" size="sm" onClick={run}>
@@ -323,7 +336,15 @@ export function AIPhotoPanel({
             />
           </div>
           <div className="flex flex-wrap items-center justify-end gap-2">
-            <Button type="button" variant="ghost" size="sm" onClick={onClose}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                onClose()
+                onReturnFocus?.()
+              }}
+            >
               {mode === 'enhance' ? t('keepOriginal') : t('discard')}
             </Button>
             <Button
@@ -349,6 +370,7 @@ export function AIPhotoPanel({
                 resultRef.current = null
                 onApply(resultUrl)
                 onClose()
+                onReturnFocus?.()
               }}
             >
               {mode === 'enhance' ? t('keepEnhanced') : t('useThisPhoto')}

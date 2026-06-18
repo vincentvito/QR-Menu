@@ -1,4 +1,4 @@
-import { Plus, QrCode } from 'lucide-react'
+import { Plus, QrCode, Sparkles } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import { getDashboardContext } from '@/lib/dashboard/context'
 import { getMenusForRestaurant } from '@/lib/menus/get'
@@ -7,20 +7,62 @@ import { Button } from '@/components/ui/button'
 import { MenuList } from '@/components/dashboard/MenuList'
 import { TransitionLink } from '@/components/navigation/TransitionLink'
 
-export default async function MenusPage() {
+interface MenusPageProps {
+  searchParams?: Promise<{ trial?: string }>
+}
+
+export default async function MenusPage({ searchParams }: MenusPageProps) {
   // Cached in getDashboardContext — the layout already resolved this, so
   // this call is a same-request cache hit, not a new round-trip.
   const { restaurant } = await getDashboardContext()
-  const [t, menus, subscriptionAccess] = await Promise.all([
+  const [t, menus, subscriptionAccess, params] = await Promise.all([
     getTranslations('Dashboard.pages.menus'),
     getMenusForRestaurant(restaurant.id),
     getSubscriptionAccessState(restaurant.organizationId),
+    searchParams,
   ])
   const publicBaseUrl = process.env.NEXT_PUBLIC_APP_URL ?? ''
   const canCreateMenu = !restaurant.readOnly && !subscriptionAccess.isLapsed
+  const showTrialStarted = params?.trial === 'started'
+  const firstMenu = menus[0] ?? null
 
   return (
     <main className="mx-auto w-full max-w-5xl px-4 py-6 sm:px-6 sm:py-8">
+      {showTrialStarted ? (
+        <section className="border-accent bg-accent/12 text-foreground mb-6 rounded-[20px] border p-4 shadow-[0_16px_42px_-36px_rgba(26,30,23,0.45)]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex gap-3">
+              <span className="bg-accent text-accent-foreground mt-0.5 grid size-9 shrink-0 place-items-center rounded-full">
+                <Sparkles className="size-4" aria-hidden="true" />
+              </span>
+              <div>
+                <h2 className="text-sm font-semibold">{t('trialStarted.title')}</h2>
+                <p className="text-muted-foreground mt-1 text-sm leading-6">
+                  {t('trialStarted.description')}
+                </p>
+              </div>
+            </div>
+            {firstMenu ? (
+              <Button asChild size="sm" className="shrink-0">
+                <TransitionLink
+                  href={`/dashboard/menus/${firstMenu.slug}/edit`}
+                  transitionType="nav-forward"
+                >
+                  {t('trialStarted.cta')}
+                </TransitionLink>
+              </Button>
+            ) : (
+              <Button asChild size="sm" className="shrink-0">
+                <TransitionLink href="/dashboard/menus/new" transitionType="nav-forward">
+                  <Plus className="size-4" aria-hidden="true" />
+                  {t('newMenu')}
+                </TransitionLink>
+              </Button>
+            )}
+          </div>
+        </section>
+      ) : null}
+
       <div className="mb-6 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
         {canCreateMenu ? (

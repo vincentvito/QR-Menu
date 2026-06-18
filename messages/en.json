@@ -122,7 +122,12 @@
         "title": "Menus",
         "newMenu": "New menu",
         "emptyTitle": "No menus yet",
-        "emptyDescription": "Create your first menu from a URL, photo, PDF, or pasted text."
+        "emptyDescription": "Create your first menu from a URL, photo, PDF, or pasted text.",
+        "trialStarted": {
+          "title": "Your trial is active",
+          "description": "Your menu can go live now. Open your menu to publish it, polish dishes, and use your 5 AI credits for photos.",
+          "cta": "Open menu"
+        }
       }
     },
     "restaurants": {

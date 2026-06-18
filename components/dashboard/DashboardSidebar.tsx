@@ -1,5 +1,6 @@
 'use client'
 
+import { forwardRef, type ComponentPropsWithoutRef } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
@@ -24,11 +25,13 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from '@/components/ui/sidebar'
 import { BrandMark } from '@/components/brand/BrandMark'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
 import { signOut } from '@/lib/auth-client'
 import { formatDisplayName } from '@/lib/display-name'
+import { TransitionLink } from '@/components/navigation/TransitionLink'
 import { RestaurantSwitcher } from './RestaurantSwitcher'
 
 // Nav items flagged `orgOnly` are hidden from restaurant-scoped staff
@@ -78,6 +81,23 @@ export function DashboardSidebar({
     router.push('/auth/login')
   }
 
+  function renderNavLink({
+    href,
+    label,
+    Icon,
+  }: {
+    href: string
+    label: string
+    Icon: React.ComponentType<{ className?: string }>
+  }) {
+    return (
+      <DashboardSidebarLink href={href}>
+        <Icon />
+        <span>{label}</span>
+      </DashboardSidebarLink>
+    )
+  }
+
   return (
     <Sidebar collapsible="icon" className="[view-transition-name:dashboard-sidebar]">
       <SidebarHeader>
@@ -104,10 +124,7 @@ export function DashboardSidebar({
                       tooltip={label}
                       className={collapsedButtonClass}
                     >
-                      <Link href={item.href}>
-                        <item.icon />
-                        <span>{label}</span>
-                      </Link>
+                      {renderNavLink({ href: item.href, label, Icon: item.icon })}
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )
@@ -120,10 +137,11 @@ export function DashboardSidebar({
                     tooltip={t('nav.admin')}
                     className={collapsedButtonClass}
                   >
-                    <Link href={ADMIN_NAV.href}>
-                      <ADMIN_NAV.icon />
-                      <span>{t('nav.admin')}</span>
-                    </Link>
+                    {renderNavLink({
+                      href: ADMIN_NAV.href,
+                      label: t('nav.admin'),
+                      Icon: ADMIN_NAV.icon,
+                    })}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ) : null}
@@ -144,7 +162,7 @@ export function DashboardSidebar({
               tooltip={viewer.email}
               className={collapsedButtonClass}
             >
-              <Link href="/dashboard/profile">
+              <DashboardSidebarLink href="/dashboard/profile">
                 <Avatar className="size-7">
                   <AvatarImage src={viewer.image ?? undefined} alt="" />
                   <AvatarFallback className="bg-foreground text-background text-[10px]">
@@ -155,7 +173,7 @@ export function DashboardSidebar({
                   <div className="truncate text-xs font-medium">{displayName}</div>
                   <div className="text-muted-foreground truncate text-[11px]">{viewer.email}</div>
                 </div>
-              </Link>
+              </DashboardSidebarLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
@@ -173,3 +191,54 @@ export function DashboardSidebar({
     </Sidebar>
   )
 }
+
+const DashboardSidebarLink = forwardRef<
+  HTMLAnchorElement,
+  Omit<ComponentPropsWithoutRef<typeof Link>, 'href'> & { href: string }
+>(function DashboardSidebarLink({ href, onClick, children, ...props }, ref) {
+  const router = useRouter()
+  const { isMobile, setOpenMobile } = useSidebar()
+
+  if (!isMobile) {
+    return (
+      <TransitionLink
+        ref={ref}
+        href={href}
+        transitionType="nav-forward"
+        onClick={onClick}
+        {...props}
+      >
+        {children}
+      </TransitionLink>
+    )
+  }
+
+  return (
+    <Link
+      ref={ref}
+      href={href}
+      onClick={(event) => {
+        onClick?.(event)
+        if (
+          event.defaultPrevented ||
+          event.button !== 0 ||
+          event.metaKey ||
+          event.altKey ||
+          event.ctrlKey ||
+          event.shiftKey
+        ) {
+          return
+        }
+
+        event.preventDefault()
+        setOpenMobile(false)
+        window.setTimeout(() => {
+          router.push(href)
+        }, 120)
+      }}
+      {...props}
+    >
+      {children}
+    </Link>
+  )
+})

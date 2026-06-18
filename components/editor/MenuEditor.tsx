@@ -1650,9 +1650,33 @@ const ItemRow = memo(function ItemRow({
   const [draftBadges, setDraftBadges] = useState<string[]>(item.badges)
   const [draftSpecialUntil, setDraftSpecialUntil] = useState<string | null>(item.specialUntil)
   const [confirming, setConfirming] = useState(false)
+  const [spotlight, setSpotlight] = useState(false)
+  const spotlightTimers = useRef<Array<ReturnType<typeof setTimeout>>>([])
   const { generatingDescription, descriptionError, setDescriptionError, enhanceDescription } =
     useDescriptionEnhancer(slug)
   const [aiMode, setAIMode] = useState<AIPhotoMode | null>(null)
+
+  useEffect(() => {
+    return () => {
+      for (const timer of spotlightTimers.current) clearTimeout(timer)
+      spotlightTimers.current = []
+    }
+  }, [])
+
+  function focusDishSoon() {
+    // Wait one beat for the row to re-render out of edit mode before scrolling,
+    // then hold the spotlight briefly. Both timers are tracked so unmount
+    // (e.g. dish deleted right after) can cancel them.
+    const scrollTimer = setTimeout(() => {
+      document
+        .getElementById(`dish-row-${item.id}`)
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      setSpotlight(true)
+      const clearTimer = setTimeout(() => setSpotlight(false), 1800)
+      spotlightTimers.current.push(clearTimer)
+    }, 80)
+    spotlightTimers.current.push(scrollTimer)
+  }
 
   function resetDrafts() {
     setDraftName(item.name)
@@ -1675,6 +1699,7 @@ const ItemRow = memo(function ItemRow({
   function cancelEdit() {
     resetDrafts()
     setIsEditing(false)
+    focusDishSoon()
   }
 
   function saveEdit() {
@@ -1729,6 +1754,7 @@ const ItemRow = memo(function ItemRow({
 
     if (Object.keys(patch).length > 0) onChange(item.id, patch)
     setIsEditing(false)
+    focusDishSoon()
   }
 
   return (
@@ -1739,6 +1765,7 @@ const ItemRow = memo(function ItemRow({
         isFirst ? '' : 'border-cream-line border-t',
         isEditing && 'bg-card',
         confirming && 'bg-destructive/5',
+        spotlight && 'animate-dish-row-spotlight relative z-10 rounded-[18px]',
       )}
     >
       <div className="flex items-start gap-3 px-4 py-4">
@@ -2085,6 +2112,7 @@ const ItemRow = memo(function ItemRow({
             currentImageUrl={item.imageUrl}
             onApply={(url) => onChange(item.id, { imageUrl: url })}
             onClose={() => setAIMode(null)}
+            onReturnFocus={focusDishSoon}
             onCreditSpent={onCreditSpent}
             canBuyCredits={canBuyCredits}
             isAdmin={isAdmin}

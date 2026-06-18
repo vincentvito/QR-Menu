@@ -122,7 +122,12 @@
         "title": "Menús",
         "newMenu": "Nuevo menú",
         "emptyTitle": "Aún no hay menús",
-        "emptyDescription": "Crea tu primer menú desde una URL, foto, PDF o texto pegado."
+        "emptyDescription": "Crea tu primer menú desde una URL, foto, PDF o texto pegado.",
+        "trialStarted": {
+          "title": "Tu prueba está activa",
+          "description": "Tu menú ya puede publicarse. Abre tu menú para publicarlo, pulir platos y usar tus 5 créditos de IA para fotos.",
+          "cta": "Abrir menú"
+        }
       }
     },
     "restaurants": {

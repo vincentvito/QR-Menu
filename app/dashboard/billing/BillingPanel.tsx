@@ -198,7 +198,9 @@ export function BillingPanel({ orgId, canManage, state, planCatalog }: BillingPa
         plan: planId,
         referenceId: orgId,
         annual: interval === 'year',
-        successUrl: '/dashboard/billing?checkout=success',
+        successUrl: isSetupMode
+          ? '/dashboard/menus?trial=started'
+          : '/dashboard/billing?checkout=success',
         cancelUrl: '/dashboard/billing?checkout=cancel',
       })
       if (result.error) {

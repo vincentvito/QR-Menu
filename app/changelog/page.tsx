@@ -6,6 +6,29 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.31.2',
+    date: '2026-06-17',
+    title: 'Trial and editor guidance',
+    changes: [
+      {
+        type: 'changed' as const,
+        items: [
+          'After starting a trial from Billing, owners now return to Menus with clear next steps for publishing and using AI credits',
+          'The editor now scrolls back to the dish and briefly highlights it after saving edits or closing an AI photo review',
+          'The dish focus highlight now pulses twice so owners can more easily spot where they were working',
+          'The mobile dashboard menu now closes before navigating to the selected page',
+        ],
+      },
+      {
+        type: 'fixed' as const,
+        items: [
+          'AI photo generation now uses dish descriptions to avoid confusing similarly named dishes and drinks',
+          'Dashboard page transitions no longer flash loading content over the mobile menu while navigating',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.31.1',
     date: '2026-06-13',
     title: 'Settings preview fix',

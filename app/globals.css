@@ -455,6 +455,24 @@
   }
 }
 
+@keyframes dish-row-spotlight {
+  0% {
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--accent) 65%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  22% {
+    box-shadow:
+      0 0 0 2px color-mix(in srgb, var(--accent) 80%, transparent),
+      0 0 0 8px color-mix(in srgb, var(--accent) 18%, transparent);
+  }
+  100% {
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent),
+      0 0 0 0 color-mix(in srgb, var(--accent) 0%, transparent);
+  }
+}
+
 @utility animate-fade-up {
   animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -521,6 +539,10 @@
 
 @utility animate-save-pill-wave {
   animation: save-pill-wave 1100ms cubic-bezier(0.22, 1, 0.36, 1) 400ms both;
+}
+
+@utility animate-dish-row-spotlight {
+  animation: dish-row-spotlight 850ms cubic-bezier(0.22, 1, 0.36, 1) 2 both;
 }
 
 @media (prefers-reduced-motion: reduce) {

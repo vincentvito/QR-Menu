@@ -24,6 +24,7 @@ const CATEGORY_MAP: Array<[RegExp, Archetype]> = [
   [/smoothie|juice|shake|frapp|slush|iced/i, 'iced-drink'],
   [/dessert|ice cream|gelato|sorbet|helado/i, 'dessert'],
   [/pastr|bakery|bread|viennoiserie|panader/i, 'pastry'],
+  [/pizza|piza|pasta|burger|hamburg|sandwich|taco|burrito|sushi|salad|ensalada/i, 'food'],
 ]
 
 const NAME_KEYWORDS: Array<[RegExp, Archetype]> = [
@@ -54,11 +55,25 @@ const NAME_KEYWORDS: Array<[RegExp, Archetype]> = [
   ],
 ]
 
-function detectArchetype(name: string, category: string): Archetype {
+const DESCRIPTION_KEYWORDS: Array<[RegExp, Archetype]> = [
+  [
+    /\b(pizza|piza|dough|masa|crust|base de pizza|mozzarella|queso|cheese|tomate|tomato|salsa napolitana|pepperoni|topping|toppings|albahaca|basil|oregano|orégano)\b/i,
+    'food',
+  ],
+  ...NAME_KEYWORDS,
+]
+
+function detectArchetype(name: string, category: string, description: string): Archetype {
   const cat = category.trim()
   if (cat) {
     for (const [pattern, archetype] of CATEGORY_MAP) {
       if (pattern.test(cat)) return archetype
+    }
+  }
+  const desc = description.trim()
+  if (desc) {
+    for (const [pattern, archetype] of DESCRIPTION_KEYWORDS) {
+      if (pattern.test(desc)) return archetype
     }
   }
   const n = name.trim()
@@ -363,7 +378,7 @@ function buildDishBlock(dish: DishContext): string {
 }
 
 function buildPrompt(dish: DishContext, mode: 'generate' | 'enhance'): string {
-  const archetype = detectArchetype(dish.name, dish.category)
+  const archetype = detectArchetype(dish.name, dish.category, dish.description)
   const direction = buildDirectionLine(dish.extraContext)
   const instruction = mode === 'generate' ? GENERATE_INSTRUCTIONS : ENHANCE_INSTRUCTIONS
   return [
