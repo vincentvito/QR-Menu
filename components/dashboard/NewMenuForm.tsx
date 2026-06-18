@@ -40,6 +40,7 @@ export function NewMenuForm() {
   const [isDragging, setIsDragging] = useState(false)
   const [isPending, startTransition] = useTransition()
   const busy = isLoading || isPending
+  const hasSource = files.length > 0 || url.trim().length > 0 || text.trim().length > 0
 
   function sameFile(a: File, b: File) {
     return a.name === b.name && a.size === b.size && a.lastModified === b.lastModified
@@ -128,9 +129,31 @@ export function NewMenuForm() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="border-cream-line bg-background/60 rounded-[16px] border p-4">
+          <h3 className="text-sm font-semibold">{t('chooseSourceTitle')}</h3>
+          <p className="text-muted-foreground mt-1 text-sm leading-6">
+            {t('chooseSourceDescription')}
+          </p>
+        </div>
+
         {/* File drop zone */}
-        <div className="space-y-2">
-          <Label htmlFor="menu-file">{t('fileLabel')}</Label>
+        <div
+          className={`rounded-[18px] border p-4 transition-colors ${
+            files.length > 0 ? 'border-accent bg-accent/10' : 'border-cream-line bg-background/35'
+          }`}
+        >
+          <div className="mb-3 flex items-start gap-2">
+            <span
+              aria-hidden="true"
+              className="bg-foreground text-background mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-semibold"
+            >
+              A
+            </span>
+            <div>
+              <Label htmlFor="menu-file">{t('fileLabel')}</Label>
+              <p className="text-muted-foreground mt-0.5 text-xs">{t('fileOptionHint')}</p>
+            </div>
+          </div>
 
           <label
             htmlFor="menu-file"
@@ -227,8 +250,23 @@ export function NewMenuForm() {
 
         <Divider label={t('orDivider')} />
 
-        <div className="space-y-2">
-          <Label htmlFor="menu-url">{t('urlLabel')}</Label>
+        <div
+          className={`rounded-[18px] border p-4 transition-colors ${
+            url.trim() ? 'border-accent bg-accent/10' : 'border-cream-line bg-background/35'
+          }`}
+        >
+          <div className="mb-3 flex items-start gap-2">
+            <span
+              aria-hidden="true"
+              className="bg-foreground text-background mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-semibold"
+            >
+              B
+            </span>
+            <div>
+              <Label htmlFor="menu-url">{t('urlLabel')}</Label>
+              <p className="text-muted-foreground mt-0.5 text-xs">{t('urlOptionHint')}</p>
+            </div>
+          </div>
           <div className="relative">
             <LinkIcon
               className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2"
@@ -251,8 +289,23 @@ export function NewMenuForm() {
 
         <Divider label={t('orDivider')} />
 
-        <div className="space-y-2">
-          <Label htmlFor="menu-text">{t('textLabel')}</Label>
+        <div
+          className={`rounded-[18px] border p-4 transition-colors ${
+            text.trim() ? 'border-accent bg-accent/10' : 'border-cream-line bg-background/35'
+          }`}
+        >
+          <div className="mb-3 flex items-start gap-2">
+            <span
+              aria-hidden="true"
+              className="bg-foreground text-background mt-0.5 grid size-6 shrink-0 place-items-center rounded-full text-[11px] font-semibold"
+            >
+              C
+            </span>
+            <div>
+              <Label htmlFor="menu-text">{t('textLabel')}</Label>
+              <p className="text-muted-foreground mt-0.5 text-xs">{t('textOptionHint')}</p>
+            </div>
+          </div>
           <Textarea
             id="menu-text"
             value={text}
@@ -264,14 +317,16 @@ export function NewMenuForm() {
           />
         </div>
 
-        <div className="space-y-2">
+        <div className="border-cream-line bg-background/35 rounded-[18px] border p-4">
           <Label htmlFor="menu-name">{t('nameLabel')}</Label>
+          <p className="text-muted-foreground mt-1 text-xs">{t('nameHint')}</p>
           <Input
             id="menu-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             disabled={busy}
             placeholder={t('namePlaceholder')}
+            className="mt-3"
           />
         </div>
 
@@ -281,7 +336,20 @@ export function NewMenuForm() {
           </p>
         )}
 
-        <PillButton type="submit" variant="primary" size="lg" disabled={busy} className="w-full">
+        {!hasSource && !error ? (
+          <p id="source-required-hint" className="text-muted-foreground text-center text-xs">
+            {t('sourceRequired')}
+          </p>
+        ) : null}
+
+        <PillButton
+          type="submit"
+          variant="primary"
+          size="lg"
+          disabled={busy || !hasSource}
+          aria-describedby={!hasSource && !error ? 'source-required-hint' : undefined}
+          className="w-full disabled:cursor-not-allowed disabled:opacity-45"
+        >
           {busy ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />

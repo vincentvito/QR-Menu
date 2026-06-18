@@ -17,6 +17,7 @@ const changelog = [
           'The editor now scrolls back to the dish and briefly highlights it after saving edits or closing an AI photo review',
           'The dish focus highlight now pulses twice so owners can more easily spot where they were working',
           'The mobile dashboard menu now closes before navigating to the selected page',
+          'Menu creation now clearly asks owners to choose one import source and keeps Create menu disabled until a source is provided',
         ],
       },
       {
