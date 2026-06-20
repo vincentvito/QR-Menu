@@ -418,6 +418,8 @@
     "openPhotoAria": "Abrir foto de {item}",
     "quickCategoryNav": "Navegación rápida por categorías",
     "noPhoto": "Sin foto",
+    "polaroidPrevAria": "Plato anterior",
+    "polaroidNextAria": "Plato siguiente",
     "dishPhoto": "Foto del plato",
     "closePhoto": "Cerrar"
   },
@@ -862,6 +864,36 @@
       "templateAria": "Plantilla del menú",
       "theme": "Tema",
       "themeAria": "Tema del menú",
+      "themes": {
+        "editorial": {
+          "label": "Editorial",
+          "description": "Crema cálida con precios caqui."
+        },
+        "pastel": {
+          "label": "Pastel",
+          "description": "Salvia y coral sobre blanco cálido."
+        },
+        "luxury": {
+          "label": "Lujo",
+          "description": "Pergamino, espresso y dorado."
+        },
+        "midnight": {
+          "label": "Medianoche",
+          "description": "Ámbar y borgoña sobre tinta oscura."
+        },
+        "sunset": {
+          "label": "Atardecer",
+          "description": "Terracota con azul oceánico."
+        },
+        "mono": {
+          "label": "Mono",
+          "description": "Fondo negro con texto blanco."
+        },
+        "light": {
+          "label": "Claro",
+          "description": "Fondo blanco con texto negro."
+        }
+      },
       "seasonalTouch": "Toque de temporada",
       "seasonalAria": "Efecto de temporada",
       "restaurantNameColor": "Color del nombre del restaurante",

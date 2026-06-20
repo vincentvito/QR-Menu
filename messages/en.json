@@ -418,6 +418,8 @@
     "openPhotoAria": "Open photo of {item}",
     "quickCategoryNav": "Quick category nav",
     "noPhoto": "No photo",
+    "polaroidPrevAria": "Previous dish",
+    "polaroidNextAria": "Next dish",
     "dishPhoto": "Dish photo",
     "closePhoto": "Close"
   },
@@ -862,6 +864,36 @@
       "templateAria": "Menu template",
       "theme": "Theme",
       "themeAria": "Menu theme",
+      "themes": {
+        "editorial": {
+          "label": "Editorial",
+          "description": "Warm cream with persimmon prices."
+        },
+        "pastel": {
+          "label": "Pastel",
+          "description": "Sage and coral on warm off-white."
+        },
+        "luxury": {
+          "label": "Luxury",
+          "description": "Parchment, espresso, and gold."
+        },
+        "midnight": {
+          "label": "Midnight",
+          "description": "Amber and burgundy on deep ink."
+        },
+        "sunset": {
+          "label": "Sunset",
+          "description": "Terracotta prices with ocean blue."
+        },
+        "mono": {
+          "label": "Mono",
+          "description": "Black background with white type."
+        },
+        "light": {
+          "label": "Light",
+          "description": "White background with black type."
+        }
+      },
       "seasonalTouch": "Seasonal touch",
       "seasonalAria": "Seasonal overlay",
       "restaurantNameColor": "Restaurant name color",

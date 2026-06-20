@@ -6,6 +6,17 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.34.0',
+    date: '2026-06-20',
+    title: 'Monochrome menu themes',
+    changes: [
+      {
+        type: 'added' as const,
+        items: ['Added Mono and Light menu themes for high-contrast black-and-white public menus'],
+      },
+    ],
+  },
+  {
     version: '0.33.0',
     date: '2026-06-20',
     title: 'Text-only menu option',

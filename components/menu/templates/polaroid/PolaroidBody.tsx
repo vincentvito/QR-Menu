@@ -1,13 +1,20 @@
 'use client'
 
-import { memo, useMemo, useState, type ReactNode } from 'react'
+import {
+  memo,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+} from 'react'
 import { useTranslations } from 'next-intl'
-import { Camera, Search, Sparkles, X } from 'lucide-react'
+import { Camera, ChevronLeft, ChevronRight, Search, Sparkles, X } from 'lucide-react'
 import { BadgeRow } from '@/components/menu/BadgeRow'
 import { DietaryTagPills } from '@/components/menu/DietaryTagPills'
 import { PriceChip } from '@/components/menu/PriceChip'
 import { VariantPriceChips } from '@/components/menu/VariantPriceChips'
-import { categoryIcon } from '@/lib/menus/category-icon'
 import { cn } from '@/lib/utils'
 import type {
   TemplateBodyProps,
@@ -47,25 +54,38 @@ export function PolaroidBody({
   const searchItems = useMemo(() => flattenItems(groups, specials), [groups, specials])
   const showSearch = Boolean(hasQuery) && !preview
 
+  // The deck position lives here (not inside Deck) so the bottom-bar arrows
+  // and the draggable card share one source of truth. Reset to the first
+  // card when the category changes — adjusting state during render avoids an
+  // effect (see notes/you-might-not-need-effect).
+  const deckKey = selected ?? 'all'
+  const total = deckItems.length
+  const [deckState, setDeckState] = useState({ key: deckKey, index: 0 })
+  let rawIndex = deckState.index
+  if (deckState.key !== deckKey) {
+    setDeckState({ key: deckKey, index: 0 })
+    rawIndex = 0
+  }
+  const activeIndex = total > 0 ? ((rawIndex % total) + total) % total : 0
+  const goTo = (next: number) =>
+    setDeckState({ key: deckKey, index: total > 0 ? ((next % total) + total) % total : 0 })
+
   return (
     <>
-      <div className={cn('relative pt-6', preview ? 'pb-20' : 'pb-36')}>
+      <div className={cn('relative overflow-x-clip pt-3', preview ? 'pb-20' : 'pb-36')}>
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-[-20px] top-0 h-56 opacity-80"
+          className="pointer-events-none absolute inset-x-[-20px] top-0 h-32 opacity-80"
           style={{
             background:
               'radial-gradient(80% 70% at 50% 0%, color-mix(in oklab, var(--accent) 30%, transparent) 0%, transparent 70%)',
           }}
         />
 
-        <header className="relative pr-16">
-          <p className="text-muted-foreground flex items-center gap-2 text-[11px] font-semibold tracking-[0.18em] uppercase">
-            <Camera className="size-3.5" aria-hidden="true" />
-            {showSearch ? t('results') : t('allCategory')}
-          </p>
-          <h2 className="mt-1 text-[30px] leading-[1.02] font-semibold tracking-[-0.03em]">
-            {showSearch ? t('searchLabel') : deckTitle}
+        <header className="relative pr-12">
+          <h2 className="text-foreground flex items-center gap-1.5 text-[14px] font-semibold tracking-tight">
+            <Camera className="text-muted-foreground size-3.5 shrink-0" aria-hidden="true" />
+            <span className="truncate">{showSearch ? t('searchLabel') : deckTitle}</span>
           </h2>
         </header>
 
@@ -79,9 +99,11 @@ export function PolaroidBody({
           <Deck
             items={deckItems}
             symbol={symbol}
-            onOpenImage={onOpenImage}
             preview={preview}
             anchorId={selected === SPECIALS_KEY ? specialsAnchorId : activeGroup?.id}
+            index={activeIndex}
+            onNext={() => goTo(activeIndex + 1)}
+            onPrev={() => goTo(activeIndex - 1)}
           />
         )}
 
@@ -105,13 +127,14 @@ export function PolaroidBody({
 
       {!preview && (
         <PolaroidChrome
-          groups={groups}
-          specials={specials}
-          selected={selected}
-          onSelect={setSelected}
           query={query ?? ''}
           onQueryChange={onQueryChange ?? (() => {})}
           hasQuery={Boolean(hasQuery)}
+          showNav={!showSearch && total > 1}
+          navIndex={activeIndex}
+          navTotal={total}
+          onPrev={() => goTo(activeIndex - 1)}
+          onNext={() => goTo(activeIndex + 1)}
         />
       )}
     </>
@@ -139,94 +162,209 @@ function flattenItems(groups: TemplateCategoryGroup[], specials: TemplateItem[])
 interface DeckProps {
   items: TemplateItem[]
   symbol: string
-  onOpenImage: (src: string) => void
   preview?: boolean
   anchorId?: string
+  index: number
+  onNext: () => void
+  onPrev: () => void
 }
 
-function Deck({ items, symbol, onOpenImage, preview, anchorId }: DeckProps) {
+type DragHandlers = {
+  onPointerDown: (e: ReactPointerEvent<HTMLDivElement>) => void
+  onPointerMove: (e: ReactPointerEvent<HTMLDivElement>) => void
+  onPointerUp: (e: ReactPointerEvent<HTMLDivElement>) => void
+  onPointerCancel: (e: ReactPointerEvent<HTMLDivElement>) => void
+}
+
+const DRAG_THRESHOLD = 56
+
+// A stacked pile of polaroids instead of a sideways scroll: the active dish
+// sits on top with the rest fanned behind it. Drag the top card sideways
+// (or use the arrows in the bottom bar) to move through the pile, which
+// cycles so it never runs out. The active index is owned by the parent.
+function Deck({ items, symbol, preview, anchorId, index, onNext, onPrev }: DeckProps) {
+  const total = items.length
+  const activeIndex = total > 0 ? ((index % total) + total) % total : 0
+  const draggable = !preview && total > 1
+
+  const draggingRef = useRef(false)
+  const startXRef = useRef(0)
+  const [drag, setDrag] = useState({ active: false, x: 0 })
+
+  const pointerHandlers: DragHandlers | undefined = draggable
+    ? {
+        onPointerDown: (e) => {
+          draggingRef.current = true
+          startXRef.current = e.clientX
+          setDrag({ active: true, x: 0 })
+          e.currentTarget.setPointerCapture?.(e.pointerId)
+        },
+        onPointerMove: (e) => {
+          if (!draggingRef.current) return
+          setDrag({ active: true, x: e.clientX - startXRef.current })
+        },
+        onPointerUp: (e) => {
+          if (!draggingRef.current) return
+          draggingRef.current = false
+          const dx = e.clientX - startXRef.current
+          setDrag({ active: false, x: 0 })
+          if (dx <= -DRAG_THRESHOLD) onNext()
+          else if (dx >= DRAG_THRESHOLD) onPrev()
+        },
+        onPointerCancel: () => {
+          draggingRef.current = false
+          setDrag({ active: false, x: 0 })
+        },
+      }
+    : undefined
+
   return (
-    <div id={anchorId} className="relative mt-7 scroll-mt-8">
-      <div
-        aria-hidden="true"
-        className="border-cream-line bg-card absolute top-5 right-4 left-4 h-[380px] rotate-3 rounded-[8px] border shadow-[0_18px_45px_-34px_rgba(0,0,0,0.45)]"
-      />
-      <div
-        aria-hidden="true"
-        className="border-cream-line bg-card absolute top-3 right-5 left-5 h-[380px] -rotate-2 rounded-[8px] border shadow-[0_18px_45px_-34px_rgba(0,0,0,0.45)]"
-      />
-      <ul className="no-scrollbar relative flex snap-x snap-mandatory gap-5 overflow-x-auto px-1 py-2 pr-12">
-        {items.map((item, index) => (
-          <PolaroidCard
-            key={item.id}
-            item={item}
-            symbol={symbol}
-            onOpenImage={onOpenImage}
-            preview={preview}
-            tilt={index % 3 === 0 ? '-rotate-2' : index % 3 === 1 ? 'rotate-1' : 'rotate-2'}
-          />
-        ))}
-      </ul>
+    <div id={anchorId} className="scroll-mt-8">
+      {/* `isolate` traps the cards' z-indexes (up to 60 while dragging) in
+          their own stacking context so a dragged card can't paint over the
+          floating category rail or bottom bar. */}
+      <div className="relative isolate mx-auto mt-3 min-h-[400px] w-full max-w-[260px] select-none">
+        {items.map((item, i) => {
+          const pos = (((i - activeIndex) % total) + total) % total
+          const isTop = pos === 0
+          return (
+            <StackCard
+              key={item.id}
+              pos={pos}
+              total={total}
+              isTop={isTop}
+              draggable={isTop && draggable}
+              drag={isTop ? drag : null}
+              pointerHandlers={isTop ? pointerHandlers : undefined}
+            >
+              <PolaroidCardContent item={item} symbol={symbol} />
+            </StackCard>
+          )
+        })}
+      </div>
     </div>
   )
 }
 
-interface CardProps {
-  item: TemplateItem
-  symbol: string
-  onOpenImage: (src: string) => void
-  preview?: boolean
-  tilt: string
+function NavButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string
+  onClick: () => void
+  children: ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={label}
+      onClick={onClick}
+      className="border-cream-line bg-card text-foreground hover:bg-foreground hover:text-background focus-visible:ring-foreground grid size-9 place-items-center rounded-full border transition-colors hover:scale-105 focus-visible:ring-2 focus-visible:outline-none"
+    >
+      {children}
+    </button>
+  )
 }
 
-const PolaroidCard = memo(function PolaroidCard({
+// Position of a card within the pile, by distance from the top (pos 0).
+// The single "edge" slot sits off-screen to the LEFT: on next, the top card
+// slides out to it (matching a left drag); on previous, the incoming card
+// slides in from it (so a right drag reads as the strip moving right). This
+// keeps the motion horizontal and aligned with the drag. Shallow piles (<=4)
+// just cycle a card to the back.
+function stackStyle(pos: number, total: number): CSSProperties {
+  const transition = 'transform 380ms cubic-bezier(0.22,1,0.36,1), opacity 320ms ease'
+  if (total > 4 && pos === total - 1) {
+    return {
+      left: '50%',
+      transform: 'translate(-180%, 6px) rotate(-12deg) scale(0.94)',
+      opacity: 0,
+      zIndex: 50,
+      transition,
+    }
+  }
+  const byPos: Record<number, CSSProperties> = {
+    0: { transform: 'translate(-50%, 0) rotate(-1.5deg)', opacity: 1, zIndex: 40 },
+    1: { transform: 'translate(-46%, 14px) rotate(2.5deg) scale(0.965)', opacity: 1, zIndex: 30 },
+    2: { transform: 'translate(-54%, 24px) rotate(-3.5deg) scale(0.93)', opacity: 0.92, zIndex: 20 },
+    3: { transform: 'translate(-49%, 32px) rotate(4.5deg) scale(0.9)', opacity: 0.6, zIndex: 10 },
+  }
+  const fallback: CSSProperties = {
+    transform: 'translate(-50%, 36px) scale(0.88)',
+    opacity: 0,
+    zIndex: 0,
+  }
+  return { left: '50%', transition, ...(byPos[pos] ?? fallback) }
+}
+
+interface StackCardProps {
+  pos: number
+  total: number
+  isTop: boolean
+  draggable: boolean
+  drag: { active: boolean; x: number } | null
+  pointerHandlers?: DragHandlers
+  children: ReactNode
+}
+
+function StackCard({ pos, total, isTop, draggable, drag, pointerHandlers, children }: StackCardProps) {
+  let style = stackStyle(pos, total)
+  if (isTop && drag?.active) {
+    // Follow the pointer 1:1 while dragging (no transition), with a slight
+    // tilt for feel. On release the parent advances and the stack settles.
+    style = {
+      ...style,
+      transform: `translate(calc(-50% + ${drag.x}px), 0) rotate(${(drag.x * 0.05).toFixed(2)}deg)`,
+      transition: 'none',
+      zIndex: 60,
+      touchAction: 'pan-y',
+    }
+  } else if (draggable) {
+    // pan-y keeps vertical page scroll working while we own horizontal drags.
+    style = { ...style, touchAction: 'pan-y' }
+  }
+  return (
+    <div
+      aria-hidden={!isTop}
+      className={cn(
+        'bg-card text-card-foreground border-cream-line absolute top-0 w-full rounded-[8px] border p-3 text-left shadow-[0_18px_50px_-30px_rgba(0,0,0,0.5)]',
+        draggable && 'cursor-grab active:cursor-grabbing',
+      )}
+      style={style}
+      {...(pointerHandlers ?? {})}
+    >
+      {children}
+    </div>
+  )
+}
+
+const PolaroidCardContent = memo(function PolaroidCardContent({
   item,
   symbol,
-  onOpenImage,
-  preview,
-  tilt,
-}: CardProps) {
+}: {
+  item: TemplateItem
+  symbol: string
+}) {
   const t = useTranslations('MenuView')
   const imageUrl = item.imageUrl
   const photoClass =
-    'bg-muted relative aspect-[4/5] w-full overflow-hidden rounded-[4px] border border-black/5'
+    'bg-muted relative aspect-square w-full overflow-hidden rounded-[4px] border border-black/5'
 
   return (
-    <li
-      className={cn(
-        'bg-card text-card-foreground border-cream-line min-h-[430px] w-[82%] max-w-[360px] shrink-0 snap-center rounded-[8px] border p-3 shadow-[0_18px_50px_-30px_rgba(0,0,0,0.5)] transition-transform duration-300 sm:w-[72%]',
-        tilt,
-      )}
-    >
+    <>
       {imageUrl ? (
-        preview ? (
-          <div className={photoClass}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imageUrl}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              className="h-full w-full object-cover"
-            />
-          </div>
-        ) : (
-          <button
-            type="button"
-            aria-label={t('openPhotoAria', { item: item.name })}
-            onClick={() => onOpenImage(imageUrl)}
-            className={`${photoClass} focus-visible:ring-foreground transition-transform hover:scale-[1.01] focus-visible:ring-2 focus-visible:outline-none`}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={imageUrl}
-              alt=""
-              loading="lazy"
-              decoding="async"
-              className="h-full w-full object-cover"
-            />
-          </button>
-        )
+        <div className={photoClass}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageUrl}
+            alt=""
+            loading="lazy"
+            decoding="async"
+            draggable={false}
+            className="pointer-events-none h-full w-full object-cover select-none"
+          />
+        </div>
       ) : (
         <div className={`${photoClass} grid place-items-center`}>
           <span className="text-muted-foreground/70 text-[11px] font-semibold tracking-[0.18em] uppercase">
@@ -247,13 +385,13 @@ const PolaroidCard = memo(function PolaroidCard({
           <VariantPriceChips symbol={symbol} variants={item.variants} className="mt-2" />
         )}
         {item.description && (
-          <p className="text-muted-foreground mt-2 text-[14px] leading-[1.55]">
+          <p className="text-muted-foreground mt-2 line-clamp-3 text-[14px] leading-[1.55]">
             {item.description}
           </p>
         )}
         <DietaryTagPills tags={item.tags} className="mt-3" pillClassName="text-[10px]" />
       </div>
-    </li>
+    </>
   )
 })
 
@@ -277,67 +415,66 @@ function FloatingCategories({
     <nav
       aria-label={t('quickCategoryNav')}
       className={cn(
-        'absolute top-6 right-0 z-10 flex w-12 flex-col items-center gap-2',
-        preview && 'pointer-events-none',
+        'no-scrollbar z-40 flex max-h-[70vh] flex-col items-end gap-1.5 overflow-y-auto py-1',
+        preview
+          ? 'pointer-events-none absolute top-1/2 right-0 -translate-y-1/2'
+          : 'fixed top-1/2 right-2 -translate-y-1/2',
       )}
     >
       {specials.length > 0 && (
-        <CategoryDot
+        <CategoryPill
           label={t('specialsShort')}
           active={selected === SPECIALS_KEY}
           tone="pop"
+          icon
           onClick={() => onSelect(SPECIALS_KEY)}
-        >
-          <Sparkles className="size-4" aria-hidden="true" />
-        </CategoryDot>
+        />
       )}
-      {groups.map((group) => {
-        const Icon = categoryIcon(group.category, group.iconId)
-        return (
-          <CategoryDot
-            key={group.id}
-            label={group.category}
-            active={selected === group.id}
-            onClick={() => onSelect(group.id)}
-          >
-            <Icon className="size-4" aria-hidden="true" />
-          </CategoryDot>
-        )
-      })}
+      {groups.map((group) => (
+        <CategoryPill
+          key={group.id}
+          label={group.category}
+          active={selected === group.id}
+          onClick={() => onSelect(group.id)}
+        />
+      ))}
     </nav>
   )
 }
 
-function CategoryDot({
+// Small label pills (not icons) — not every category has a recognizable icon,
+// so text reads clearer. They float over the right gutter with a backdrop
+// blur and truncate long names.
+function CategoryPill({
   label,
   active,
   tone = 'default',
+  icon,
   onClick,
-  children,
 }: {
   label: string
   active: boolean
   tone?: 'default' | 'pop'
+  icon?: boolean
   onClick: () => void
-  children: ReactNode
 }) {
   return (
     <button
       type="button"
-      aria-label={label}
       aria-pressed={active}
       onClick={onClick}
       title={label}
       className={cn(
-        'border-cream-line focus-visible:ring-foreground grid size-10 place-items-center rounded-full border shadow-[0_8px_20px_-12px_rgba(0,0,0,0.45)] transition-transform hover:scale-105 focus-visible:ring-2 focus-visible:outline-none',
+        'focus-visible:ring-foreground inline-flex max-w-[120px] items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-semibold shadow-[0_8px_20px_-12px_rgba(0,0,0,0.45)] backdrop-blur-md transition-colors focus-visible:ring-2 focus-visible:outline-none',
         active
           ? tone === 'pop'
-            ? 'bg-pop text-pop-foreground'
-            : 'bg-foreground text-background'
-          : 'bg-card/92 text-foreground backdrop-blur-md',
+            ? 'border-transparent bg-pop text-pop-foreground'
+            : 'border-transparent bg-foreground text-background'
+          : 'border-cream-line bg-card/92 text-foreground',
       )}
     >
-      {children}
+      {icon && <Sparkles className="size-3 shrink-0" aria-hidden="true" />}
+      <span className="truncate">{label}</span>
     </button>
   )
 }
@@ -401,29 +538,51 @@ const SearchDishRow = memo(function SearchDishRow({
 })
 
 interface PolaroidChromeProps {
-  groups: TemplateCategoryGroup[]
-  specials: TemplateItem[]
-  selected: string | null
-  onSelect: (key: string | null) => void
   query: string
   onQueryChange: (next: string) => void
   hasQuery: boolean
+  showNav: boolean
+  navIndex: number
+  navTotal: number
+  onPrev: () => void
+  onNext: () => void
 }
 
 function PolaroidChrome({
-  groups,
-  specials,
-  selected,
-  onSelect,
   query,
   onQueryChange,
   hasQuery,
+  showNav,
+  navIndex,
+  navTotal,
+  onPrev,
+  onNext,
 }: PolaroidChromeProps) {
   const t = useTranslations('MenuView')
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 pb-[env(safe-area-inset-bottom)]">
       <div className="bg-background/90 border-cream-line border-t backdrop-blur-md">
         <div className="mx-auto max-w-[720px] px-5 pt-3 pb-3 sm:px-8">
+          {/* Dish navigation. Arrows are desktop-only (sm+) where the drag
+              gesture isn't obvious; on mobile the card is dragged directly,
+              so only the position counter shows. */}
+          {showNav && (
+            <div className="mb-3 flex items-center justify-center gap-4">
+              <span className="hidden sm:inline-flex">
+                <NavButton label={t('polaroidPrevAria')} onClick={onPrev}>
+                  <ChevronLeft className="size-4" aria-hidden="true" />
+                </NavButton>
+              </span>
+              <span className="text-muted-foreground min-w-[44px] text-center text-[12px] font-semibold tabular-nums">
+                {navIndex + 1} / {navTotal}
+              </span>
+              <span className="hidden sm:inline-flex">
+                <NavButton label={t('polaroidNextAria')} onClick={onNext}>
+                  <ChevronRight className="size-4" aria-hidden="true" />
+                </NavButton>
+              </span>
+            </div>
+          )}
           <label htmlFor="polaroid-search" className="sr-only">
             {t('searchLabel')}
           </label>
@@ -454,67 +613,8 @@ function PolaroidChrome({
               </button>
             )}
           </div>
-
-          <nav
-            aria-label={t('quickCategoryNav')}
-            className="no-scrollbar scroll-fade-x mt-3 flex gap-2 overflow-x-auto"
-          >
-            {specials.length > 0 && (
-              <QuickButton
-                label={t('specialsShort')}
-                active={!hasQuery && selected === SPECIALS_KEY}
-                tone="pop"
-                onClick={() => {
-                  onQueryChange('')
-                  onSelect(SPECIALS_KEY)
-                }}
-              />
-            )}
-            {groups.map((group) => (
-              <QuickButton
-                key={group.id}
-                label={group.category}
-                active={!hasQuery && selected === group.id}
-                onClick={() => {
-                  onQueryChange('')
-                  onSelect(group.id)
-                }}
-              />
-            ))}
-          </nav>
         </div>
       </div>
     </div>
-  )
-}
-
-function QuickButton({
-  label,
-  active,
-  tone = 'default',
-  onClick,
-}: {
-  label: string
-  active: boolean
-  tone?: 'default' | 'pop'
-  onClick: () => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        'shrink-0 rounded-[12px] px-4 py-2 text-[12px] font-semibold whitespace-nowrap transition-colors',
-        active
-          ? tone === 'pop'
-            ? 'bg-pop text-pop-foreground'
-            : 'bg-foreground text-background'
-          : tone === 'pop'
-            ? 'bg-pop/15 text-pop hover:bg-pop/25'
-            : 'bg-card text-foreground hover:bg-foreground/10',
-      )}
-    >
-      {label}
-    </button>
   )
 }

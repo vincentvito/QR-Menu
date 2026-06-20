@@ -173,6 +173,9 @@ export default async function PublicMenuPage({ params, searchParams }: PageProps
   // (e.g. Polaroid) falls back to Editorial, which has no bottom chrome.
   const template = getDisplayTemplate(restaurant.templateId, restaurant.showItemImages)
   const pageBottomPadding = template.chrome === 'bottom' ? 'pb-40' : 'pb-24'
+  // The Polaroid deck is tall, so keep its restaurant-name hero compact to
+  // leave the cards in view without scrolling.
+  const compactHeader = template.id === 'polaroid'
 
   const now = Date.now()
   const activeSpecialIds = menu.items
@@ -297,7 +300,13 @@ export default async function PublicMenuPage({ params, searchParams }: PageProps
             />
           </>
         )}
-        <div className="relative mx-auto flex min-h-[220px] max-w-[720px] flex-col px-5 pt-6 pb-8 sm:min-h-[280px] sm:px-8 sm:pt-10 sm:pb-12">
+        <div
+          className={`relative mx-auto flex max-w-[720px] flex-col px-5 sm:px-8 ${
+            compactHeader
+              ? 'min-h-[120px] pt-5 pb-5 sm:min-h-[140px] sm:pt-6 sm:pb-6'
+              : 'min-h-[220px] pt-6 pb-8 sm:min-h-[280px] sm:pt-10 sm:pb-12'
+          }`}
+        >
           {restaurant.wifiSsid ? (
             <div className="mb-6 flex justify-end">
               <WifiReveal
@@ -325,7 +334,9 @@ export default async function PublicMenuPage({ params, searchParams }: PageProps
               ) : null}
               {restaurant.showRestaurantName ? (
                 <h1
-                  className="mt-1.5 text-[28px] leading-[1.08] font-semibold tracking-[-0.03em] sm:text-[40px]"
+                  className={`mt-1.5 leading-[1.08] font-semibold tracking-[-0.03em] ${
+                    compactHeader ? 'text-[22px] sm:text-[26px]' : 'text-[28px] sm:text-[40px]'
+                  }`}
                   style={
                     restaurant.headerTextColor ? { color: restaurant.headerTextColor } : undefined
                   }

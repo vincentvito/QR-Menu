@@ -5,8 +5,9 @@
 
 export interface ThemeDef {
   id: string
-  label: string
-  description: string
+  // Human-readable label + description are localized in the settings UI
+  // under the `Settings.menuDesign.themes.<id>` message keys, keyed by id —
+  // so they intentionally don't live on the theme object.
   // Full font-family CSS value for the theme's headings. Body font stays
   // DM Sans across themes for readable dish copy at small sizes.
   headingFontFamily: string
@@ -39,8 +40,6 @@ const FONT_UNBOUNDED = "'Unbounded', ui-sans-serif, system-ui, sans-serif"
 export const THEMES: ThemeDef[] = [
   {
     id: 'editorial',
-    label: 'Editorial',
-    description: 'Warm cream + persimmon prices. The original look.',
     headingFontFamily: FONT_SANS,
     colors: {
       background: '#F6F2E7',
@@ -61,8 +60,6 @@ export const THEMES: ThemeDef[] = [
   },
   {
     id: 'pastel',
-    label: 'Pastel',
-    description: 'Sage + coral on warm off-white, with elegant serif headings.',
     headingFontFamily: FONT_SERIF,
     colors: {
       background: '#FAF5F2',
@@ -85,8 +82,6 @@ export const THEMES: ThemeDef[] = [
   },
   {
     id: 'luxury',
-    label: 'Luxury',
-    description: 'Warm parchment with espresso text and gold price chips. Fraunces serif headings.',
     headingFontFamily: FONT_FRAUNCES,
     colors: {
       // Deeper warm parchment — clearly richer than Editorial's cream so
@@ -115,8 +110,6 @@ export const THEMES: ThemeDef[] = [
   },
   {
     id: 'midnight',
-    label: 'Midnight',
-    description: 'Amber + burgundy on deep ink, set in Unbounded display.',
     headingFontFamily: FONT_UNBOUNDED,
     colors: {
       background: '#13141A',
@@ -137,8 +130,6 @@ export const THEMES: ThemeDef[] = [
   },
   {
     id: 'sunset',
-    label: 'Sunset',
-    description: 'Mediterranean mix — terracotta prices against ocean blue.',
     headingFontFamily: FONT_SANS,
     colors: {
       background: '#FAF3EA',
@@ -157,6 +148,46 @@ export const THEMES: ThemeDef[] = [
       border: '#E8DCC9',
       chip: '#F3C99A',
       chipForeground: '#2A2622',
+    },
+  },
+  {
+    id: 'mono',
+    headingFontFamily: FONT_UNBOUNDED,
+    colors: {
+      background: '#0B0B0B',
+      foreground: '#F7F7F2',
+      card: '#171717',
+      accent: '#F7F7F2',
+      accentForeground: '#0B0B0B',
+      accentDeep: '#D9D9D1',
+      pop: '#F7F7F2',
+      popForeground: '#0B0B0B',
+      popDeep: '#D9D9D1',
+      muted: '#171717',
+      mutedForeground: '#A7A7A0',
+      border: '#2F2F2F',
+      chip: '#F7F7F2',
+      chipForeground: '#0B0B0B',
+    },
+  },
+  {
+    id: 'light',
+    headingFontFamily: FONT_SANS,
+    colors: {
+      background: '#F9F9F4',
+      foreground: '#111111',
+      card: '#FFFFFF',
+      accent: '#111111',
+      accentForeground: '#FFFFFF',
+      accentDeep: '#2A2A2A',
+      pop: '#111111',
+      popForeground: '#FFFFFF',
+      popDeep: '#2A2A2A',
+      muted: '#EFEFE8',
+      mutedForeground: '#676761',
+      border: '#D8D8D0',
+      chip: '#111111',
+      chipForeground: '#FFFFFF',
     },
   },
 ]

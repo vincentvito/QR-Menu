@@ -612,10 +612,10 @@ export function SettingsForm({
                           className="text-foreground text-sm font-semibold tracking-tight"
                           style={{ fontFamily: th.headingFontFamily }}
                         >
-                          {th.label}
+                          {t(`menuDesign.themes.${th.id}.label`)}
                         </div>
                         <p className="text-muted-foreground mt-0.5 truncate text-[11px] leading-snug">
-                          {th.description}
+                          {t(`menuDesign.themes.${th.id}.description`)}
                         </p>
                       </div>
                       {selected && (
