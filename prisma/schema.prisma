@@ -247,6 +247,7 @@ model Restaurant {
   showMenuName       Boolean @default(true)
   showDishCount      Boolean @default(true)
   showCategoryIcons  Boolean @default(true)
+  showItemImages     Boolean @default(true)
 
   // Flipped to true when plan downgrade leaves this restaurant above the limit.
   // Public menu pages keep working; dashboard becomes view-only until upgrade or delete.

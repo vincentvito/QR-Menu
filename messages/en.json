@@ -879,7 +879,9 @@
         "dishCount": "Dish count",
         "dishCountDescription": "Show the total number of dishes under the header names.",
         "categoryIcons": "Category icons",
-        "categoryIconsDescription": "Show each category's icon inside the public menu filter pills."
+        "categoryIconsDescription": "Show each category's icon inside the public menu filter pills.",
+        "itemImages": "Dish photos",
+        "itemImagesDescription": "Show a photo next to each dish. Turn off for a clean, text-only menu."
       }
     },
     "brand": {
@@ -1465,6 +1467,7 @@
       "invalidMenuNameVisibility": "Invalid menu name visibility",
       "invalidDishCountVisibility": "Invalid dish count visibility",
       "invalidCategoryIconVisibility": "Invalid category icon visibility",
+      "invalidItemImagesVisibility": "Invalid item image visibility",
       "unsupportedCurrency": "Unsupported currency",
       "invalidQrDotStyle": "Invalid QR dot style",
       "invalidQrCornerStyle": "Invalid QR corner style",

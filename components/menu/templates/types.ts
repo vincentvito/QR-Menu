@@ -30,6 +30,13 @@ export interface TemplateBodyProps {
   specialsAnchorId: string
   symbol: string
   onOpenImage: (src: string) => void
+  // Whether dish photos should be shown. When false (the owner turned off
+  // "show item images" in Settings) templates render a clean text-only
+  // layout — no thumbnails, no "no photo" placeholders. Photo-first
+  // templates aren't rendered in this state at all; the host swaps them
+  // for the Editorial layout (see `photoFirst` + getDisplayTemplate).
+  // Defaults to true when omitted.
+  showImages?: boolean
   // When true, templates must render image thumbnails as non-interactive
   // elements (<div> instead of <button>). Used by TemplatePreview, which
   // is itself inside a picker <button> — nested buttons are invalid HTML.
@@ -52,6 +59,12 @@ export interface TemplateDef {
   // into the template body so it can render its own (e.g. at the
   // bottom of the viewport for a category-first layout).
   chrome?: 'top' | 'bottom'
+  // Photo-first layouts (grid/deck) that only make sense with photos. When
+  // the owner hides item images, the host renders the Editorial layout
+  // instead of this one, so guests get an intentional text menu rather
+  // than a wall of "no photo" placeholders. Text-forward templates leave
+  // this unset and simply drop their thumbnails when showImages is false.
+  photoFirst?: boolean
   // Rendered inside the public menu's <main>. Owns specials + category
   // sections. Must use shared primitives (PriceChip, BadgeRow) so brand
   // decisions survive across templates.

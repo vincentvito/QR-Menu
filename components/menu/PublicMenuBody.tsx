@@ -4,7 +4,7 @@ import { useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Search, Sparkles, X } from 'lucide-react'
 import { ImageLightbox } from '@/components/menu/ImageLightbox'
-import { getTemplate } from '@/components/menu/templates'
+import { getDisplayTemplate } from '@/components/menu/templates'
 import type { TemplateCategoryGroup, TemplateItem } from '@/components/menu/templates/types'
 import { categoryIcon, type CategoryIconId } from '@/lib/menus/category-icon'
 
@@ -18,6 +18,7 @@ interface PublicMenuBodyProps {
   templateId: string
   categoryIcons: Record<string, CategoryIconId>
   showCategoryIcons: boolean
+  showItemImages: boolean
 }
 
 const SPECIALS_ANCHOR_ID = 'todays-specials'
@@ -33,6 +34,7 @@ export function PublicMenuBody({
   templateId,
   categoryIcons,
   showCategoryIcons,
+  showItemImages,
 }: PublicMenuBodyProps) {
   const t = useTranslations('MenuView')
   const [query, setQuery] = useState('')
@@ -85,7 +87,7 @@ export function PublicMenuBody({
     return new Map(visibleGroups.map((g) => [g.id, categoryIcon(g.category, g.iconId)]))
   }, [visibleGroups, showCategoryIcons])
 
-  const template = getTemplate(templateId)
+  const template = getDisplayTemplate(templateId, showItemImages)
   const bottomChrome = template.chrome === 'bottom'
   const showCategoryNav = !hasQuery && (visibleSpecials.length > 0 || visibleGroups.length > 1)
   const nothingToShow = visibleGroups.length === 0 && visibleSpecials.length === 0
@@ -179,6 +181,7 @@ export function PublicMenuBody({
             specialsAnchorId={SPECIALS_ANCHOR_ID}
             symbol={symbol}
             onOpenImage={setLightboxSrc}
+            showImages={showItemImages}
             query={bottomChrome ? query : undefined}
             onQueryChange={bottomChrome ? setQuery : undefined}
             hasQuery={bottomChrome ? hasQuery : undefined}

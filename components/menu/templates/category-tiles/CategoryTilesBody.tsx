@@ -30,6 +30,7 @@ export function CategoryTilesBody({
   symbol,
   onOpenImage,
   preview,
+  showImages = true,
   query,
   onQueryChange,
   hasQuery,
@@ -67,6 +68,7 @@ export function CategoryTilesBody({
             specials={specials}
             symbol={symbol}
             onOpenImage={onOpenImage}
+            showImages={showImages}
           />
         ) : showGrid ? (
           <Grid
@@ -78,6 +80,7 @@ export function CategoryTilesBody({
             }}
             preview={preview}
             specialsAnchorId={specialsAnchorId}
+            showImages={showImages}
           />
         ) : selected === SPECIALS_KEY ? (
           <CategoryView
@@ -87,6 +90,7 @@ export function CategoryTilesBody({
             symbol={symbol}
             onBack={() => setSelected(null)}
             onOpenImage={onOpenImage}
+            showImages={showImages}
           />
         ) : activeGroup ? (
           <CategoryView
@@ -95,6 +99,7 @@ export function CategoryTilesBody({
             symbol={symbol}
             onBack={() => setSelected(null)}
             onOpenImage={onOpenImage}
+            showImages={showImages}
           />
         ) : null}
       </div>
@@ -122,9 +127,10 @@ interface GridProps {
   onSelect: (key: string) => void
   preview?: boolean
   specialsAnchorId: string
+  showImages: boolean
 }
 
-function Grid({ groups, specials, onSelect, preview, specialsAnchorId }: GridProps) {
+function Grid({ groups, specials, onSelect, preview, specialsAnchorId, showImages }: GridProps) {
   return (
     <div className="mt-6 space-y-4">
       {specials.length > 0 && (
@@ -137,7 +143,13 @@ function Grid({ groups, specials, onSelect, preview, specialsAnchorId }: GridPro
       )}
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
         {groups.map((g) => (
-          <CategoryTile key={g.id} group={g} onClick={() => onSelect(g.id)} preview={preview} />
+          <CategoryTile
+            key={g.id}
+            group={g}
+            onClick={() => onSelect(g.id)}
+            preview={preview}
+            showImages={showImages}
+          />
         ))}
       </div>
     </div>
@@ -209,12 +221,20 @@ interface CategoryTileProps {
   group: TemplateCategoryGroup
   onClick: () => void
   preview?: boolean
+  showImages: boolean
 }
 
-const CategoryTile = memo(function CategoryTile({ group, onClick, preview }: CategoryTileProps) {
+const CategoryTile = memo(function CategoryTile({
+  group,
+  onClick,
+  preview,
+  showImages,
+}: CategoryTileProps) {
   const t = useTranslations('MenuView')
   const Icon = categoryIcon(group.category, group.iconId)
-  const bgImage = group.items.find((i) => i.imageUrl)?.imageUrl ?? null
+  // With images hidden, tiles drop their photo background and fall through
+  // to the gradient placeholder so the category grid still reads cleanly.
+  const bgImage = showImages ? (group.items.find((i) => i.imageUrl)?.imageUrl ?? null) : null
   const className =
     'group border-cream-line bg-card relative aspect-square w-full overflow-hidden rounded-[20px] border text-left transition-transform hover:scale-[1.02] disabled:hover:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground'
   const content = (
@@ -313,6 +333,7 @@ interface CategoryViewProps {
   symbol: string
   onBack: () => void
   onOpenImage: (src: string) => void
+  showImages: boolean
 }
 
 function CategoryView({
@@ -322,6 +343,7 @@ function CategoryView({
   symbol,
   onBack,
   onOpenImage,
+  showImages,
 }: CategoryViewProps) {
   const t = useTranslations('MenuView')
   return (
@@ -346,7 +368,13 @@ function CategoryView({
       </div>
       <ul className="mt-6 space-y-6">
         {items.map((item) => (
-          <DishRow key={item.id} item={item} symbol={symbol} onOpenImage={onOpenImage} />
+          <DishRow
+            key={item.id}
+            item={item}
+            symbol={symbol}
+            onOpenImage={onOpenImage}
+            showImages={showImages}
+          />
         ))}
       </ul>
     </div>
@@ -360,9 +388,10 @@ interface SearchResultsProps {
   specials: TemplateItem[]
   symbol: string
   onOpenImage: (src: string) => void
+  showImages: boolean
 }
 
-function SearchResults({ groups, specials, symbol, onOpenImage }: SearchResultsProps) {
+function SearchResults({ groups, specials, symbol, onOpenImage, showImages }: SearchResultsProps) {
   const t = useTranslations('MenuView')
   // Flatten all visible items while deduping (a dish can appear in both
   // specials and its category — we only want it once in the search list).
@@ -392,7 +421,13 @@ function SearchResults({ groups, specials, symbol, onOpenImage }: SearchResultsP
       </h2>
       <ul className="mt-5 space-y-6">
         {items.map((item) => (
-          <DishRow key={item.id} item={item} symbol={symbol} onOpenImage={onOpenImage} />
+          <DishRow
+            key={item.id}
+            item={item}
+            symbol={symbol}
+            onOpenImage={onOpenImage}
+            showImages={showImages}
+          />
         ))}
       </ul>
     </div>
@@ -405,11 +440,12 @@ interface DishRowProps {
   item: TemplateItem
   symbol: string
   onOpenImage: (src: string) => void
+  showImages: boolean
 }
 
-const DishRow = memo(function DishRow({ item, symbol, onOpenImage }: DishRowProps) {
+const DishRow = memo(function DishRow({ item, symbol, onOpenImage, showImages }: DishRowProps) {
   const t = useTranslations('MenuView')
-  const imageUrl = item.imageUrl
+  const imageUrl = showImages ? item.imageUrl : null
   return (
     <li className="flex gap-4">
       {imageUrl ? (

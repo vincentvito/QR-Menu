@@ -21,6 +21,7 @@ function DefaultBody({
   symbol,
   onOpenImage,
   preview,
+  showImages = true,
 }: TemplateBodyProps) {
   const t = useTranslations('MenuView')
 
@@ -49,6 +50,7 @@ function DefaultBody({
                 symbol={symbol}
                 onOpenImage={onOpenImage}
                 preview={preview}
+                showImages={showImages}
               />
             ))}
           </ul>
@@ -74,6 +76,7 @@ function DefaultBody({
                 symbol={symbol}
                 onOpenImage={onOpenImage}
                 preview={preview}
+                showImages={showImages}
               />
             ))}
           </ul>
@@ -88,6 +91,7 @@ interface DishCardProps {
   symbol: string
   onOpenImage: (src: string) => void
   preview?: boolean
+  showImages?: boolean
 }
 
 const DefaultDishCard = memo(function DefaultDishCard({
@@ -95,9 +99,10 @@ const DefaultDishCard = memo(function DefaultDishCard({
   symbol,
   onOpenImage,
   preview,
+  showImages = true,
 }: DishCardProps) {
   const t = useTranslations('MenuView')
-  const imageUrl = item.imageUrl
+  const imageUrl = showImages ? item.imageUrl : null
   return (
     <li className="flex gap-4">
       {imageUrl ? (

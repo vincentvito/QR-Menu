@@ -879,7 +879,9 @@
         "dishCount": "Numero di piatti",
         "dishCountDescription": "Mostra il numero totale di piatti sotto i nomi delle intestazioni.",
         "categoryIcons": "Icone delle categorie",
-        "categoryIconsDescription": "Mostra l'icona di ogni categoria all'interno dei filtri del menu pubblico."
+        "categoryIconsDescription": "Mostra l'icona di ogni categoria all'interno dei filtri del menu pubblico.",
+        "itemImages": "Foto dei piatti",
+        "itemImagesDescription": "Mostra una foto accanto a ogni piatto. Disattiva per un menu di solo testo."
       }
     },
     "brand": {
@@ -1465,6 +1467,7 @@
       "invalidMenuNameVisibility": "Visibilità nome menu non valida",
       "invalidDishCountVisibility": "Visibilità conteggio piatti non valida",
       "invalidCategoryIconVisibility": "Visibilità icona categoria non valida",
+      "invalidItemImagesVisibility": "Visibilità foto dei piatti non valida",
       "unsupportedCurrency": "Valuta non supportata",
       "invalidQrDotStyle": "Stile punti QR non valido",
       "invalidQrCornerStyle": "Stile angoli QR non valido",

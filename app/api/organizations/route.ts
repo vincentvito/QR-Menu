@@ -253,6 +253,16 @@ export async function PATCH(request: Request) {
     restaurantUpdates.showCategoryIcons = body.showCategoryIcons
   }
 
+  if ('showItemImages' in body) {
+    if (typeof body.showItemImages !== 'boolean') {
+      return NextResponse.json(
+        { error: t('organizations.invalidItemImagesVisibility') },
+        { status: 400 },
+      )
+    }
+    restaurantUpdates.showItemImages = body.showItemImages
+  }
+
   if ('currency' in body) {
     if (typeof body.currency !== 'string' || !isSupportedCurrency(body.currency)) {
       return NextResponse.json({ error: t('organizations.unsupportedCurrency') }, { status: 400 })

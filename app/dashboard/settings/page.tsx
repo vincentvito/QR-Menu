@@ -118,6 +118,7 @@ export default async function SettingsPage() {
             showMenuName: restaurant.showMenuName,
             showDishCount: restaurant.showDishCount,
             showCategoryIcons: restaurant.showCategoryIcons,
+            showItemImages: restaurant.showItemImages,
           }}
         />
       </div>

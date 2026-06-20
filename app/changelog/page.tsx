@@ -6,6 +6,32 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.33.0',
+    date: '2026-06-20',
+    title: 'Text-only menu option',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Added a "Dish photos" setting in Menu design to hide all dish photos and show a clean text-only menu — photo-forward layouts switch to the Editorial layout automatically',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.32.0',
+    date: '2026-06-20',
+    title: 'Polaroid menu template',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Added a Polaroid menu template with swipeable dish photo cards, notes beneath each image, and floating category buttons',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.31.2',
     date: '2026-06-17',
     title: 'Trial and editor guidance',

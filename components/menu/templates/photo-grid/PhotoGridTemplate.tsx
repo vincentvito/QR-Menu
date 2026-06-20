@@ -198,5 +198,6 @@ export const PhotoGridTemplate: TemplateDef = {
   id: 'photo-grid',
   label: 'Photo grid',
   description: 'Photo-forward 2-column grid. Best when most dishes have photos uploaded.',
+  photoFirst: true,
   Body: PhotoGridBody,
 }

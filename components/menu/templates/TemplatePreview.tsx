@@ -3,7 +3,7 @@
 import { Search, Sparkles, Wifi } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { getTemplate } from '@/components/menu/templates'
+import { getDisplayTemplate } from '@/components/menu/templates'
 import { CategoryTilesPreviewChrome } from '@/components/menu/templates/category-tiles/CategoryTilesBody'
 import { DEMO_GROUPS, DEMO_SPECIALS, DEMO_SYMBOL } from '@/components/menu/templates/demo-data'
 import type { TemplateCategoryGroup, TemplateItem } from '@/components/menu/templates/types'
@@ -67,6 +67,7 @@ interface TemplatePreviewProps {
   showMenuName?: boolean
   showDishCount?: boolean
   showCategoryIcons?: boolean
+  showItemImages?: boolean
   wifiSsid?: string | null
   // When set, clicking the mockup opens this URL (the live public menu)
   // in a new tab. Also flips the cursor to pointer on hover so the
@@ -97,11 +98,12 @@ export function TemplatePreview({
   showMenuName = true,
   showDishCount = true,
   showCategoryIcons = true,
+  showItemImages = true,
   wifiSsid,
   liveUrl,
 }: TemplatePreviewProps) {
   const t = useTranslations('MenuView')
-  const template = getTemplate(templateId)
+  const template = getDisplayTemplate(templateId, showItemImages)
   const theme = getTheme(themeId)
   const screenRef = useRef<HTMLDivElement | null>(null)
   const contentRef = useRef<HTMLDivElement | null>(null)
@@ -198,6 +200,7 @@ export function TemplatePreview({
     showRestaurantName,
     showDishCount,
     showCategoryIcons,
+    showItemImages,
   ])
 
   // Theme provides the full palette + heading font. Brand color overrides
@@ -398,6 +401,7 @@ export function TemplatePreview({
                     specialsAnchorId="preview-specials"
                     symbol={bodyData.symbol}
                     preview
+                    showImages={showItemImages}
                     onOpenImage={() => {
                       /* no-op */
                     }}

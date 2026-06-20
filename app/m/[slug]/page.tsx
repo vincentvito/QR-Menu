@@ -14,7 +14,7 @@ import { PublicMenuBody } from '@/components/menu/PublicMenuBody'
 import { WifiReveal } from '@/components/menu/WifiReveal'
 import { SeasonalOverlay } from '@/components/menu/SeasonalOverlay'
 import { buildInlineStyle } from '@/components/menu/ThemeStyles'
-import { getTemplate } from '@/components/menu/templates'
+import { getDisplayTemplate } from '@/components/menu/templates'
 import { getTheme } from '@/lib/menus/themes'
 import { FacebookIcon, GoogleIcon, InstagramIcon, TikTokIcon } from '@/components/brand/SocialIcons'
 import { socialUrl } from '@/lib/socials'
@@ -168,8 +168,10 @@ export default async function PublicMenuPage({ params, searchParams }: PageProps
   const brandStyle = buildInlineStyle(theme, restaurant.primaryColor, restaurant.secondaryColor)
   // Templates that own a fixed bottom chrome (e.g. category-tiles) need
   // extra room at the end of the page so the footer doesn't hide under
-  // it. pb-40 ≈ the chrome's height + breathing room.
-  const template = getTemplate(restaurant.templateId)
+  // it. pb-40 ≈ the chrome's height + breathing room. Resolve the template
+  // the same way the body does — with images hidden, a photo-first layout
+  // (e.g. Polaroid) falls back to Editorial, which has no bottom chrome.
+  const template = getDisplayTemplate(restaurant.templateId, restaurant.showItemImages)
   const pageBottomPadding = template.chrome === 'bottom' ? 'pb-40' : 'pb-24'
 
   const now = Date.now()
@@ -347,6 +349,7 @@ export default async function PublicMenuPage({ params, searchParams }: PageProps
         templateId={restaurant.templateId}
         categoryIcons={categoryIcons}
         showCategoryIcons={restaurant.showCategoryIcons}
+        showItemImages={restaurant.showItemImages}
         items={menu.items.map((i) => ({
           id: i.id,
           category: i.category,

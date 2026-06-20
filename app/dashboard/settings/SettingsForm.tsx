@@ -69,6 +69,7 @@ const MENU_DESIGN_FIELDS = [
   'showMenuName',
   'showDishCount',
   'showCategoryIcons',
+  'showItemImages',
 ] as const
 const BRAND_FIELDS = ['logo', 'headerImage', 'primaryColor', 'secondaryColor'] as const
 const QR_FIELDS = [
@@ -121,6 +122,7 @@ interface SettingsDraft {
   showMenuName: boolean
   showDishCount: boolean
   showCategoryIcons: boolean
+  showItemImages: boolean
 }
 
 interface SettingsFormProps {
@@ -160,6 +162,7 @@ interface SettingsFormProps {
     showMenuName: boolean
     showDishCount: boolean
     showCategoryIcons: boolean
+    showItemImages: boolean
   }
   /** R2 URL of the iPhone mockup used by the template picker previews. */
   templatePreviewMockupUrl: string
@@ -226,6 +229,7 @@ function createDraftFromInitial(initial: SettingsFormProps['initial']): Settings
     showMenuName: initial.showMenuName,
     showDishCount: initial.showDishCount,
     showCategoryIcons: initial.showCategoryIcons,
+    showItemImages: initial.showItemImages,
   }
 }
 
@@ -738,6 +742,13 @@ export function SettingsForm({
                     setDraft((prev) => ({ ...prev, showCategoryIcons: checked }))
                   }
                 />
+                <VisibilityToggle
+                  label={t('menuDesign.visibility.itemImages')}
+                  description={t('menuDesign.visibility.itemImagesDescription')}
+                  checked={draft.showItemImages}
+                  disabled={disabled}
+                  onChange={(checked) => setDraft((prev) => ({ ...prev, showItemImages: checked }))}
+                />
               </div>
             </div>
           </div>
@@ -765,6 +776,7 @@ export function SettingsForm({
                 showMenuName={draft.showMenuName}
                 showDishCount={draft.showDishCount}
                 showCategoryIcons={draft.showCategoryIcons}
+                showItemImages={draft.showItemImages}
                 wifiSsid={draft.wifiSsid || null}
                 liveUrl={previewMenu.name ? previewMenu.url : null}
               />
