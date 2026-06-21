@@ -40,14 +40,10 @@ import { SEASONAL_OVERLAYS, DEFAULT_SEASONAL_OVERLAY_ID } from '@/lib/menus/seas
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-const QR_DOT_STYLES: QRDotStyle[] = [
-  'square',
-  'rounded',
-  'dots',
-  'classy',
-  'classy-rounded',
-  'extra-rounded',
-]
+// Intentionally limited to the two cleanest, most scannable dot styles.
+// qr-code-styling supports more, and the API still accepts them, but the
+// picker only offers these two.
+const QR_DOT_STYLES: QRDotStyle[] = ['square', 'dots']
 
 const QR_CORNER_STYLES: QRCornerStyle[] = ['square', 'dot', 'extra-rounded']
 
@@ -780,19 +776,21 @@ export function SettingsForm({
                 wifiSsid={draft.wifiSsid || null}
                 liveUrl={previewMenu.name ? previewMenu.url : null}
               />
+
+              {/* Save sits with the sticky preview so it's reachable without
+                  scrolling past the (long) list of design controls. */}
+              <div className="mt-4 flex justify-end">
+                <SectionSaveButton
+                  t={t}
+                  dirty={menuDesignDirty}
+                  disabled={disabled}
+                  saving={savingSection === 'menuDesign'}
+                  onClick={() => saveFields(MENU_DESIGN_FIELDS, 'menuDesign')}
+                />
+              </div>
             </div>
           </div>
         </div>
-
-        <SectionFooter>
-          <SectionSaveButton
-            t={t}
-            dirty={menuDesignDirty}
-            disabled={disabled}
-            saving={savingSection === 'menuDesign'}
-            onClick={() => saveFields(MENU_DESIGN_FIELDS, 'menuDesign')}
-          />
-        </SectionFooter>
       </section>
 
       <section

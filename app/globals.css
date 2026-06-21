@@ -755,6 +755,14 @@
     color: var(--accent-foreground);
   }
 
+  /* Hide the native WebKit clear ("x") on search inputs — our menu search
+     renders its own clear button, so the native one was a duplicate. */
+  input[type='search']::-webkit-search-cancel-button,
+  input[type='search']::-webkit-search-decoration {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
   /* Mobile nav disclosure icon swap */
   details[data-nav] > summary .icon-closed {
     display: inline-block;

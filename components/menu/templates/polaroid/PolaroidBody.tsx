@@ -15,6 +15,7 @@ import { BadgeRow } from '@/components/menu/BadgeRow'
 import { DietaryTagPills } from '@/components/menu/DietaryTagPills'
 import { PriceChip } from '@/components/menu/PriceChip'
 import { VariantPriceChips } from '@/components/menu/VariantPriceChips'
+import { DISMISS_OVERLAYS_EVENT } from '@/lib/menus/overlay-events'
 import { cn } from '@/lib/utils'
 import type {
   TemplateBodyProps,
@@ -194,6 +195,13 @@ function Deck({ items, symbol, preview, anchorId, index, onNext, onPrev }: DeckP
   const pointerHandlers: DragHandlers | undefined = draggable
     ? {
         onPointerDown: (e) => {
+          // Don't start a drag when the press begins on an interactive child
+          // (e.g. a dietary-tag popover trigger) — let it handle its own tap.
+          if ((e.target as HTMLElement).closest('[data-no-drag]')) return
+          // A drag is pointerdown→move→up, not a clean outside "click", so
+          // Radix's open popovers won't reliably self-dismiss. Tell them to
+          // close now so none linger while the card moves out from under them.
+          window.dispatchEvent(new Event(DISMISS_OVERLAYS_EVENT))
           draggingRef.current = true
           startXRef.current = e.clientX
           setDrag({ active: true, x: 0 })
@@ -267,17 +275,17 @@ function NavButton({
   )
 }
 
-// Position of a card within the pile, by distance from the top (pos 0).
-// The single "edge" slot sits off-screen to the LEFT: on next, the top card
-// slides out to it (matching a left drag); on previous, the incoming card
-// slides in from it (so a right drag reads as the strip moving right). This
-// keeps the motion horizontal and aligned with the drag. Shallow piles (<=4)
-// just cycle a card to the back.
+// Transform for a card by its distance from the top (pos 0). The top card is
+// rendered in normal flow (so it drives the container's height — long
+// descriptions grow the card instead of overflowing a fixed box); the rest
+// are absolutely stacked behind it. The single "edge" slot sits off-screen
+// to the LEFT: on next the top card slides out to it (matching a left drag);
+// on previous the incoming card slides in from it (a right drag reads as the
+// strip moving right). Shallow piles (<=4) just cycle a card to the back.
 function stackStyle(pos: number, total: number): CSSProperties {
   const transition = 'transform 380ms cubic-bezier(0.22,1,0.36,1), opacity 320ms ease'
   if (total > 4 && pos === total - 1) {
     return {
-      left: '50%',
       transform: 'translate(-180%, 6px) rotate(-12deg) scale(0.94)',
       opacity: 0,
       zIndex: 50,
@@ -285,17 +293,17 @@ function stackStyle(pos: number, total: number): CSSProperties {
     }
   }
   const byPos: Record<number, CSSProperties> = {
-    0: { transform: 'translate(-50%, 0) rotate(-1.5deg)', opacity: 1, zIndex: 40 },
-    1: { transform: 'translate(-46%, 14px) rotate(2.5deg) scale(0.965)', opacity: 1, zIndex: 30 },
-    2: { transform: 'translate(-54%, 24px) rotate(-3.5deg) scale(0.93)', opacity: 0.92, zIndex: 20 },
-    3: { transform: 'translate(-49%, 32px) rotate(4.5deg) scale(0.9)', opacity: 0.6, zIndex: 10 },
+    0: { transform: 'rotate(-1.5deg)', opacity: 1, zIndex: 40 },
+    1: { transform: 'translate(10px, 14px) rotate(2.5deg) scale(0.965)', opacity: 1, zIndex: 30 },
+    2: { transform: 'translate(-12px, 24px) rotate(-3.5deg) scale(0.93)', opacity: 0.92, zIndex: 20 },
+    3: { transform: 'translate(7px, 32px) rotate(4.5deg) scale(0.9)', opacity: 0.6, zIndex: 10 },
   }
   const fallback: CSSProperties = {
-    transform: 'translate(-50%, 36px) scale(0.88)',
+    transform: 'translate(0, 36px) scale(0.88)',
     opacity: 0,
     zIndex: 0,
   }
-  return { left: '50%', transition, ...(byPos[pos] ?? fallback) }
+  return { transition, ...(byPos[pos] ?? fallback) }
 }
 
 interface StackCardProps {
@@ -315,7 +323,7 @@ function StackCard({ pos, total, isTop, draggable, drag, pointerHandlers, childr
     // tilt for feel. On release the parent advances and the stack settles.
     style = {
       ...style,
-      transform: `translate(calc(-50% + ${drag.x}px), 0) rotate(${(drag.x * 0.05).toFixed(2)}deg)`,
+      transform: `translateX(${drag.x}px) rotate(${(drag.x * 0.05).toFixed(2)}deg)`,
       transition: 'none',
       zIndex: 60,
       touchAction: 'pan-y',
@@ -326,9 +334,16 @@ function StackCard({ pos, total, isTop, draggable, drag, pointerHandlers, childr
   }
   return (
     <div
-      aria-hidden={!isTop}
+      // `inert` (not just aria-hidden) on the cards behind the top one: it
+      // hides them from assistive tech AND removes their focusable children
+      // (dietary-tag buttons) from the tab order — otherwise focusing a pill
+      // on a buried card trips the "aria-hidden on a focused ancestor" warning.
+      inert={!isTop}
       className={cn(
-        'bg-card text-card-foreground border-cream-line absolute top-0 w-full rounded-[8px] border p-3 text-left shadow-[0_18px_50px_-30px_rgba(0,0,0,0.5)]',
+        'bg-card text-card-foreground border-cream-line rounded-[8px] border p-3 text-left shadow-[0_18px_50px_-30px_rgba(0,0,0,0.5)]',
+        // Top card stays in flow so it sets the container height; the rest
+        // stack behind it, pinned to the top of that box.
+        isTop ? 'relative' : 'absolute inset-x-0 top-0',
         draggable && 'cursor-grab active:cursor-grabbing',
       )}
       style={style}
@@ -385,7 +400,7 @@ const PolaroidCardContent = memo(function PolaroidCardContent({
           <VariantPriceChips symbol={symbol} variants={item.variants} className="mt-2" />
         )}
         {item.description && (
-          <p className="text-muted-foreground mt-2 line-clamp-3 text-[14px] leading-[1.55]">
+          <p className="text-muted-foreground mt-2 text-[14px] leading-[1.55]">
             {item.description}
           </p>
         )}

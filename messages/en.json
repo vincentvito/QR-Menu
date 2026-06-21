@@ -934,7 +934,7 @@
       "startTrialToDownload": "Start your trial to download the menu QR.",
       "startTrial": "Start trial",
       "dotStyles": {
-        "square": "Square",
+        "square": "Classic",
         "rounded": "Rounded",
         "dots": "Dots",
         "classy": "Classy",
@@ -943,8 +943,8 @@
       },
       "cornerStyles": {
         "square": "Square",
-        "dot": "Dot",
-        "extra-rounded": "Extra rounded"
+        "dot": "Circular",
+        "extra-rounded": "Rounded"
       }
     },
     "wifi": {

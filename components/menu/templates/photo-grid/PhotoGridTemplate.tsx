@@ -179,14 +179,7 @@ const PhotoGridTile = memo(function PhotoGridTile({
           />
         )}
         {item.description && (
-          <p
-            className={cn(
-              'text-muted-foreground text-[12.5px] leading-[1.5]',
-              featured ? 'line-clamp-3' : 'line-clamp-2',
-            )}
-          >
-            {item.description}
-          </p>
+          <p className="text-muted-foreground text-[12.5px] leading-[1.5]">{item.description}</p>
         )}
         <DietaryTagPills tags={item.tags} className="pt-0.5" pillClassName="px-1.5 text-[9px]" />
       </div>
