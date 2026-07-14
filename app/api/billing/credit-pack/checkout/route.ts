@@ -65,7 +65,7 @@ export async function POST() {
     )
   }
 
-  const stripe = new Stripe(secretKey, { apiVersion: '2026-03-25.dahlia' })
+  const stripe = new Stripe(secretKey, { apiVersion: '2026-06-24.dahlia' })
 
   // Ensure the org has a Stripe customer. Normally the @better-auth/stripe
   // plugin creates one when the org first enters a subscription flow; this is

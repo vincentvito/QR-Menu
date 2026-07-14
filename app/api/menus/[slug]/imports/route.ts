@@ -22,6 +22,8 @@ const ALLOWED_MIME = new Set([
 ])
 const MAX_TEXT_CHARS = 50_000
 const MAX_FILES = 3
+const MAX_FILE_BYTES = 10 * 1024 * 1024
+const MAX_TOTAL_FILE_BYTES = 20 * 1024 * 1024
 
 interface RouteContext {
   params: Promise<{ slug: string }>
@@ -126,6 +128,12 @@ export async function POST(request: Request, { params }: RouteContext) {
             { error: t('common.unsupportedFileType', { type: badFile.type || 'unknown' }) },
             { status: 400 },
           )
+        }
+
+        const oversizedFile = rawFiles.find((rawFile) => rawFile.size > MAX_FILE_BYTES)
+        const totalFileBytes = rawFiles.reduce((total, rawFile) => total + rawFile.size, 0)
+        if (oversizedFile || totalFileBytes > MAX_TOTAL_FILE_BYTES) {
+          return NextResponse.json({ error: t('menus.filesTooLarge') }, { status: 413 })
         }
 
         const extractedFiles = await Promise.all(

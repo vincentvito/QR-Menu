@@ -1446,6 +1446,7 @@
       "uploadOrPaste": "Upload a file or paste menu text.",
       "textTooLong": "Menu text is too long (max {limit, number} characters).",
       "tooManyFiles": "Upload up to {limit} files.",
+      "filesTooLarge": "Each file must be under 10 MB, with a 20 MB total limit.",
       "nameEmpty": "Menu name can’t be empty",
       "noItemsToAdd": "No items to add",
       "categoryNamesRequired": "Category names are required",

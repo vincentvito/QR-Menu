@@ -58,7 +58,7 @@ The local app runs on [http://localhost:3001](http://localhost:3001).
 See `.env.example` for the full list. Production deploys must set at least:
 
 - `NEXT_PUBLIC_APP_URL` and `BETTER_AUTH_URL` to the production domain.
-- `SECRET` to a strong random value.
+- `BETTER_AUTH_SECRET` to a random value of at least 32 characters.
 - `DATABASE_URL` for runtime database access and `DIRECT_URL` for migrations.
 - Stripe keys, webhook secret, plan price IDs, and credit-pack price ID.
 - `GOOGLE_GENERATIVE_AI_API_KEY` for menu extraction and AI photo generation.

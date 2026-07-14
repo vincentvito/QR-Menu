@@ -6,6 +6,20 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.34.1',
+    date: '2026-07-13',
+    title: 'Authentication and AI security update',
+    changes: [
+      {
+        type: 'fixed' as const,
+        items: [
+          'Updated authentication security and closed a race that could allow simultaneous AI photo requests to exceed available credits',
+          'Oversized menu files are now rejected before they can reach AI processing',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.34.0',
     date: '2026-06-20',
     title: 'Monochrome menu themes',

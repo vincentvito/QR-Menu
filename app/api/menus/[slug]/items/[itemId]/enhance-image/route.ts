@@ -7,8 +7,12 @@ import prisma from '@/lib/prisma'
 import { enhanceDishImage } from '@/lib/ai/dish-image'
 import { buildEnhancePrompt } from '@/lib/ai/dish-image-prompts'
 import { keyForMenuItemImage, uploadBuffer } from '@/lib/storage/r2'
-import { hasCredits } from '@/lib/plans/gates'
-import { spendCredits, InsufficientCreditsError } from '@/lib/plans/credits'
+import {
+  spendCredits,
+  refundCreditSpend,
+  InsufficientCreditsError,
+  type SpendResult,
+} from '@/lib/plans/credits'
 import { CREDIT_COSTS } from '@/lib/plans/costs'
 import { requireMenuAccess } from '@/lib/menus/get'
 import { canWriteRestaurant, getSubscriptionAccessState } from '@/lib/plans/subscription-access'
@@ -102,11 +106,7 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: t('menus.noPhotoToEnhance') }, { status: 400 })
   }
 
-  const creditsOk = await hasCredits(access.organizationId, CREDIT_COSTS.DISH_IMAGE_ENHANCE)
-  if (!creditsOk) {
-    return NextResponse.json({ error: t('menus.outOfCredits'), gate: 'credits' }, { status: 402 })
-  }
-
+  let reservation: SpendResult | undefined
   try {
     // Download the current photo from R2 and base64-encode for Gemini.
     const sourceRes = await fetch(item.imageUrl)
@@ -119,6 +119,18 @@ export async function POST(request: Request, { params }: RouteContext) {
     const sourceMimeType = sourceRes.headers.get('content-type') ?? 'image/jpeg'
     const sourceBuffer = Buffer.from(await sourceRes.arrayBuffer())
     const sourceBase64 = sourceBuffer.toString('base64')
+
+    try {
+      reservation = await spendCredits(
+        access.organizationId,
+        CREDIT_COSTS.DISH_IMAGE_ENHANCE,
+        'dish-image-enhance-reserved',
+        { menuItemId: item.id },
+      )
+    } catch (err) {
+      if (!(err instanceof InsufficientCreditsError)) throw err
+      return NextResponse.json({ error: t('menus.outOfCredits'), gate: 'credits' }, { status: 402 })
+    }
 
     const prompt =
       overridePrompt ??
@@ -140,23 +152,17 @@ export async function POST(request: Request, { params }: RouteContext) {
       contentType: image.mimeType,
     })
 
-    try {
-      await spendCredits(
-        access.organizationId,
-        CREDIT_COSTS.DISH_IMAGE_ENHANCE,
-        'dish-image-enhance',
-        { menuItemId: item.id },
-      )
-    } catch (err) {
-      if (err instanceof InsufficientCreditsError) {
-        console.warn('[enhance-image] credit race — action succeeded, spend failed:', err.message)
-      } else {
-        throw err
-      }
-    }
-
     return NextResponse.json({ url })
   } catch (err) {
+    if (reservation) {
+      try {
+        await refundCreditSpend(access.organizationId, reservation, 'dish-image-enhance-failed', {
+          menuItemId: item.id,
+        })
+      } catch (refundError) {
+        console.error('[enhance-image] failed to refund reserved credit:', refundError)
+      }
+    }
     const message = translatedApiError(t, err, 'menus.enhancementFailed')
     console.error('[api/menus/[slug]/items/[itemId]/enhance-image] failed:', err)
     return NextResponse.json({ error: message }, { status: 500 })

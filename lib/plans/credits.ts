@@ -12,12 +12,29 @@ export class InsufficientCreditsError extends Error {
   }
 }
 
-interface SpendResult {
+export interface SpendResult {
   spent: number
   fromMonthly: number
   fromBonus: number
   newMonthly: number
   newBonus: number
+}
+
+const MAX_TRANSACTION_ATTEMPTS = 3
+
+function isTransactionConflict(error: unknown): boolean {
+  return (error as { code?: unknown })?.code === 'P2034'
+}
+
+async function withSerializableRetry<T>(operation: () => Promise<T>): Promise<T> {
+  for (let attempt = 1; attempt <= MAX_TRANSACTION_ATTEMPTS; attempt += 1) {
+    try {
+      return await operation()
+    } catch (error) {
+      if (!isTransactionConflict(error) || attempt === MAX_TRANSACTION_ATTEMPTS) throw error
+    }
+  }
+  throw new Error('Credit transaction retry limit exceeded')
 }
 
 const COMP_MONTH_MS = 30 * 24 * 60 * 60 * 1000
@@ -82,50 +99,97 @@ export async function ensureCompMonthlyCredits(
 
   const staleBefore = new Date(now.getTime() - COMP_MONTH_MS)
 
-  return prisma.$transaction(async (tx) => {
-    const result = await tx.organization.updateMany({
-      where: {
-        id: organizationId,
-        OR: [{ monthlyCreditsResetAt: null }, { monthlyCreditsResetAt: { lt: staleBefore } }],
-      },
-      data: {
-        monthlyCreditsRemaining: amount,
-        monthlyCreditsResetAt: now,
-      },
-    })
+  return withSerializableRetry(() =>
+    prisma.$transaction(
+      async (tx) => {
+        const result = await tx.organization.updateMany({
+          where: {
+            id: organizationId,
+            OR: [{ monthlyCreditsResetAt: null }, { monthlyCreditsResetAt: { lt: staleBefore } }],
+          },
+          data: {
+            monthlyCreditsRemaining: amount,
+            monthlyCreditsResetAt: now,
+          },
+        })
 
-    const current = await tx.organization.findUnique({
-      where: { id: organizationId },
-      select: {
-        monthlyCreditsRemaining: true,
-        bonusCreditsRemaining: true,
-        monthlyCreditsResetAt: true,
+        const current = await tx.organization.findUnique({
+          where: { id: organizationId },
+          select: {
+            monthlyCreditsRemaining: true,
+            bonusCreditsRemaining: true,
+            monthlyCreditsResetAt: true,
+          },
+        })
+        if (!current) return null
+
+        if (result.count > 0) {
+          await tx.creditTransaction.create({
+            data: {
+              organizationId,
+              type: 'reset',
+              bucket: 'monthly',
+              amount,
+              balanceMonthlyAfter: current.monthlyCreditsRemaining,
+              balanceBonusAfter: current.bonusCreditsRemaining,
+              reason: 'comp-monthly-reset',
+              metadata: { plan: plan.id },
+            },
+          })
+        }
+
+        return {
+          monthly: current.monthlyCreditsRemaining,
+          bonus: current.bonusCreditsRemaining,
+          total: current.monthlyCreditsRemaining + current.bonusCreditsRemaining,
+          resetsAt: current.monthlyCreditsResetAt,
+        }
       },
-    })
-    if (!current) return null
+      { isolationLevel: 'Serializable' },
+    ),
+  )
+}
 
-    if (result.count > 0) {
-      await tx.creditTransaction.create({
-        data: {
-          organizationId,
-          type: 'reset',
-          bucket: 'monthly',
-          amount,
-          balanceMonthlyAfter: current.monthlyCreditsRemaining,
-          balanceBonusAfter: current.bonusCreditsRemaining,
-          reason: 'comp-monthly-reset',
-          metadata: { plan: plan.id },
-        },
-      })
-    }
+export async function refundCreditSpend(
+  organizationId: string,
+  spend: SpendResult,
+  reason: string,
+  metadata?: Prisma.InputJsonValue,
+): Promise<void> {
+  await withSerializableRetry(() =>
+    prisma.$transaction(
+      async (tx) => {
+        const org = await tx.organization.update({
+          where: { id: organizationId },
+          data: {
+            monthlyCreditsRemaining: { increment: spend.fromMonthly },
+            bonusCreditsRemaining: { increment: spend.fromBonus },
+          },
+          select: { monthlyCreditsRemaining: true, bonusCreditsRemaining: true },
+        })
 
-    return {
-      monthly: current.monthlyCreditsRemaining,
-      bonus: current.bonusCreditsRemaining,
-      total: current.monthlyCreditsRemaining + current.bonusCreditsRemaining,
-      resetsAt: current.monthlyCreditsResetAt,
-    }
-  })
+        for (const [bucket, amount] of [
+          ['monthly', spend.fromMonthly],
+          ['bonus', spend.fromBonus],
+        ] as const) {
+          if (amount <= 0) continue
+          await tx.creditTransaction.create({
+            data: {
+              organizationId,
+              type: 'refund',
+              bucket,
+              amount,
+              balanceMonthlyAfter: org.monthlyCreditsRemaining,
+              balanceBonusAfter: org.bonusCreditsRemaining,
+              reason,
+              metadata,
+            },
+          })
+        }
+      },
+      { isolationLevel: 'Serializable' },
+    ),
+  )
 }
 
 // Atomic credit spend. Drains the monthly bucket first (it resets on renewal,
@@ -144,61 +208,66 @@ export async function spendCredits(
 
   await ensureCompMonthlyCredits(organizationId)
 
-  return prisma.$transaction(async (tx) => {
-    const org = await tx.organization.findUnique({
-      where: { id: organizationId },
-      select: { monthlyCreditsRemaining: true, bonusCreditsRemaining: true },
-    })
-    if (!org) throw new Error('Organization not found')
-    const total = org.monthlyCreditsRemaining + org.bonusCreditsRemaining
-    if (total < amount) {
-      throw new InsufficientCreditsError(total, amount)
-    }
+  return withSerializableRetry(() =>
+    prisma.$transaction(
+      async (tx) => {
+        const org = await tx.organization.findUnique({
+          where: { id: organizationId },
+          select: { monthlyCreditsRemaining: true, bonusCreditsRemaining: true },
+        })
+        if (!org) throw new Error('Organization not found')
+        const total = org.monthlyCreditsRemaining + org.bonusCreditsRemaining
+        if (total < amount) {
+          throw new InsufficientCreditsError(total, amount)
+        }
 
-    const fromMonthly = Math.min(amount, org.monthlyCreditsRemaining)
-    const fromBonus = amount - fromMonthly
-    const newMonthly = org.monthlyCreditsRemaining - fromMonthly
-    const newBonus = org.bonusCreditsRemaining - fromBonus
+        const fromMonthly = Math.min(amount, org.monthlyCreditsRemaining)
+        const fromBonus = amount - fromMonthly
+        const newMonthly = org.monthlyCreditsRemaining - fromMonthly
+        const newBonus = org.bonusCreditsRemaining - fromBonus
 
-    await tx.organization.update({
-      where: { id: organizationId },
-      data: {
-        monthlyCreditsRemaining: newMonthly,
-        bonusCreditsRemaining: newBonus,
+        await tx.organization.update({
+          where: { id: organizationId },
+          data: {
+            monthlyCreditsRemaining: newMonthly,
+            bonusCreditsRemaining: newBonus,
+          },
+        })
+
+        if (fromMonthly > 0) {
+          await tx.creditTransaction.create({
+            data: {
+              organizationId,
+              type: 'spend',
+              bucket: 'monthly',
+              amount: -fromMonthly,
+              balanceMonthlyAfter: newMonthly,
+              balanceBonusAfter: newBonus,
+              reason,
+              metadata,
+            },
+          })
+        }
+        if (fromBonus > 0) {
+          await tx.creditTransaction.create({
+            data: {
+              organizationId,
+              type: 'spend',
+              bucket: 'bonus',
+              amount: -fromBonus,
+              balanceMonthlyAfter: newMonthly,
+              balanceBonusAfter: newBonus,
+              reason,
+              metadata,
+            },
+          })
+        }
+
+        return { spent: amount, fromMonthly, fromBonus, newMonthly, newBonus }
       },
-    })
-
-    if (fromMonthly > 0) {
-      await tx.creditTransaction.create({
-        data: {
-          organizationId,
-          type: 'spend',
-          bucket: 'monthly',
-          amount: -fromMonthly,
-          balanceMonthlyAfter: newMonthly,
-          balanceBonusAfter: newBonus,
-          reason,
-          metadata,
-        },
-      })
-    }
-    if (fromBonus > 0) {
-      await tx.creditTransaction.create({
-        data: {
-          organizationId,
-          type: 'spend',
-          bucket: 'bonus',
-          amount: -fromBonus,
-          balanceMonthlyAfter: newMonthly,
-          balanceBonusAfter: newBonus,
-          reason,
-          metadata,
-        },
-      })
-    }
-
-    return { spent: amount, fromMonthly, fromBonus, newMonthly, newBonus }
-  })
+      { isolationLevel: 'Serializable' },
+    ),
+  )
 }
 
 interface GrantArgs {

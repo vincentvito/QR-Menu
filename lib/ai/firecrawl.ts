@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { extractBrandingFallback } from '@/lib/ai/gemini'
 
 // Scrape a URL to markdown via Firecrawl's main-content extractor.

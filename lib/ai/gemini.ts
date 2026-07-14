@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { minVariantPrice, parseVariants, type MenuItemVariant } from '@/lib/menus/variants'
 

@@ -28,7 +28,7 @@ const PLATFORM_ADMIN_EMAILS = (process.env.PLATFORM_ADMIN_EMAILS ?? '')
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY
 const stripeWebhookSecret = process.env.STRIPE_WEBHOOK_SECRET
 const stripeClient = stripeSecretKey
-  ? new Stripe(stripeSecretKey, { apiVersion: '2026-03-25.dahlia' })
+  ? new Stripe(stripeSecretKey, { apiVersion: '2026-06-24.dahlia' })
   : null
 
 const STRIPE_PLANS = [

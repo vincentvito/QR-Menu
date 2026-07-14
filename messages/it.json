@@ -1446,6 +1446,7 @@
       "uploadOrPaste": "Carica un file o incolla il testo del menu.",
       "textTooLong": "Il testo del menu è troppo lungo (massimo {limit, number} caratteri).",
       "tooManyFiles": "Carica fino a {limit} file.",
+      "filesTooLarge": "Ogni file deve essere inferiore a 10 MB, con un limite totale di 20 MB.",
       "nameEmpty": "Il nome del menu non può essere vuoto",
       "noItemsToAdd": "Nessun elemento da aggiungere",
       "categoryNamesRequired": "I nomi delle categorie sono richiesti",

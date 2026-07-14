@@ -7,8 +7,12 @@ import prisma from '@/lib/prisma'
 import { generateDishImage } from '@/lib/ai/dish-image'
 import { buildGeneratePrompt } from '@/lib/ai/dish-image-prompts'
 import { keyForMenuItemImage, uploadBuffer } from '@/lib/storage/r2'
-import { hasCredits } from '@/lib/plans/gates'
-import { spendCredits, InsufficientCreditsError } from '@/lib/plans/credits'
+import {
+  spendCredits,
+  refundCreditSpend,
+  InsufficientCreditsError,
+  type SpendResult,
+} from '@/lib/plans/credits'
 import { CREDIT_COSTS } from '@/lib/plans/costs'
 import { requireMenuAccess } from '@/lib/menus/get'
 import { canWriteRestaurant, getSubscriptionAccessState } from '@/lib/plans/subscription-access'
@@ -98,8 +102,16 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: t('common.dishNotFound') }, { status: 404 })
   }
 
-  const creditsOk = await hasCredits(access.organizationId, CREDIT_COSTS.DISH_IMAGE_GENERATE)
-  if (!creditsOk) {
+  let reservation: SpendResult
+  try {
+    reservation = await spendCredits(
+      access.organizationId,
+      CREDIT_COSTS.DISH_IMAGE_GENERATE,
+      'dish-image-generate-reserved',
+      { menuItemId: item.id },
+    )
+  } catch (err) {
+    if (!(err instanceof InsufficientCreditsError)) throw err
     return NextResponse.json({ error: t('menus.outOfCredits'), gate: 'credits' }, { status: 402 })
   }
 
@@ -124,23 +136,15 @@ export async function POST(request: Request, { params }: RouteContext) {
       contentType: image.mimeType,
     })
 
-    try {
-      await spendCredits(
-        access.organizationId,
-        CREDIT_COSTS.DISH_IMAGE_GENERATE,
-        'dish-image-generate',
-        { menuItemId: item.id },
-      )
-    } catch (err) {
-      if (err instanceof InsufficientCreditsError) {
-        console.warn('[generate-image] credit race — action succeeded, spend failed:', err.message)
-      } else {
-        throw err
-      }
-    }
-
     return NextResponse.json({ url })
   } catch (err) {
+    try {
+      await refundCreditSpend(access.organizationId, reservation, 'dish-image-generate-failed', {
+        menuItemId: item.id,
+      })
+    } catch (refundError) {
+      console.error('[generate-image] failed to refund reserved credit:', refundError)
+    }
     const message = translatedApiError(t, err, 'menus.generationFailed')
     console.error('[api/menus/[slug]/items/[itemId]/generate-image] failed:', err)
     return NextResponse.json({ error: message }, { status: 500 })
