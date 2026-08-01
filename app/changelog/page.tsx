@@ -6,6 +6,33 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.37.0',
+    date: '2026-08-01',
+    title: 'Safer analytics report settings',
+    changes: [
+      {
+        type: 'changed' as const,
+        items: [
+          'Analytics reports now use the local delivery time automatically without asking for a time zone',
+          'Removing a report recipient now asks for confirmation and warns when removing the last recipient will turn reports off',
+        ],
+      },
+    ],
+  },
+  {
+    version: '0.36.0',
+    date: '2026-08-01',
+    title: 'Focused settings navigation',
+    changes: [
+      {
+        type: 'changed' as const,
+        items: [
+          'Settings are now arranged in spacious cards, with a subtle halo around the section you are viewing while the others softly fade back',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.35.0',
     date: '2026-08-01',
     title: 'Scheduled analytics reports',

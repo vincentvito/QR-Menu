@@ -39,6 +39,7 @@ import { THEMES, DEFAULT_THEME_ID } from '@/lib/menus/themes'
 import { SEASONAL_OVERLAYS, DEFAULT_SEASONAL_OVERLAY_ID } from '@/lib/menus/seasonal-overlays'
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { settingsSectionFocusClass, useSettingsFocus } from './SettingsFocus'
 
 // Intentionally limited to the two cleanest, most scannable dot styles.
 // qr-code-styling supports more, and the API still accepts them, but the
@@ -237,6 +238,7 @@ export function SettingsForm({
   templatePreviewMockupUrl,
   templatePreviewData,
 }: SettingsFormProps) {
+  const { activeSection, setActiveSection } = useSettingsFocus()
   const t = useTranslations('Settings')
   const router = useRouter()
   const qrRef = useRef<QRCodeStylingType | null>(null)
@@ -360,14 +362,22 @@ export function SettingsForm({
   }
 
   return (
-    <form onSubmit={save} className="border-cream-line bg-card space-y-6 rounded-2xl border p-8">
+    <form onSubmit={save} className="space-y-6">
       {!canEdit && (
         <p className="bg-background/50 border-cream-line text-muted-foreground rounded-lg border p-3 text-xs">
           {t('readOnly')}
         </p>
       )}
 
-      <section id="settings-restaurant" className="scroll-mt-24 space-y-4">
+      <section
+        id="settings-restaurant"
+        className={cn(
+          'border-cream-line bg-card scroll-mt-24 space-y-4 rounded-2xl border p-6 sm:p-8',
+          settingsSectionFocusClass(activeSection === 'settings-restaurant'),
+        )}
+        onPointerDownCapture={() => setActiveSection('settings-restaurant')}
+        onFocusCapture={() => setActiveSection('settings-restaurant')}
+      >
         <SectionHeading>{t('sections.restaurant')}</SectionHeading>
 
         <div className="space-y-2">
@@ -440,7 +450,12 @@ export function SettingsForm({
 
       <section
         id="settings-links"
-        className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
+        className={cn(
+          'border-cream-line bg-card scroll-mt-24 space-y-4 rounded-2xl border p-6 sm:p-8',
+          settingsSectionFocusClass(activeSection === 'settings-links'),
+        )}
+        onPointerDownCapture={() => setActiveSection('settings-links')}
+        onFocusCapture={() => setActiveSection('settings-links')}
       >
         <SectionHeading>{t('sections.links')}</SectionHeading>
         <p className="text-muted-foreground text-xs">{t('links.description')}</p>
@@ -498,7 +513,12 @@ export function SettingsForm({
 
       <section
         id="settings-menu-design"
-        className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
+        className={cn(
+          'border-cream-line bg-card scroll-mt-24 space-y-4 rounded-2xl border p-6 sm:p-8',
+          settingsSectionFocusClass(activeSection === 'settings-menu-design'),
+        )}
+        onPointerDownCapture={() => setActiveSection('settings-menu-design')}
+        onFocusCapture={() => setActiveSection('settings-menu-design')}
       >
         <SectionHeading>{t('sections.menuDesign')}</SectionHeading>
         <p className="text-muted-foreground text-xs">
@@ -795,7 +815,12 @@ export function SettingsForm({
 
       <section
         id="settings-brand"
-        className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
+        className={cn(
+          'border-cream-line bg-card scroll-mt-24 space-y-4 rounded-2xl border p-6 sm:p-8',
+          settingsSectionFocusClass(activeSection === 'settings-brand'),
+        )}
+        onPointerDownCapture={() => setActiveSection('settings-brand')}
+        onFocusCapture={() => setActiveSection('settings-brand')}
       >
         <SectionHeading>{t('sections.brand')}</SectionHeading>
 
@@ -848,7 +873,12 @@ export function SettingsForm({
 
       <section
         id="settings-qr"
-        className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
+        className={cn(
+          'border-cream-line bg-card scroll-mt-24 space-y-4 rounded-2xl border p-6 sm:p-8',
+          settingsSectionFocusClass(activeSection === 'settings-qr'),
+        )}
+        onPointerDownCapture={() => setActiveSection('settings-qr')}
+        onFocusCapture={() => setActiveSection('settings-qr')}
       >
         <SectionHeading>{t('sections.qr')}</SectionHeading>
         <p className="text-muted-foreground text-xs">{t('qr.description')}</p>
@@ -1036,7 +1066,12 @@ export function SettingsForm({
 
       <section
         id="settings-wifi"
-        className="border-cream-line/60 scroll-mt-24 space-y-4 border-t pt-6"
+        className={cn(
+          'border-cream-line bg-card scroll-mt-24 space-y-4 rounded-2xl border p-6 sm:p-8',
+          settingsSectionFocusClass(activeSection === 'settings-wifi'),
+        )}
+        onPointerDownCapture={() => setActiveSection('settings-wifi')}
+        onFocusCapture={() => setActiveSection('settings-wifi')}
       >
         <SectionHeading>{t('sections.wifi')}</SectionHeading>
         <p className="text-muted-foreground text-xs">{t('wifi.description')}</p>
@@ -1184,7 +1219,12 @@ export function SettingsForm({
       </section>
 
       {canEdit ? (
-        <section className="border-destructive/25 bg-destructive/5 scroll-mt-24 space-y-4 rounded-2xl border p-5">
+        <section
+          className={cn(
+            'border-destructive/25 bg-destructive/5 scroll-mt-24 space-y-4 rounded-2xl border p-5',
+            settingsSectionFocusClass(false),
+          )}
+        >
           <div className="space-y-1">
             <SectionHeading>{t('danger.title')}</SectionHeading>
             <p className="text-muted-foreground text-xs leading-5">{t('danger.description')}</p>

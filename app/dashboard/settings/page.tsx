@@ -12,6 +12,7 @@ import { SettingsForm } from './SettingsForm'
 import { SettingsSideNav } from './SettingsSideNav'
 import { AnalyticsReportSettings } from './AnalyticsReportSettings'
 import { isAnalyticsReportFrequency } from '@/lib/analytics/report-schedule'
+import { SettingsFocusProvider } from './SettingsFocus'
 
 export default async function SettingsPage() {
   const [{ restaurant, role, scope, session }, t] = await Promise.all([
@@ -79,76 +80,78 @@ export default async function SettingsPage() {
 
       {/* Left quick-nav sticks beside the form on md+; on mobile it
           collapses so the viewport stays focused on editing. */}
-      <div className="md:grid md:grid-cols-[180px_minmax(0,1fr)] md:gap-8">
-        <aside className="hidden md:block">
-          <div className="sticky top-20">
-            <SettingsSideNav />
-          </div>
-        </aside>
+      <SettingsFocusProvider>
+        <div className="md:grid md:grid-cols-[180px_minmax(0,1fr)] md:gap-8">
+          <aside className="hidden md:block">
+            <div className="sticky top-20">
+              <SettingsSideNav />
+            </div>
+          </aside>
 
-        <div className="flex min-w-0 flex-col gap-6">
-          <SettingsForm
-            key={restaurant.id}
-            canEdit={canEdit}
-            canPublish={subscriptionAccess.hasActiveSubscription}
-            previewMenu={previewMenu}
-            templatePreviewMockupUrl={templatePreviewMockupUrl()}
-            templatePreviewData={templatePreviewData}
-            initial={{
-              name: restaurant.name,
-              description: restaurant.description ?? '',
-              logo: restaurant.logo ?? '',
-              headerImage: restaurant.headerImage ?? '',
-              headerTextColor: restaurant.headerTextColor ?? '',
-              sourceUrl: restaurant.sourceUrl ?? '',
-              primaryColor: restaurant.primaryColor ?? '',
-              secondaryColor: restaurant.secondaryColor ?? '',
-              currency: restaurant.currency,
-              qrDotStyle: restaurant.qrDotStyle,
-              qrCornerStyle: restaurant.qrCornerStyle,
-              qrForegroundColor: restaurant.qrForegroundColor,
-              qrBackgroundColor: restaurant.qrBackgroundColor,
-              qrCenterType: restaurant.qrCenterType,
-              qrCenterText: restaurant.qrCenterText ?? '',
-              wifiSsid: restaurant.wifiSsid ?? '',
-              wifiPassword: restaurant.wifiPassword ?? '',
-              wifiEncryption: restaurant.wifiEncryption,
-              wifiCenterType: restaurant.wifiCenterType,
-              wifiCenterText: restaurant.wifiCenterText ?? '',
-              googleReviewUrl: restaurant.googleReviewUrl ?? '',
-              instagramUrl: restaurant.instagramUrl ?? '',
-              tiktokUrl: restaurant.tiktokUrl ?? '',
-              facebookUrl: restaurant.facebookUrl ?? '',
-              templateId: restaurant.templateId,
-              theme: restaurant.theme,
-              seasonalOverlay: restaurant.seasonalOverlay,
-              menuNameColor: restaurant.menuNameColor ?? '',
-              showLogo: restaurant.showLogo,
-              showRestaurantName: restaurant.showRestaurantName,
-              showMenuName: restaurant.showMenuName,
-              showDishCount: restaurant.showDishCount,
-              showCategoryIcons: restaurant.showCategoryIcons,
-              showItemImages: restaurant.showItemImages,
-            }}
-          />
-          <AnalyticsReportSettings
-            key={`analytics-reports-${restaurant.id}`}
-            canManage={canManageReports}
-            accountEmail={session.user.email}
-            initial={{
-              frequency: isAnalyticsReportFrequency(restaurant.analyticsReportFrequency)
-                ? restaurant.analyticsReportFrequency
-                : 'off',
-              timezone: restaurant.analyticsReportTimezone,
-              recipients: reportRecipients.map(({ id, email, verifiedAt }) => ({
-                id,
-                email,
-                verified: Boolean(verifiedAt),
-              })),
-            }}
-          />
+          <div className="flex min-w-0 flex-col gap-6">
+            <SettingsForm
+              key={restaurant.id}
+              canEdit={canEdit}
+              canPublish={subscriptionAccess.hasActiveSubscription}
+              previewMenu={previewMenu}
+              templatePreviewMockupUrl={templatePreviewMockupUrl()}
+              templatePreviewData={templatePreviewData}
+              initial={{
+                name: restaurant.name,
+                description: restaurant.description ?? '',
+                logo: restaurant.logo ?? '',
+                headerImage: restaurant.headerImage ?? '',
+                headerTextColor: restaurant.headerTextColor ?? '',
+                sourceUrl: restaurant.sourceUrl ?? '',
+                primaryColor: restaurant.primaryColor ?? '',
+                secondaryColor: restaurant.secondaryColor ?? '',
+                currency: restaurant.currency,
+                qrDotStyle: restaurant.qrDotStyle,
+                qrCornerStyle: restaurant.qrCornerStyle,
+                qrForegroundColor: restaurant.qrForegroundColor,
+                qrBackgroundColor: restaurant.qrBackgroundColor,
+                qrCenterType: restaurant.qrCenterType,
+                qrCenterText: restaurant.qrCenterText ?? '',
+                wifiSsid: restaurant.wifiSsid ?? '',
+                wifiPassword: restaurant.wifiPassword ?? '',
+                wifiEncryption: restaurant.wifiEncryption,
+                wifiCenterType: restaurant.wifiCenterType,
+                wifiCenterText: restaurant.wifiCenterText ?? '',
+                googleReviewUrl: restaurant.googleReviewUrl ?? '',
+                instagramUrl: restaurant.instagramUrl ?? '',
+                tiktokUrl: restaurant.tiktokUrl ?? '',
+                facebookUrl: restaurant.facebookUrl ?? '',
+                templateId: restaurant.templateId,
+                theme: restaurant.theme,
+                seasonalOverlay: restaurant.seasonalOverlay,
+                menuNameColor: restaurant.menuNameColor ?? '',
+                showLogo: restaurant.showLogo,
+                showRestaurantName: restaurant.showRestaurantName,
+                showMenuName: restaurant.showMenuName,
+                showDishCount: restaurant.showDishCount,
+                showCategoryIcons: restaurant.showCategoryIcons,
+                showItemImages: restaurant.showItemImages,
+              }}
+            />
+            <AnalyticsReportSettings
+              key={`analytics-reports-${restaurant.id}`}
+              canManage={canManageReports}
+              accountEmail={session.user.email}
+              initial={{
+                frequency: isAnalyticsReportFrequency(restaurant.analyticsReportFrequency)
+                  ? restaurant.analyticsReportFrequency
+                  : 'off',
+                timezone: restaurant.analyticsReportTimezone,
+                recipients: reportRecipients.map(({ id, email, verifiedAt }) => ({
+                  id,
+                  email,
+                  verified: Boolean(verifiedAt),
+                })),
+              }}
+            />
+          </div>
         </div>
-      </div>
+      </SettingsFocusProvider>
     </main>
   )
 }

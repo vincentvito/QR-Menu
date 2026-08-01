@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
+import { SETTINGS_SECTION_IDS, type SettingsSectionId, useSettingsFocus } from './SettingsFocus'
 
 // Section IDs and labels must mirror the <section id="..."> anchors on
 // the Settings page. Keeping them together makes additions easy to audit.
@@ -22,19 +23,31 @@ export const SETTINGS_SECTIONS = [
 // currently under the top of the viewport.
 export function SettingsSideNav() {
   const t = useTranslations('Settings')
-  const [active, setActive] = useState<string>(SETTINGS_SECTIONS[0].id)
+  const { activeSection, setActiveSection } = useSettingsFocus()
+  const clickedSection = useRef<SettingsSectionId | null>(null)
 
   useEffect(() => {
+    const hashSection = window.location.hash.slice(1)
+    if (SETTINGS_SECTION_IDS.includes(hashSection as SettingsSectionId)) {
+      clickedSection.current = hashSection as SettingsSectionId
+      setActiveSection(hashSection as SettingsSectionId)
+    }
+
     // rootMargin pushes the "active" band toward the top of the
     // viewport — a section is considered active as soon as it crosses
     // roughly 25% down from the top, which feels natural while
     // scrolling through a long form.
     const observer = new IntersectionObserver(
       (entries) => {
+        if (clickedSection.current) return
+
         const visible = entries
           .filter((e) => e.isIntersecting)
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-        if (visible.length > 0) setActive(visible[0].target.id)
+        const visibleSection = visible[0]?.target.id
+        if (SETTINGS_SECTION_IDS.includes(visibleSection as SettingsSectionId)) {
+          setActiveSection(visibleSection as SettingsSectionId)
+        }
       },
       { rootMargin: '-15% 0px -70% 0px', threshold: 0 },
     )
@@ -44,24 +57,43 @@ export function SettingsSideNav() {
       if (el) observer.observe(el)
     }
 
-    return () => observer.disconnect()
-  }, [])
+    function unlockFocusOnWheel(event: WheelEvent) {
+      const pageBottom = document.documentElement.scrollHeight - window.innerHeight
+      const canScroll = event.deltaY < 0 ? window.scrollY > 0 : window.scrollY < pageBottom - 1
 
-  function handleClick(e: React.MouseEvent<HTMLAnchorElement>, id: string) {
+      if (canScroll) clickedSection.current = null
+    }
+
+    function unlockFocusOnTouch() {
+      clickedSection.current = null
+    }
+
+    window.addEventListener('wheel', unlockFocusOnWheel, { passive: true })
+    window.addEventListener('touchmove', unlockFocusOnTouch, { passive: true })
+
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('wheel', unlockFocusOnWheel)
+      window.removeEventListener('touchmove', unlockFocusOnTouch)
+    }
+  }, [setActiveSection])
+
+  function handleClick(e: React.MouseEvent<HTMLAnchorElement>, id: SettingsSectionId) {
     e.preventDefault()
     const el = document.getElementById(id)
     if (!el) return
+    clickedSection.current = id
     el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     // Update the URL hash so the address bar reflects the section,
     // without the default jump that `href="#..."` would cause.
     history.replaceState(null, '', `#${id}`)
-    setActive(id)
+    setActiveSection(id)
   }
 
   return (
     <nav aria-label={t('sectionsAria')} className="flex flex-col gap-1">
       {SETTINGS_SECTIONS.map((s) => {
-        const isActive = active === s.id
+        const isActive = activeSection === s.id
         return (
           <a
             key={s.id}

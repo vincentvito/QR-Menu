@@ -8,19 +8,21 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Switch } from '@/components/ui/switch'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import {
-  ANALYTICS_REPORT_TIMEZONES,
-  type AnalyticsReportFrequency,
-} from '@/lib/analytics/report-schedule'
+import { cn } from '@/lib/utils'
+import { settingsSectionFocusClass, useSettingsFocus } from './SettingsFocus'
+import type { AnalyticsReportFrequency } from '@/lib/analytics/report-schedule'
 
 interface ReportRecipient {
   id: string
@@ -45,12 +47,17 @@ interface SettingsResponse {
   error?: string
 }
 
+function detectedTimeZone(fallback: string) {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || fallback
+}
+
 export function AnalyticsReportSettings({
   canManage,
   accountEmail,
   initial,
 }: AnalyticsReportSettingsProps) {
   const t = useTranslations('Settings.analyticsReports')
+  const { activeSection, setActiveSection } = useSettingsFocus()
   const locale = useLocale()
   const [frequency, setFrequency] = useState(initial.frequency)
   const [timezone, setTimezone] = useState(initial.timezone)
@@ -143,7 +150,12 @@ export function AnalyticsReportSettings({
   return (
     <section
       id="settings-analytics-reports"
-      className="border-cream-line bg-card scroll-mt-24 rounded-2xl border p-6 sm:p-8"
+      className={cn(
+        'border-cream-line bg-card scroll-mt-24 rounded-2xl border p-6 sm:p-8',
+        settingsSectionFocusClass(activeSection === 'settings-analytics-reports'),
+      )}
+      onPointerDownCapture={() => setActiveSection('settings-analytics-reports')}
+      onFocusCapture={() => setActiveSection('settings-analytics-reports')}
     >
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 gap-3">
@@ -158,7 +170,12 @@ export function AnalyticsReportSettings({
         <Switch
           id="analytics-reports-enabled"
           checked={enabled}
-          onCheckedChange={(checked) => updateSettings(checked ? 'weekly' : 'off', timezone)}
+          onCheckedChange={(checked) =>
+            updateSettings(
+              checked ? 'weekly' : 'off',
+              checked ? detectedTimeZone(timezone) : timezone,
+            )
+          }
           disabled={!canManage || savingSettings}
           aria-label={t('enabledLabel')}
         />
@@ -196,31 +213,10 @@ export function AnalyticsReportSettings({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="analytics-report-timezone">{t('timezoneLabel')}</Label>
-            <Select
-              value={timezone}
-              onValueChange={(value) => updateSettings(frequency, value)}
-              disabled={!canManage || savingSettings}
-            >
-              <SelectTrigger id="analytics-report-timezone" className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  {ANALYTICS_REPORT_TIMEZONES.map((zone) => (
-                    <SelectItem key={zone} value={zone}>
-                      {zone.replaceAll('_', ' ')}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
             <div className="bg-background border-cream-line flex items-start gap-2 rounded-lg border p-3">
               <CalendarClock className="text-muted-foreground mt-0.5 size-4 shrink-0" />
               <p className="text-sm">
-                {frequency === 'daily'
-                  ? t('deliveryDaily', { timezone })
-                  : t('deliveryWeekly', { timezone })}
+                {frequency === 'daily' ? t('deliveryDaily') : t('deliveryWeekly')}
               </p>
             </div>
           </div>
@@ -250,20 +246,44 @@ export function AnalyticsReportSettings({
                         : ''}
                     </p>
                   </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => removeRecipient(recipient.id)}
-                    disabled={!canManage || removingRecipientId !== null}
-                    aria-label={t('removeRecipient', { email: recipient.email })}
-                  >
-                    {removingRecipientId === recipient.id ? (
-                      <Loader2 className="size-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="size-4" />
-                    )}
-                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        disabled={!canManage || removingRecipientId !== null}
+                        aria-label={t('removeRecipient', { email: recipient.email })}
+                      >
+                        {removingRecipientId === recipient.id ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="size-4" />
+                        )}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent size="sm">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          {t('confirmRemoveTitle', { email: recipient.email })}
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          {recipients.length === 1
+                            ? t('confirmRemoveLastDescription')
+                            : t('confirmRemoveDescription')}
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                        <AlertDialogAction
+                          variant="destructive"
+                          onClick={() => removeRecipient(recipient.id)}
+                        >
+                          {t('confirmRemove')}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
               ))}
             </div>
