@@ -2,34 +2,6 @@ export const ANALYTICS_REPORT_FREQUENCIES = ['off', 'daily', 'weekly'] as const
 
 export type AnalyticsReportFrequency = (typeof ANALYTICS_REPORT_FREQUENCIES)[number]
 
-export const ANALYTICS_REPORT_TIMEZONES = [
-  'America/Toronto',
-  'America/Vancouver',
-  'America/Edmonton',
-  'America/Winnipeg',
-  'America/Halifax',
-  'America/St_Johns',
-  'America/New_York',
-  'America/Chicago',
-  'America/Denver',
-  'America/Los_Angeles',
-  'America/Mexico_City',
-  'America/Sao_Paulo',
-  'Europe/London',
-  'Europe/Paris',
-  'Europe/Rome',
-  'Europe/Berlin',
-  'Europe/Madrid',
-  'Africa/Johannesburg',
-  'Asia/Dubai',
-  'Asia/Kolkata',
-  'Asia/Singapore',
-  'Asia/Tokyo',
-  'Australia/Sydney',
-  'Pacific/Auckland',
-  'UTC',
-] as const
-
 const DAY_MS = 24 * 60 * 60 * 1000
 const MINUTE_MS = 60 * 1000
 

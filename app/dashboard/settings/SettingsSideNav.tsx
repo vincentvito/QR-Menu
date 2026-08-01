@@ -25,11 +25,13 @@ export function SettingsSideNav() {
   const t = useTranslations('Settings')
   const { activeSection, setActiveSection } = useSettingsFocus()
   const clickedSection = useRef<SettingsSectionId | null>(null)
+  const ignoreScrollUntil = useRef(0)
 
   useEffect(() => {
     const hashSection = window.location.hash.slice(1)
     if (SETTINGS_SECTION_IDS.includes(hashSection as SettingsSectionId)) {
       clickedSection.current = hashSection as SettingsSectionId
+      ignoreScrollUntil.current = Date.now() + 900
       setActiveSection(hashSection as SettingsSectionId)
     }
 
@@ -57,24 +59,19 @@ export function SettingsSideNav() {
       if (el) observer.observe(el)
     }
 
-    function unlockFocusOnWheel(event: WheelEvent) {
-      const pageBottom = document.documentElement.scrollHeight - window.innerHeight
-      const canScroll = event.deltaY < 0 ? window.scrollY > 0 : window.scrollY < pageBottom - 1
-
-      if (canScroll) clickedSection.current = null
-    }
-
-    function unlockFocusOnTouch() {
+    // Unlock after any user scroll (wheel, touch, keyboard, scrollbar).
+    // Ignore the smooth scroll that follows a nav click so focus doesn't
+    // jump mid-animation.
+    function unlockFocusOnScroll() {
+      if (Date.now() < ignoreScrollUntil.current) return
       clickedSection.current = null
     }
 
-    window.addEventListener('wheel', unlockFocusOnWheel, { passive: true })
-    window.addEventListener('touchmove', unlockFocusOnTouch, { passive: true })
+    window.addEventListener('scroll', unlockFocusOnScroll, { passive: true })
 
     return () => {
       observer.disconnect()
-      window.removeEventListener('wheel', unlockFocusOnWheel)
-      window.removeEventListener('touchmove', unlockFocusOnTouch)
+      window.removeEventListener('scroll', unlockFocusOnScroll)
     }
   }, [setActiveSection])
 
@@ -83,6 +80,7 @@ export function SettingsSideNav() {
     const el = document.getElementById(id)
     if (!el) return
     clickedSection.current = id
+    ignoreScrollUntil.current = Date.now() + 900
     el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     // Update the URL hash so the address bar reflects the section,
     // without the default jump that `href="#..."` would cause.

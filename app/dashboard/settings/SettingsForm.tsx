@@ -1219,12 +1219,7 @@ export function SettingsForm({
       </section>
 
       {canEdit ? (
-        <section
-          className={cn(
-            'border-destructive/25 bg-destructive/5 scroll-mt-24 space-y-4 rounded-2xl border p-5',
-            settingsSectionFocusClass(false),
-          )}
-        >
+        <section className="border-destructive/25 bg-destructive/5 scroll-mt-24 space-y-4 rounded-2xl border p-5">
           <div className="space-y-1">
             <SectionHeading>{t('danger.title')}</SectionHeading>
             <p className="text-muted-foreground text-xs leading-5">{t('danger.description')}</p>
