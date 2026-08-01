@@ -10,6 +10,7 @@ export const SETTINGS_SECTION_IDS = [
   'settings-qr',
   'settings-wifi',
   'settings-analytics-reports',
+  'settings-danger',
 ] as const
 
 export type SettingsSectionId = (typeof SETTINGS_SECTION_IDS)[number]

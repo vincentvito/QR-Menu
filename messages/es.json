@@ -819,7 +819,8 @@
       "brand": "Marca",
       "qr": "Estilo del código QR",
       "wifi": "WiFi",
-      "analyticsReports": "Informes de analítica"
+      "analyticsReports": "Informes de analítica",
+      "danger": "Zona de peligro"
     },
     "actions": {
       "saving": "Guardando...",

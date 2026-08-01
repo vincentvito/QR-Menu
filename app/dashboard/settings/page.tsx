@@ -13,6 +13,7 @@ import { SettingsSideNav } from './SettingsSideNav'
 import { AnalyticsReportSettings } from './AnalyticsReportSettings'
 import { isAnalyticsReportFrequency } from '@/lib/analytics/report-schedule'
 import { SettingsFocusProvider } from './SettingsFocus'
+import { DangerZone } from './DangerZone'
 
 export default async function SettingsPage() {
   const [{ restaurant, role, scope, session }, t] = await Promise.all([
@@ -84,7 +85,7 @@ export default async function SettingsPage() {
         <div className="md:grid md:grid-cols-[180px_minmax(0,1fr)] md:gap-8">
           <aside className="hidden md:block">
             <div className="sticky top-20">
-              <SettingsSideNav />
+              <SettingsSideNav showDanger={canEdit} />
             </div>
           </aside>
 
@@ -149,6 +150,7 @@ export default async function SettingsPage() {
                 })),
               }}
             />
+            {canEdit ? <DangerZone restaurantName={restaurant.name} /> : null}
           </div>
         </div>
       </SettingsFocusProvider>

@@ -6,6 +6,17 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.38.0',
+    date: '2026-08-01',
+    title: 'Clearer settings order',
+    changes: [
+      {
+        type: 'changed' as const,
+        items: ['Danger Zone is now the final Settings card and the final sidebar destination'],
+      },
+    ],
+  },
+  {
     version: '0.37.0',
     date: '2026-08-01',
     title: 'Safer analytics report settings',

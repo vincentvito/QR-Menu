@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { Download, Loader2, Trash2 } from 'lucide-react'
+import { Download, Loader2 } from 'lucide-react'
 import type QRCodeStylingType from 'qr-code-styling'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -247,8 +247,6 @@ export function SettingsForm({
   const [savedDraft, setSavedDraft] = useState<SettingsDraft>(() => createDraftFromInitial(initial))
   const [submitting, setSubmitting] = useState(false)
   const [savingSection, setSavingSection] = useState<string | null>(null)
-  const [deleteConfirmation, setDeleteConfirmation] = useState('')
-  const [deletingRestaurant, setDeletingRestaurant] = useState(false)
 
   const wifiUri = draft.wifiSsid.trim()
     ? buildWifiUri({
@@ -259,7 +257,6 @@ export function SettingsForm({
     : null
 
   const disabled = !canEdit || submitting || Boolean(savingSection)
-  const canDeleteRestaurant = deleteConfirmation.trim().toLowerCase() === 'confirm'
 
   function isDirty(fields: readonly (keyof SettingsDraft)[]) {
     return fields.some((field) => draft[field] !== savedDraft[field])
@@ -329,35 +326,6 @@ export function SettingsForm({
       toast.error(t('errors.network'))
     } finally {
       setSubmitting(false)
-    }
-  }
-
-  async function deleteRestaurant() {
-    if (!canDeleteRestaurant) {
-      toast.error(t('errors.confirmDelete'))
-      return
-    }
-
-    setDeletingRestaurant(true)
-    try {
-      const res = await fetch('/api/restaurants', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ confirmation: deleteConfirmation.trim().toLowerCase() }),
-      })
-      const data = await res.json().catch(() => ({}))
-      if (!res.ok) {
-        toast.error(data.error ?? t('errors.deleteFailed'))
-        return
-      }
-      toast.success(t('toast.deleted', { name: savedDraft.name }))
-      setDeleteConfirmation('')
-      router.push('/dashboard/settings')
-      router.refresh()
-    } catch {
-      toast.error(t('errors.network'))
-    } finally {
-      setDeletingRestaurant(false)
     }
   }
 
@@ -1217,42 +1185,6 @@ export function SettingsForm({
           />
         </SectionFooter>
       </section>
-
-      {canEdit ? (
-        <section className="border-destructive/25 bg-destructive/5 scroll-mt-24 space-y-4 rounded-2xl border p-5">
-          <div className="space-y-1">
-            <SectionHeading>{t('danger.title')}</SectionHeading>
-            <p className="text-muted-foreground text-xs leading-5">{t('danger.description')}</p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="delete-restaurant-confirmation">{t('danger.confirmLabel')}</Label>
-            <Input
-              id="delete-restaurant-confirmation"
-              value={deleteConfirmation}
-              onChange={(e) => setDeleteConfirmation(e.target.value)}
-              disabled={deletingRestaurant}
-              autoComplete="off"
-            />
-          </div>
-
-          <div className="flex justify-end">
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={deleteRestaurant}
-              disabled={deletingRestaurant || !canDeleteRestaurant}
-            >
-              {deletingRestaurant ? (
-                <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
-              ) : (
-                <Trash2 className="size-3.5" aria-hidden="true" />
-              )}
-              {t('danger.deleteButton')}
-            </Button>
-          </div>
-        </section>
-      ) : null}
 
       {canEdit && (
         <Button type="submit" size="lg" disabled={submitting || !anyDirty} className="w-full">

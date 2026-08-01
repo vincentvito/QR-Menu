@@ -819,7 +819,8 @@
       "brand": "Brand",
       "qr": "QR code style",
       "wifi": "WiFi",
-      "analyticsReports": "Analytics reports"
+      "analyticsReports": "Analytics reports",
+      "danger": "Danger zone"
     },
     "actions": {
       "saving": "Saving...",

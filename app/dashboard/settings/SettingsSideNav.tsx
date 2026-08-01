@@ -15,23 +15,29 @@ export const SETTINGS_SECTIONS = [
   { id: 'settings-qr', labelKey: 'qr' },
   { id: 'settings-wifi', labelKey: 'wifi' },
   { id: 'settings-analytics-reports', labelKey: 'analyticsReports' },
+  { id: 'settings-danger', labelKey: 'danger' },
 ] as const
 
 // Sticky left-hand quick-nav for the Settings page. Clicking a label
 // smooth-scrolls the section into view with an offset that clears the
 // dashboard's sticky header. Scroll-spy highlights whichever section is
 // currently under the top of the viewport.
-export function SettingsSideNav() {
+export function SettingsSideNav({ showDanger }: { showDanger: boolean }) {
   const t = useTranslations('Settings')
   const { activeSection, setActiveSection } = useSettingsFocus()
   const clickedSection = useRef<SettingsSectionId | null>(null)
-  const ignoreScrollUntil = useRef(0)
+  const unlockTimer = useRef<number | null>(null)
 
   useEffect(() => {
     const hashSection = window.location.hash.slice(1)
-    if (SETTINGS_SECTION_IDS.includes(hashSection as SettingsSectionId)) {
+    if (
+      SETTINGS_SECTION_IDS.includes(hashSection as SettingsSectionId) &&
+      (hashSection !== 'settings-danger' || showDanger)
+    ) {
       clickedSection.current = hashSection as SettingsSectionId
-      ignoreScrollUntil.current = Date.now() + 900
+      unlockTimer.current = window.setTimeout(() => {
+        clickedSection.current = null
+      }, 900)
       setActiveSection(hashSection as SettingsSectionId)
     }
 
@@ -55,32 +61,37 @@ export function SettingsSideNav() {
     )
 
     for (const section of SETTINGS_SECTIONS) {
+      if (section.id === 'settings-danger' && !showDanger) continue
       const el = document.getElementById(section.id)
       if (el) observer.observe(el)
     }
 
-    // Unlock after any user scroll (wheel, touch, keyboard, scrollbar).
-    // Ignore the smooth scroll that follows a nav click so focus doesn't
-    // jump mid-animation.
-    function unlockFocusOnScroll() {
-      if (Date.now() < ignoreScrollUntil.current) return
-      clickedSection.current = null
+    function updateFocusAtPageEnd() {
+      if (clickedSection.current || !showDanger) return
+
+      const atPageEnd =
+        window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2
+      if (atPageEnd) setActiveSection('settings-danger')
     }
 
-    window.addEventListener('scroll', unlockFocusOnScroll, { passive: true })
+    window.addEventListener('scroll', updateFocusAtPageEnd, { passive: true })
 
     return () => {
       observer.disconnect()
-      window.removeEventListener('scroll', unlockFocusOnScroll)
+      window.removeEventListener('scroll', updateFocusAtPageEnd)
+      if (unlockTimer.current) window.clearTimeout(unlockTimer.current)
     }
-  }, [setActiveSection])
+  }, [setActiveSection, showDanger])
 
   function handleClick(e: React.MouseEvent<HTMLAnchorElement>, id: SettingsSectionId) {
     e.preventDefault()
     const el = document.getElementById(id)
     if (!el) return
     clickedSection.current = id
-    ignoreScrollUntil.current = Date.now() + 900
+    if (unlockTimer.current) window.clearTimeout(unlockTimer.current)
+    unlockTimer.current = window.setTimeout(() => {
+      clickedSection.current = null
+    }, 900)
     el.scrollIntoView({ behavior: 'smooth', block: 'start' })
     // Update the URL hash so the address bar reflects the section,
     // without the default jump that `href="#..."` would cause.
@@ -90,25 +101,27 @@ export function SettingsSideNav() {
 
   return (
     <nav aria-label={t('sectionsAria')} className="flex flex-col gap-1">
-      {SETTINGS_SECTIONS.map((s) => {
-        const isActive = activeSection === s.id
-        return (
-          <a
-            key={s.id}
-            href={`#${s.id}`}
-            onClick={(e) => handleClick(e, s.id)}
-            aria-current={isActive ? 'location' : undefined}
-            className={cn(
-              'block rounded-lg px-3 py-2 text-sm transition-colors',
-              isActive
-                ? 'bg-foreground text-background font-semibold'
-                : 'text-muted-foreground hover:bg-card hover:text-foreground',
-            )}
-          >
-            {t(`sections.${s.labelKey}`)}
-          </a>
-        )
-      })}
+      {SETTINGS_SECTIONS.filter((section) => showDanger || section.id !== 'settings-danger').map(
+        (s) => {
+          const isActive = activeSection === s.id
+          return (
+            <a
+              key={s.id}
+              href={`#${s.id}`}
+              onClick={(e) => handleClick(e, s.id)}
+              aria-current={isActive ? 'location' : undefined}
+              className={cn(
+                'block rounded-lg px-3 py-2 text-sm transition-colors',
+                isActive
+                  ? 'bg-foreground text-background font-semibold'
+                  : 'text-muted-foreground hover:bg-card hover:text-foreground',
+              )}
+            >
+              {t(`sections.${s.labelKey}`)}
+            </a>
+          )
+        },
+      )}
     </nav>
   )
 }
