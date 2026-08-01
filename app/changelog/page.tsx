@@ -6,6 +6,20 @@ import { BrandMark } from '@/components/brand/BrandMark'
 
 const changelog = [
   {
+    version: '0.35.0',
+    date: '2026-08-01',
+    title: 'Scheduled analytics reports',
+    changes: [
+      {
+        type: 'added' as const,
+        items: [
+          'Each restaurant can now send daily or weekly analytics reports at 9:00 AM in its local time zone, in English, Spanish, or Italian',
+          'Add extra report recipients — each confirms their own address, and anyone can stop reports from the email without signing in',
+        ],
+      },
+    ],
+  },
+  {
     version: '0.34.1',
     date: '2026-07-13',
     title: 'Authentication and AI security update',

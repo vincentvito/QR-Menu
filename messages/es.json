@@ -818,7 +818,8 @@
       "menuDesign": "Diseño del menú",
       "brand": "Marca",
       "qr": "Estilo del código QR",
-      "wifi": "WiFi"
+      "wifi": "WiFi",
+      "analyticsReports": "Informes de analítica"
     },
     "actions": {
       "saving": "Guardando...",
@@ -843,6 +844,42 @@
       "facebook": "Facebook",
       "handlePlaceholder": "tuusuario",
       "pagePlaceholder": "tupagina"
+    },
+    "analyticsReports": {
+      "title": "Informes de analítica",
+      "description": "Envía por email un resumen sencillo del rendimiento de este restaurante.",
+      "enabledLabel": "Activar informes de analítica",
+      "frequencyLabel": "Frecuencia",
+      "daily": "Diario",
+      "weekly": "Semanal",
+      "weeklyRecommended": "Recomendamos la frecuencia semanal para que las notificaciones sigan siendo útiles sin generar ruido.",
+      "timezoneLabel": "Zona horaria de entrega",
+      "deliveryDaily": "Todos los días a las 9:00 · {timezone}",
+      "deliveryWeekly": "Los lunes a las 9:00 · {timezone}",
+      "recipientsLabel": "Destinatarios",
+      "recipientsHint": "Las direcciones adicionales deben confirmar antes de recibir informes.",
+      "active": "Activo",
+      "pending": "Confirmación pendiente",
+      "accountEmail": "Email de tu cuenta",
+      "emailLabel": "Email de destinatario adicional",
+      "emailPlaceholder": "propietario@ejemplo.com",
+      "addRecipient": "Añadir email",
+      "removeRecipient": "Eliminar {email}",
+      "readOnly": "La entrega de informes es de solo lectura. Pueden cambiarla los propietarios y administradores con un plan activo.",
+      "toast": {
+        "updated": "Horario del informe actualizado",
+        "disabled": "Informes de analítica desactivados",
+        "confirmationSent": "Email de confirmación enviado",
+        "recipientAdded": "Destinatario añadido",
+        "recipientRemoved": "Destinatario eliminado",
+        "lastRecipientRemoved": "Destinatario eliminado e informes desactivados"
+      },
+      "errors": {
+        "saveFailed": "No se pudo actualizar el horario del informe",
+        "addFailed": "No se pudo añadir ese destinatario",
+        "removeFailed": "No se pudo eliminar ese destinatario",
+        "network": "Error de red; inténtalo de nuevo"
+      }
     },
     "toast": {
       "sectionSaved": "{section} guardado",
@@ -1386,6 +1423,60 @@
       },
       "expires": "Este código vence en 5 minutos.",
       "ignore": "Si no solicitaste este código, puedes ignorar este email sin problema."
+    },
+    "scheduledAnalytics": {
+      "subject": "Informe de analítica de {restaurantName}",
+      "intro": "Así rindió {restaurantName} del {dateRange}.",
+      "metrics": {
+        "scans": "Escaneos",
+        "uniqueGuests": "Clientes únicos",
+        "reviewClicks": "Clics en reseñas",
+        "wifiReveals": "WiFi revelado"
+      },
+      "noActivity": "No se registró actividad de clientes en este periodo. El informe se completará a medida que usen tus menús.",
+      "openAnalytics": "Abrir Analítica",
+      "managePreferences": "Gestionar ajustes del informe",
+      "unsubscribe": "Dejar de recibir informes en esta dirección",
+      "footer": "Recibes este mensaje porque los informes de analítica están activados para este restaurante."
+    },
+    "analyticsRecipientVerification": {
+      "subject": "Confirma los informes de analítica de {restaurantName}",
+      "body": "Confirma esta dirección para recibir informes de analítica de {restaurantName}.",
+      "button": "Confirmar email",
+      "copyLink": "O copia este enlace en tu navegador:",
+      "ignore": "Si no esperabas este mensaje, puedes ignorarlo sin problema."
+    }
+  },
+  "AnalyticsReportEmailPreferences": {
+    "metadataTitle": "Preferencias de email de informes",
+    "homeAria": "Inicio de Qtable",
+    "thisRestaurant": "este restaurante",
+    "verified": {
+      "title": "Email confirmado",
+      "body": "Esta dirección ya puede recibir informes de analítica de {restaurant}."
+    },
+    "unsubscribed": {
+      "title": "Informes detenidos",
+      "body": "Esta dirección dejará de recibir informes de analítica de {restaurant}."
+    },
+    "invalid": {
+      "title": "Este enlace no es válido",
+      "body": "El enlace puede haber caducado o haber sido reemplazado. Puedes gestionar los destinatarios desde los ajustes del restaurante."
+    },
+    "manageSettings": "Gestionar ajustes del restaurante",
+    "returnHome": "Volver al inicio",
+    "confirm": {
+      "cancel": "Cancelar",
+      "verify": {
+        "title": "Confirma esta dirección",
+        "body": "Confirma que {email} debe recibir los informes de analítica de {restaurant}.",
+        "action": "Confirmar y recibir informes"
+      },
+      "unsubscribe": {
+        "title": "¿Detener estos informes?",
+        "body": "{email} dejará de recibir los informes de analítica de {restaurant}. Los demás destinatarios no se ven afectados.",
+        "action": "Detener informes"
+      }
     }
   },
   "Api": {
@@ -1428,6 +1519,15 @@
       "menuSlugRequired": "Falta menuSlug",
       "payloadObject": "El payload debe ser un objeto",
       "payloadTooLarge": "El payload es demasiado grande"
+    },
+    "analyticsReports": {
+      "invalidFrequency": "Elige Diario, Semanal o Desactivado",
+      "invalidTimezone": "Elige una zona horaria válida",
+      "invalidEmail": "Introduce una dirección de email válida",
+      "recipientLimit": "Puedes añadir hasta {limit} destinatarios",
+      "recipientNotFound": "No se encontró el destinatario",
+      "confirmationFailed": "El destinatario se añadió, pero no se pudo enviar el email de confirmación",
+      "confirmationCooldown": "Acabamos de enviar un email de confirmación a esa dirección: espera un momento antes de reenviarlo"
     },
     "invitations": {
       "invalidEmail": "Email no válido",

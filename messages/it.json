@@ -818,7 +818,8 @@
       "menuDesign": "Design del menu",
       "brand": "Brand",
       "qr": "Stile del codice QR",
-      "wifi": "WiFi"
+      "wifi": "WiFi",
+      "analyticsReports": "Report di analisi"
     },
     "actions": {
       "saving": "Salvataggio...",
@@ -843,6 +844,42 @@
       "facebook": "Facebook",
       "handlePlaceholder": "iltuonomeutente",
       "pagePlaceholder": "latuapagina"
+    },
+    "analyticsReports": {
+      "title": "Report di analisi",
+      "description": "Invia via email un semplice riepilogo delle prestazioni di questo ristorante.",
+      "enabledLabel": "Attiva i report di analisi",
+      "frequencyLabel": "Frequenza",
+      "daily": "Giornaliero",
+      "weekly": "Settimanale",
+      "weeklyRecommended": "La frequenza settimanale è consigliata per mantenere utili le notifiche senza creare rumore.",
+      "timezoneLabel": "Fuso orario di consegna",
+      "deliveryDaily": "Ogni giorno alle 9:00 · {timezone}",
+      "deliveryWeekly": "Ogni lunedì alle 9:00 · {timezone}",
+      "recipientsLabel": "Destinatari",
+      "recipientsHint": "Gli indirizzi aggiuntivi devono essere confermati prima di ricevere i report.",
+      "active": "Attivo",
+      "pending": "Conferma in attesa",
+      "accountEmail": "Email del tuo account",
+      "emailLabel": "Email del destinatario aggiuntivo",
+      "emailPlaceholder": "proprietario@esempio.com",
+      "addRecipient": "Aggiungi email",
+      "removeRecipient": "Rimuovi {email}",
+      "readOnly": "La consegna dei report è in sola lettura. Possono modificarla proprietari e amministratori con un piano attivo.",
+      "toast": {
+        "updated": "Programmazione del report aggiornata",
+        "disabled": "Report di analisi disattivati",
+        "confirmationSent": "Email di conferma inviata",
+        "recipientAdded": "Destinatario aggiunto",
+        "recipientRemoved": "Destinatario rimosso",
+        "lastRecipientRemoved": "Destinatario rimosso e report disattivati"
+      },
+      "errors": {
+        "saveFailed": "Impossibile aggiornare la programmazione del report",
+        "addFailed": "Impossibile aggiungere il destinatario",
+        "removeFailed": "Impossibile rimuovere il destinatario",
+        "network": "Errore di rete - riprova"
+      }
     },
     "toast": {
       "sectionSaved": "{section} salvata",
@@ -1386,6 +1423,60 @@
       },
       "expires": "Questo codice scade tra 5 minuti.",
       "ignore": "Se non hai richiesto questo codice, puoi ignorare questa email in tutta sicurezza."
+    },
+    "scheduledAnalytics": {
+      "subject": "Report di analisi di {restaurantName}",
+      "intro": "Ecco come è andato {restaurantName} dal {dateRange}.",
+      "metrics": {
+        "scans": "Scansioni",
+        "uniqueGuests": "Ospiti unici",
+        "reviewClicks": "Clic su recensioni",
+        "wifiReveals": "Visualizzazioni WiFi"
+      },
+      "noActivity": "In questo periodo non è stata registrata alcuna attività degli ospiti. Il report si compilerà man mano che useranno i tuoi menu.",
+      "openAnalytics": "Apri Analisi",
+      "managePreferences": "Gestisci impostazioni report",
+      "unsubscribe": "Interrompi i report a questo indirizzo",
+      "footer": "Ricevi questo messaggio perché i report di analisi sono attivi per questo ristorante."
+    },
+    "analyticsRecipientVerification": {
+      "subject": "Conferma i report di analisi per {restaurantName}",
+      "body": "Conferma questo indirizzo per ricevere i report di analisi di {restaurantName}.",
+      "button": "Conferma email",
+      "copyLink": "Oppure copia questo link nel browser:",
+      "ignore": "Se non ti aspettavi questo messaggio, puoi ignorarlo in sicurezza."
+    }
+  },
+  "AnalyticsReportEmailPreferences": {
+    "metadataTitle": "Preferenze email dei report",
+    "homeAria": "Home di Qtable",
+    "thisRestaurant": "questo ristorante",
+    "verified": {
+      "title": "Email confermata",
+      "body": "Questo indirizzo può ora ricevere i report di analisi per {restaurant}."
+    },
+    "unsubscribed": {
+      "title": "Report interrotti",
+      "body": "Questo indirizzo non riceverà più i report di analisi per {restaurant}."
+    },
+    "invalid": {
+      "title": "Questo link non è valido",
+      "body": "Il link potrebbe essere scaduto o sostituito. Puoi gestire i destinatari dalle impostazioni del ristorante."
+    },
+    "manageSettings": "Gestisci impostazioni ristorante",
+    "returnHome": "Torna alla home",
+    "confirm": {
+      "cancel": "Annulla",
+      "verify": {
+        "title": "Conferma questo indirizzo",
+        "body": "Conferma che {email} deve ricevere i report di analisi per {restaurant}.",
+        "action": "Conferma e attiva i report"
+      },
+      "unsubscribe": {
+        "title": "Interrompere questi report?",
+        "body": "{email} non riceverà più i report di analisi per {restaurant}. Gli altri destinatari non sono interessati.",
+        "action": "Interrompi i report"
+      }
     }
   },
   "Api": {
@@ -1428,6 +1519,15 @@
       "menuSlugRequired": "menuSlug è richiesto",
       "payloadObject": "payload deve essere un oggetto",
       "payloadTooLarge": "payload troppo grande"
+    },
+    "analyticsReports": {
+      "invalidFrequency": "Scegli Giornaliero, Settimanale o Disattivato",
+      "invalidTimezone": "Scegli un fuso orario valido",
+      "invalidEmail": "Inserisci un indirizzo email valido",
+      "recipientLimit": "Puoi aggiungere fino a {limit} destinatari",
+      "recipientNotFound": "Destinatario del report non trovato",
+      "confirmationFailed": "Il destinatario è stato aggiunto, ma non è stato possibile inviare l'email di conferma",
+      "confirmationCooldown": "Abbiamo appena inviato un'email di conferma a quell'indirizzo: attendi un momento prima di reinviarla"
     },
     "invitations": {
       "invalidEmail": "Email non valida",

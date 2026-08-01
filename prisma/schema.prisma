@@ -253,16 +253,40 @@ model Restaurant {
   // Public menu pages keep working; dashboard becomes view-only until upgrade or delete.
   readOnly Boolean @default(false)
 
+  // Restaurant-scoped scheduled analytics reports. Frequency is
+  // "off" | "daily" | "weekly"; delivery is at 09:00 local time.
+  analyticsReportFrequency String @default("off")
+  analyticsReportTimezone  String @default("America/Toronto")
+  analyticsReportLocale    String @default("en")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  menus       Menu[]
-  members     RestaurantMember[]
-  invitations RestaurantInvitation[]
-  events      MenuEvent[]
+  menus                     Menu[]
+  members                   RestaurantMember[]
+  invitations               RestaurantInvitation[]
+  events                    MenuEvent[]
+  analyticsReportRecipients AnalyticsReportRecipient[]
 
   @@index([organizationId])
   @@map("restaurant")
+}
+
+model AnalyticsReportRecipient {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  email        String
+  verifiedAt   DateTime?
+  disabledAt   DateTime?
+  lastSentKey  String?
+  lastSentAt   DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([restaurantId, email])
+  @@index([restaurantId, disabledAt])
+  @@map("analytics_report_recipient")
 }
 
 // Managed by the @better-auth/stripe plugin. Field shape mirrors its expected

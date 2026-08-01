@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
 
-// Section IDs and labels must mirror the <section id="..."> anchors in
-// SettingsForm.tsx. Extract to a const so both files reference the same
-// list — easy to audit when we add a new section.
+// Section IDs and labels must mirror the <section id="..."> anchors on
+// the Settings page. Keeping them together makes additions easy to audit.
 export const SETTINGS_SECTIONS = [
   { id: 'settings-restaurant', labelKey: 'restaurant' },
   { id: 'settings-links', labelKey: 'links' },
@@ -14,6 +13,7 @@ export const SETTINGS_SECTIONS = [
   { id: 'settings-brand', labelKey: 'brand' },
   { id: 'settings-qr', labelKey: 'qr' },
   { id: 'settings-wifi', labelKey: 'wifi' },
+  { id: 'settings-analytics-reports', labelKey: 'analyticsReports' },
 ] as const
 
 // Sticky left-hand quick-nav for the Settings page. Clicking a label

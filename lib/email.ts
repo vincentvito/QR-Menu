@@ -2,6 +2,17 @@ interface SendEmailParams {
   to: string
   subject: string
   html: string
+  // Extra MIME headers, e.g. List-Unsubscribe on scheduled reports.
+  headers?: Record<string, string>
+}
+
+export interface SendEmailResult {
+  success: boolean
+  // Set when credentials are missing and the message was logged instead of
+  // sent. Unattended senders (scheduled reports) must treat this as a failure
+  // so a misconfigured deploy doesn't look like a successful delivery.
+  skipped?: boolean
+  error?: string
 }
 
 // Sends transactional email via ZeptoMail. When credentials are missing the OTP
@@ -10,7 +21,8 @@ export async function sendEmail({
   to,
   subject,
   html,
-}: SendEmailParams): Promise<{ success: boolean; error?: string }> {
+  headers,
+}: SendEmailParams): Promise<SendEmailResult> {
   const apiUrl = process.env.ZEPTOMAIL_API_URL
   const apiKey = process.env.ZEPTO_MAIL_API_KEY
   const fromEmail = process.env.EMAIL_FROM ?? 'noreply@qtable.ai'
@@ -19,7 +31,7 @@ export async function sendEmail({
   if (!apiUrl || !apiKey) {
     console.warn('[email] ZeptoMail not configured — logging instead of sending')
     console.info(`[email] → ${to}\n  subject: ${subject}\n${html}`)
-    return { success: true }
+    return { success: true, skipped: true }
   }
 
   try {
@@ -36,6 +48,7 @@ export async function sendEmail({
         subject,
         htmlbody: html,
         textbody: html.replace(/<[^>]*>/g, ''),
+        ...(headers ? { mime_headers: headers } : {}),
       }),
     })
 

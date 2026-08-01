@@ -12,7 +12,7 @@ Qtable turns printed restaurant menus into mobile-friendly public menus and QR c
 - next-intl for English, Spanish, and Italian localization
 - Google Gemini for menu extraction and dish image generation
 - Cloudflare R2 for uploaded logos, headers, and dish photos
-- ZeptoMail for OTP and invitation email delivery
+- ZeptoMail for OTP, invitation, and scheduled analytics report delivery
 - FeedbackBasket for in-app feedback collection
 
 ## Core Flows
@@ -64,6 +64,7 @@ See `.env.example` for the full list. Production deploys must set at least:
 - `GOOGLE_GENERATIVE_AI_API_KEY` for menu extraction and AI photo generation.
 - Cloudflare R2 credentials and public asset URL.
 - ZeptoMail credentials and sender identity.
+- `CRON_SECRET` for authenticated daily or weekly restaurant analytics report delivery.
 - `PLATFORM_ADMIN_EMAILS` for owner/admin bootstrap accounts.
 
 Do not deploy with localhost URLs in production. They affect auth redirects, invitation links, public QR URLs, and checkout return URLs.
@@ -119,7 +120,7 @@ npx tsx scripts/delete-account.ts user@example.com --confirm
 
 - Run `npm run lint`, `npm run format:check`, and `npm run build`.
 - Run `npx prisma migrate deploy` against production.
-- Verify signup, OTP email, onboarding, setup mode, trial checkout, and Stripe webhook delivery.
+- Verify signup, OTP email, restaurant analytics report schedules, recipient confirmation/unsubscribe, onboarding, setup mode, trial checkout, and Stripe webhook delivery.
 - Verify AI menu import, AI photo generation, out-of-credits states, and credit-pack checkout.
 - Verify public QR URLs use the production domain.
 - Scan a real QR code on a phone and test each public menu template.
