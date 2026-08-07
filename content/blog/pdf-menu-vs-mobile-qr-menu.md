@@ -7,6 +7,8 @@ author: Qtable Product Team
 authorRole: Product and restaurant operations
 tags: [PDF menu, mobile menu, QR menu]
 primaryIntent: PDF menu vs digital menu
+image: /blog/pdf-vs-mobile-hero.webp
+imageAlt: A dense restaurant PDF on a laptop beside a structured mobile menu on a phone
 draft: false
 ---
 
@@ -15,6 +17,8 @@ A PDF is adequate when the menu rarely changes, the document is already easy to 
 The QR code itself does not decide the experience. Its destination does.
 
 ## The practical difference
+
+![A tablet showing a dense fixed menu beside a phone showing one clear mobile dish card](/blog/pdf-vs-mobile-detail.webp)
 
 | Question              | QR code linked to a PDF                               | QR code linked to a mobile menu                              |
 | --------------------- | ----------------------------------------------------- | ------------------------------------------------------------ |

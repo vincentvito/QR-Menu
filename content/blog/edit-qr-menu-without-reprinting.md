@@ -7,6 +7,8 @@ author: Qtable Product Team
 authorRole: Product and restaurant operations
 tags: [edit QR menu, stable QR code, menu updates]
 primaryIntent: edit QR menu without changing QR code
+image: /blog/edit-menu-hero.webp
+imageAlt: A restaurant manager editing a digital menu beside an existing QR table card
 draft: false
 ---
 
@@ -28,6 +30,8 @@ Use the same small release process for a price correction and a complete seasona
 The [launch checklist](/blog/qr-menu-launch-checklist) provides a broader device, content, and print test when the update affects more than one item.
 
 ## Changes that normally keep the same QR
+
+![A guest phone showing an updated dish price beside the restaurant's existing QR table card](/blog/edit-menu-confirm.webp)
 
 These edits happen behind the existing menu address:
 

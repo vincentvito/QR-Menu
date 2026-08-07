@@ -7,6 +7,8 @@ author: Qtable Product Team
 authorRole: Restaurant menu workflow reviewers
 tags: [menu photos, digital menus, QR menus]
 primaryIntent: turn a menu photo into a digital menu
+image: /blog/menu-photo-hero.webp
+imageAlt: A restaurant owner photographing a printed menu on a table beside a window
 draft: false
 ---
 
@@ -23,6 +25,8 @@ Check the source before digitizing it. Crossed-out prices, handwritten specials,
 If the menu has several pages, decide their order before shooting. Qtable accepts up to three import files at once. For a longer menu, divide the work into clear batches rather than squeezing several distant pages into one photograph.
 
 ## Take a readable menu photo
+
+![A phone held parallel above a menu page in soft window light, with a white card used to reduce glare](/blog/menu-photo-capture.webp)
 
 Use this quick capture routine for each page:
 

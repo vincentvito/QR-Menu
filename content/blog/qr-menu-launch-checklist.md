@@ -7,6 +7,8 @@ author: Qtable Product Team
 authorRole: Product and restaurant operations
 tags: [QR menu checklist, menu testing, restaurant launch]
 primaryIntent: QR menu launch checklist
+image: /blog/launch-checklist-hero.webp
+imageAlt: Two different phones testing the same restaurant QR menu card at a table
 draft: false
 ---
 
@@ -50,6 +52,8 @@ Test at least one current iPhone and one Android phone, using both Wi-Fi and cel
 These checks align with W3C guidance on [content reflow](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html), [link purpose](https://www.w3.org/WAI/WCAG22/Understanding/link-purpose-in-context.html), and [minimum target size](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html). Passing this operational checklist is not a complete accessibility audit, but it catches common table-side failures.
 
 ## 4. Test a physical proof
+
+![A printed QR table-card proof being checked with a phone and ruler at a restaurant table](/blog/launch-checklist-print-test.webp)
 
 Export the production QR code and print one proof at the final intended size and on comparable material. Do not validate only a large code on a bright desktop monitor.
 

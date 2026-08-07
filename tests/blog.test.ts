@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import test from 'node:test'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
@@ -270,6 +271,30 @@ test('the approved cluster is complete, uniquely targeted, and non-orphaned', ()
   const blogIndexSource = readFileSync(new URL('../app/blog/page.tsx', import.meta.url), 'utf8')
   assert.ok(homepageSource.includes('/qr-menu-from-pdf'))
   assert.ok(blogIndexSource.includes('/qr-menu-from-pdf'))
+})
+
+test('every published guide has a cover and an in-article image with local assets', () => {
+  const posts = getAllBlogPosts({ production: true, now: NOW })
+
+  for (const post of posts) {
+    assert.ok(post.image, `${post.slug} must have a cover image`)
+    assert.ok(post.imageAlt?.trim(), `${post.slug} must have cover alt text`)
+    assert.ok(
+      existsSync(join(process.cwd(), 'public', post.image!.replace(/^\//, ''))),
+      `${post.slug} cover image must exist`,
+    )
+
+    const inlineImages = [...post.content.matchAll(/!\[([^\]]+)\]\((\/blog\/[^)]+)\)/g)]
+    assert.ok(inlineImages.length > 0, `${post.slug} must have an in-article image`)
+
+    for (const [, alt, imagePath] of inlineImages) {
+      assert.ok(alt.trim(), `${post.slug} inline image must have alt text`)
+      assert.ok(
+        existsSync(join(process.cwd(), 'public', imagePath.replace(/^\//, ''))),
+        `${post.slug} inline image must exist`,
+      )
+    }
+  }
 })
 
 test('cluster sitemap contains every approved route and no deferred route', () => {

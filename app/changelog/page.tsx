@@ -18,6 +18,7 @@ const changelog = [
         items: [
           'Added a practical restaurant menu blog, starting with a guide to turning menu photos into an editable digital menu',
           'Added a PDF-to-QR menu guide and practical comparisons, update instructions, and a pre-print launch checklist',
+          'Added original cover and instructional images throughout every restaurant menu guide',
         ],
       },
       {
