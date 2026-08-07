@@ -1,0 +1,144 @@
+{
+  "fetchedAt": "2026-08-07",
+  "locale": "en (search fallback locale not controllable)",
+  "method": "Public live web search fallback because TinyFish and authenticated Search Console were unavailable; nine representative queries across three shortlisted clusters; repository evidence inspected locally",
+  "clusters": [
+    {
+      "id": "pdf-photo-to-editable-qr-menu",
+      "anchorQueries": [
+        "convert PDF menu to QR code",
+        "upload restaurant menu PDF create QR code",
+        "turn menu photo into digital menu"
+      ],
+      "intent": "Transactional/commercial: turn an existing printed, photographed, or PDF restaurant menu into a usable QR menu without retyping it",
+      "serpPageTypes": [
+        "PDF-hosting QR generators",
+        "restaurant-menu SaaS landing pages",
+        "AI menu digitizers",
+        "step-by-step tutorials"
+      ],
+      "competitorTypes": [
+        "generic QR generators",
+        "PDF flipbook hosts",
+        "restaurant menu builders",
+        "AI extraction tools"
+      ],
+      "titlePatterns": [
+        "Upload PDF, Get QR Code",
+        "Create a Restaurant QR Menu in Seconds",
+        "Turn Your Restaurant Menu Into a QR Menu",
+        "Free Menu Digitizer"
+      ],
+      "userQuestions": [
+        "Will the QR open a PDF or a mobile menu?",
+        "Can I upload a photo instead of a PDF?",
+        "Can I correct extracted dishes and prices?",
+        "Does the QR change when I edit the menu?",
+        "What should I check before printing table cards?"
+      ],
+      "ourAngle": "Import a PDF, photo, URL, or pasted text into editable dishes and categories, then publish a branded mobile menu behind a stable QR. Show the review step and contrast this with merely linking diners to a PDF.",
+      "proofAssets": [
+        "Original before/after capture of a source PDF and extracted editable menu",
+        "Original phone screenshots of a published menu",
+        "Original recording of a price edit appearing behind the same QR",
+        "Documented supported file types and current import limits"
+      ],
+      "targetPage": "/qr-menu-from-pdf",
+      "supportingPages": [
+        "/blog/turn-menu-photo-into-digital-menu",
+        "/blog/pdf-menu-vs-mobile-qr-menu",
+        "/blog/edit-qr-menu-without-reprinting",
+        "/blog/qr-menu-launch-checklist"
+      ],
+      "status": "approved-first-cluster"
+    },
+    {
+      "id": "core-qr-menu-software",
+      "anchorQueries": [
+        "create QR menu for restaurant",
+        "digital menu maker for restaurants",
+        "restaurant QR menu software"
+      ],
+      "intent": "Transactional/commercial: compare or choose software to create and manage a restaurant QR menu",
+      "serpPageTypes": [
+        "restaurant SaaS homepages",
+        "menu-maker product pages",
+        "POS and ordering suites",
+        "video tutorials"
+      ],
+      "competitorTypes": [
+        "menu-only SaaS",
+        "POS and ordering suites",
+        "free menu makers",
+        "generic QR platforms"
+      ],
+      "titlePatterns": [
+        "QR Code Menu Software for Restaurants",
+        "Digital Menu Maker for Restaurants",
+        "Free QR Menu and Ordering System",
+        "Launch in Minutes"
+      ],
+      "userQuestions": [
+        "Do guests need an app?",
+        "Can prices and dishes update without reprinting?",
+        "Does it include ordering or POS?",
+        "Can I use my logo, colors, photos, and languages?",
+        "How quickly can I launch?"
+      ],
+      "ourAngle": "A focused, mobile-first menu workflow for owners who already have menu content and want fast import, branding, editing, QR publishing, and menu analytics without implying unsupported POS or ordering features.",
+      "proofAssets": [
+        "Product workflow screenshots",
+        "Public demo menu",
+        "QR customization examples",
+        "Documented template and analytics capabilities"
+      ],
+      "targetPage": "/restaurant-qr-menu",
+      "supportingPages": [],
+      "status": "shortlisted"
+    },
+    {
+      "id": "mobile-menu-templates",
+      "anchorQueries": [
+        "restaurant menu templates digital menu",
+        "QR menu design templates restaurant",
+        "mobile friendly restaurant menu template"
+      ],
+      "intent": "Commercial/inspirational: evaluate layouts and visual styles for a restaurant's digital or QR menu",
+      "serpPageTypes": [
+        "template galleries",
+        "drag-and-drop design tools",
+        "QR-menu builder pages",
+        "digital-signage products"
+      ],
+      "competitorTypes": [
+        "large printable template libraries",
+        "design editors",
+        "restaurant menu SaaS",
+        "digital signage platforms"
+      ],
+      "titlePatterns": [
+        "Free Restaurant Menu Templates",
+        "Editable Online, Print-Ready",
+        "Creative Menu Templates",
+        "Mobile-First Restaurant Menu"
+      ],
+      "userQuestions": [
+        "What does each layout look like on a phone?",
+        "Can I change colors, logo, and photos?",
+        "Which layout works for a long menu?",
+        "Does the template load quickly and remain readable?",
+        "Is it for print, signage, or diner phones?"
+      ],
+      "ourAngle": "A small, honest gallery of Qtable's mobile menu layouts, demonstrated with realistic menus and readability/performance evidence rather than competing on printable-template count.",
+      "proofAssets": [
+        "Original screenshots of editorial, photo-grid, and category-tile layouts",
+        "Mobile viewport captures",
+        "Measured performance checks",
+        "Brand-color and image-setting examples"
+      ],
+      "targetPage": "/digital-menu-templates",
+      "supportingPages": [],
+      "status": "shortlisted-deferred"
+    }
+  ]
+}
