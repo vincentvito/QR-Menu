@@ -9,7 +9,18 @@ import { BrandMark } from '@/components/brand/BrandMark'
 import { QRCode } from '@/components/brand/QRCode'
 import { Kicker } from '@/components/ui/kicker'
 import { BackToTop } from '@/components/landing/BackToTop'
+import { JsonLd } from '@/components/seo/JsonLd'
 import LanguageSwitcher from '@/components/LanguageSwitcher'
+import {
+  FAQ_KEYS,
+  buildFaqJsonLd,
+  buildHomepageJsonLd,
+  buildPageMetadata,
+  getAcquisitionRoute,
+  type FaqItem,
+} from '@/lib/seo'
+
+export const metadata = buildPageMetadata(getAcquisitionRoute('/'))
 
 // ─────────────────────────────────────────────────────────────────────────
 // Unsplash imagery (same set the design handoff uses).
@@ -57,6 +68,10 @@ export default async function LandingPage() {
     auth.api.getSession({ headers: await headers() }),
   ])
   const year = new Date().getFullYear()
+  const faqItems = FAQ_KEYS.map((key) => ({
+    question: t(`faq.items.${key}.q` as 'faq.items.savvy.q'),
+    answer: t(`faq.items.${key}.a` as 'faq.items.savvy.a'),
+  }))
   // Destination for every "Get started / Sign in / CTA" link on the page:
   // authenticated visitors jump straight to their dashboard, anonymous
   // visitors land on /auth/login (which already has a post-login gate).
@@ -64,6 +79,8 @@ export default async function LandingPage() {
 
   return (
     <div className="bg-background text-foreground min-h-screen">
+      <JsonLd data={buildHomepageJsonLd()} />
+      <JsonLd data={buildFaqJsonLd(faqItems)} />
       <a
         href="#main"
         className="bg-foreground text-background sr-only z-50 rounded-md px-3 py-2 text-sm font-medium focus:not-sr-only focus:fixed focus:top-4 focus:left-4"
@@ -80,7 +97,7 @@ export default async function LandingPage() {
         <QrDemo t={t} ctaHref={ctaHref} />
         <LovedBy t={t} />
         <Pricing t={t} ctaHref={ctaHref} />
-        <Faq t={t} />
+        <Faq t={t} items={faqItems} />
         <FooterCta t={t} ctaHref={ctaHref} />
       </main>
 
@@ -971,9 +988,7 @@ function Pricing({ t, ctaHref }: { t: T; ctaHref: string }) {
 // ─────────────────────────────────────────────────────────────────────────
 // FAQ
 // ─────────────────────────────────────────────────────────────────────────
-function Faq({ t }: { t: T }) {
-  const items = ['savvy', 'price', 'wifi', 'scans', 'expired', 'domain'] as const
-
+function Faq({ t, items }: { t: T; items: readonly FaqItem[] }) {
   return (
     <section id="resources" className={`bg-card ${SECTION_Y}`}>
       <div className={`${SECTION} grid gap-14 lg:grid-cols-[1fr_1.6fr] lg:gap-16`}>
@@ -999,15 +1014,15 @@ function Faq({ t }: { t: T }) {
         </div>
 
         <div>
-          {items.map((key, i) => (
+          {items.map((item, i) => (
             <details
-              key={key}
+              key={item.question}
               data-faq
               {...(i === 0 ? { open: true } : {})}
               className="border-cream-line bg-card mb-2 rounded-[24px] border"
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-5 text-[17px] font-semibold tracking-[-0.01em] [&::-webkit-details-marker]:hidden">
-                <span>{t(`faq.items.${key}.q` as 'faq.items.savvy.q')}</span>
+                <span>{item.question}</span>
                 <span
                   aria-hidden="true"
                   className="faq-icon grid h-8 w-8 flex-shrink-0 place-items-center rounded-full"
@@ -1016,7 +1031,7 @@ function Faq({ t }: { t: T }) {
                 </span>
               </summary>
               <div className="text-muted-foreground px-5 pb-5 text-[15px] leading-[1.55]">
-                {t(`faq.items.${key}.a` as 'faq.items.savvy.a')}
+                {item.answer}
               </div>
             </details>
           ))}

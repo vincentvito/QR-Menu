@@ -3,8 +3,24 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BrandMark } from '@/components/brand/BrandMark'
+import { buildPageMetadata, getAcquisitionRoute } from '@/lib/seo'
+
+export const metadata = buildPageMetadata(getAcquisitionRoute('/changelog'))
 
 const changelog = [
+  {
+    version: '0.38.1',
+    date: '2026-08-07',
+    title: 'Improved search discovery',
+    changes: [
+      {
+        type: 'changed' as const,
+        items: [
+          'Public pages now provide clearer page-specific search details and more accurate update dates',
+        ],
+      },
+    ],
+  },
   {
     version: '0.38.0',
     date: '2026-08-01',

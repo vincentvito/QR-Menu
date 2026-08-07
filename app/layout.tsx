@@ -5,6 +5,7 @@ import { TooltipProvider } from '@/components/ui/tooltip'
 import { Toaster } from '@/components/ui/sonner'
 import { FeedbackWidget } from '@/components/feedback/FeedbackWidget'
 import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, OG_IMAGE, SITE_NAME, SITE_URL } from '@/lib/site'
+import { INDEXABLE_ROBOTS } from '@/lib/seo'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -29,9 +30,6 @@ export const metadata: Metadata = {
   publisher: SITE_NAME,
   category: 'Restaurant software',
   manifest: '/manifest.webmanifest',
-  alternates: {
-    canonical: '/',
-  },
   formatDetection: {
     telephone: false,
     email: false,
@@ -42,7 +40,6 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
-    url: '/',
     locale: 'en_US',
     images: [OG_IMAGE],
   },
@@ -52,17 +49,7 @@ export const metadata: Metadata = {
     description: DEFAULT_DESCRIPTION,
     images: [OG_IMAGE.url],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-      'max-video-preview': -1,
-    },
-  },
+  robots: INDEXABLE_ROBOTS,
   appleWebApp: {
     capable: true,
     title: SITE_NAME,
