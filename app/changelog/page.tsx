@@ -27,6 +27,10 @@ const changelog = [
           'Public pages now provide clearer page-specific search details and more accurate update dates',
         ],
       },
+      {
+        type: 'fixed' as const,
+        items: ['Blog guide cards now keep their titles aligned across the grid'],
+      },
     ],
   },
   {

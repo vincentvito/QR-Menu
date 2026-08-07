@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import { blogPostPath, formatPostDate, type BlogPostMeta } from '@/lib/blog'
 
 export function BlogCard({ post }: { post: BlogPostMeta }) {
@@ -26,11 +27,14 @@ export function BlogCard({ post }: { post: BlogPostMeta }) {
           <span aria-hidden="true">·</span>
           <span>{post.readingTime}</span>
         </div>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {post.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="bg-card rounded-full px-2.5 py-1 text-xs font-medium">
+        <div
+          className="mt-4 flex h-6 items-center gap-2 overflow-hidden"
+          aria-label={`Topics: ${post.tags.join(', ')}`}
+        >
+          {post.tags.slice(0, 2).map((tag) => (
+            <Badge key={tag} variant="secondary">
               {tag}
-            </span>
+            </Badge>
           ))}
         </div>
         <h2 className="mt-5 text-2xl leading-tight font-semibold tracking-[-0.02em]">
