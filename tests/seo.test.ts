@@ -49,7 +49,7 @@ test('acquisition pages have unique absolute self-canonicals', () => {
 test('the SEO registry includes only live static acquisition routes', () => {
   assert.deepEqual(
     ACQUISITION_ROUTES.map((route) => route.path),
-    ['/', '/changelog'],
+    ['/', '/blog', '/changelog'],
   )
   assert.ok(!ACQUISITION_ROUTES.some((route) => String(route.path) === '/qr-menu-from-pdf'))
 })

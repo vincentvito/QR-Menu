@@ -127,7 +127,8 @@ function Nav({
     { label: t('nav.howItWorks'), href: '#how-it-works' },
     { label: t('nav.examples'), href: '#examples' },
     { label: t('nav.pricing'), href: '#pricing' },
-    { label: t('nav.resources'), href: '#resources' },
+    { label: t('nav.faq'), href: '#resources' },
+    { label: t('nav.blog'), href: '/blog' },
   ]
   // Logged-in visitors see "Dashboard"; anonymous visitors see "Get started".
   // Either way, one CTA — no separate "Sign in" link (we dropped it to keep
@@ -1134,13 +1135,26 @@ function Footer({ t, year }: { t: T; year: number }) {
                   {t(`footer.columns.${col}.title` as 'footer.columns.product.title')}
                 </div>
                 <ul className="m-0 list-none p-0">
-                  {links.map((l) => (
-                    <li key={l} className="py-1">
-                      <a href="#" className="text-[13px] transition-opacity hover:opacity-70">
-                        {l}
-                      </a>
-                    </li>
-                  ))}
+                  {links.map((l, index) => {
+                    const isBlogLink = col === 'resources' && index === 0
+
+                    return (
+                      <li key={l} className="py-1">
+                        {isBlogLink ? (
+                          <Link
+                            href="/blog"
+                            className="text-[13px] transition-opacity hover:opacity-70"
+                          >
+                            {l}
+                          </Link>
+                        ) : (
+                          <a href="#" className="text-[13px] transition-opacity hover:opacity-70">
+                            {l}
+                          </a>
+                        )}
+                      </li>
+                    )
+                  })}
                 </ul>
               </div>
             )

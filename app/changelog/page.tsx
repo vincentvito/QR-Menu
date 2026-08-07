@@ -14,6 +14,12 @@ const changelog = [
     title: 'Improved search discovery',
     changes: [
       {
+        type: 'added' as const,
+        items: [
+          'Added a practical restaurant menu blog, starting with a guide to turning menu photos into an editable digital menu',
+        ],
+      },
+      {
         type: 'changed' as const,
         items: [
           'Public pages now provide clearer page-specific search details and more accurate update dates',

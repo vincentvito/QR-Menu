@@ -4,7 +4,7 @@ import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, OG_IMAGE, SITE_NAME, SITE_URL } fro
 type ChangeFrequency = NonNullable<MetadataRoute.Sitemap[number]['changeFrequency']>
 
 export type AcquisitionRoute = {
-  path: '/' | '/changelog'
+  path: '/' | '/blog' | '/changelog'
   title: string
   description: string
   socialImage: string
@@ -27,6 +27,19 @@ export const ACQUISITION_ROUTES = [
     changeFrequency: 'monthly',
     priority: 1,
     indexable: true,
+  },
+  {
+    path: '/blog',
+    title: 'Restaurant menu guides and practical QR tips | Qtable',
+    description:
+      'Practical guides for turning printed restaurant menus into clear, editable mobile menus and reliable QR experiences.',
+    socialImage: OG_IMAGE.url,
+    publishedAt: '2026-08-07',
+    modifiedAt: '2026-08-07',
+    changeFrequency: 'weekly',
+    priority: 0.8,
+    indexable: true,
+    breadcrumbs: [{ name: 'Blog', path: '/blog' }],
   },
   {
     path: '/changelog',

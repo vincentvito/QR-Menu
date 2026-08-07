@@ -1,11 +1,12 @@
 import type { MetadataRoute } from 'next'
 import { ACTIVE_SUBSCRIPTION_STATUSES } from '@/lib/plans/subscription-access'
 import { acquisitionSitemapEntries, publicMenuSitemapEntry } from '@/lib/seo'
+import { blogSitemapEntries } from '@/lib/blog'
 
 export const revalidate = 3600
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const routes = acquisitionSitemapEntries()
+  const routes = [...acquisitionSitemapEntries(), ...blogSitemapEntries()]
 
   try {
     const { default: prisma } = await import('@/lib/prisma')
