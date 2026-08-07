@@ -28,6 +28,7 @@ function source(
   fileName: string,
   overrides: Partial<{
     title: string
+    heading: string
     description: string
     publishedAt: string
     modifiedAt: string
@@ -43,6 +44,7 @@ function source(
 ): BlogPostSource {
   const data = {
     title: 'A useful restaurant menu guide',
+    heading: 'A clear heading for restaurant owners',
     description: 'A precise description of this practical restaurant menu guide.',
     publishedAt: '2026-08-07',
     author: 'Qtable Product Team',
@@ -63,6 +65,7 @@ function source(
     fileName,
     source: `---
 title: ${data.title}
+heading: ${data.heading}
 description: ${data.description}
 publishedAt: ${data.publishedAt}
 ${optional.join('\n')}
@@ -91,6 +94,7 @@ test('valid frontmatter is typed, dated, and assigned reading time', () => {
   )
 
   assert.equal(post.slug, 'valid-post')
+  assert.equal(post.heading, 'A clear heading for restaurant owners')
   assert.equal(post.modifiedAt, '2026-08-08')
   assert.equal(post.imageAlt, 'A phone scanning a restaurant menu QR code')
   assert.equal(post.readingTimeMinutes, 2)
@@ -199,12 +203,92 @@ test('raw HTML is inert while internal and external Markdown links stay safe', (
   assert.match(html, /rel="noopener noreferrer"/)
 })
 
-test('pilot internal links are absolute-path links to live routes', () => {
-  const [pilot] = getAllBlogPosts({ production: true, now: NOW })
-  const links = getInternalMarkdownLinks(pilot.content)
+test('the approved cluster is complete, uniquely targeted, and non-orphaned', () => {
+  const posts = getAllBlogPosts({ production: true, now: NOW })
+  const slugs = posts.map((post) => post.slug).sort()
+  const expectedSlugs = [
+    'edit-qr-menu-without-reprinting',
+    'pdf-menu-vs-mobile-qr-menu',
+    'qr-menu-launch-checklist',
+    'turn-menu-photo-into-digital-menu',
+  ]
+  const postPaths = new Set(expectedSlugs.map((slug) => blogPostPath(slug)))
 
-  assert.ok(links.length >= 2)
-  assert.ok(links.every((href) => href === '/onboarding'))
+  assert.deepEqual(slugs, expectedSlugs)
+  assert.deepEqual(
+    posts
+      .map(({ slug, title, heading, primaryIntent }) => ({ slug, title, heading, primaryIntent }))
+      .sort((a, b) => a.slug.localeCompare(b.slug)),
+    [
+      {
+        slug: 'edit-qr-menu-without-reprinting',
+        title: 'How to Update a QR Menu Without Reprinting the Code',
+        heading: 'Edit your restaurant menu while the table QR stays the same',
+        primaryIntent: 'edit QR menu without changing QR code',
+      },
+      {
+        slug: 'pdf-menu-vs-mobile-qr-menu',
+        title: 'PDF Menu vs Mobile QR Menu: What Diners Actually Open',
+        heading: 'Should your restaurant QR code open a PDF or a mobile menu?',
+        primaryIntent: 'PDF menu vs digital menu',
+      },
+      {
+        slug: 'qr-menu-launch-checklist',
+        title: 'Restaurant QR Menu Launch Checklist: Test Before You Print',
+        heading: 'Test your QR menu before it reaches every table',
+        primaryIntent: 'QR menu launch checklist',
+      },
+      {
+        slug: 'turn-menu-photo-into-digital-menu',
+        title: 'How to Turn a Menu Photo Into an Editable Digital Menu',
+        heading: 'Turn a photo of your menu into an editable digital menu',
+        primaryIntent: 'turn a menu photo into a digital menu',
+      },
+    ],
+  )
+  assert.equal(new Set(posts.map((post) => post.title)).size, posts.length)
+  assert.equal(new Set(posts.map((post) => post.heading)).size, posts.length)
+  assert.equal(new Set(posts.map((post) => post.primaryIntent)).size, posts.length)
+
+  for (const post of posts) {
+    const links = getInternalMarkdownLinks(post.content)
+    assert.ok(links.includes('/qr-menu-from-pdf'), `${post.slug} must link to the hub`)
+    assert.ok(
+      links.some((href) => href !== blogPostPath(post.slug) && postPaths.has(href)),
+      `${post.slug} must link to a useful sibling`,
+    )
+    assert.match(post.content, /https:\/\//, `${post.slug} must cite an external source`)
+  }
+
+  const hubSource = readFileSync(
+    new URL('../app/qr-menu-from-pdf/page.tsx', import.meta.url),
+    'utf8',
+  )
+  for (const postPath of postPaths) assert.ok(hubSource.includes(postPath))
+
+  const homepageSource = readFileSync(new URL('../app/page.tsx', import.meta.url), 'utf8')
+  const blogIndexSource = readFileSync(new URL('../app/blog/page.tsx', import.meta.url), 'utf8')
+  assert.ok(homepageSource.includes('/qr-menu-from-pdf'))
+  assert.ok(blogIndexSource.includes('/qr-menu-from-pdf'))
+})
+
+test('cluster sitemap contains every approved route and no deferred route', () => {
+  const urls = new Set([
+    ...blogSitemapEntries({ production: true, now: NOW }).map((entry) => entry.url),
+    ...[absoluteUrl(getAcquisitionRoute('/qr-menu-from-pdf').path)],
+  ])
+
+  for (const path of [
+    '/qr-menu-from-pdf',
+    '/blog/edit-qr-menu-without-reprinting',
+    '/blog/pdf-menu-vs-mobile-qr-menu',
+    '/blog/qr-menu-launch-checklist',
+    '/blog/turn-menu-photo-into-digital-menu',
+  ]) {
+    assert.ok(urls.has(absoluteUrl(path)))
+  }
+  assert.ok(!urls.has(absoluteUrl('/restaurant-qr-menu')))
+  assert.ok(!urls.has(absoluteUrl('/digital-menu-templates')))
 })
 
 test('metadata, canonical, JSON-LD, and sitemap use the same article URL and dates', () => {

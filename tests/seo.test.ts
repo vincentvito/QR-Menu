@@ -9,8 +9,10 @@ import {
   absoluteUrl,
   acquisitionSitemapEntries,
   buildFaqJsonLd,
+  buildBreadcrumbJsonLd,
   buildHomepageJsonLd,
   buildPageMetadata,
+  getAcquisitionRoute,
   publicMenuSitemapEntry,
 } from '../lib/seo'
 import { SITE_URL } from '../lib/site'
@@ -49,9 +51,55 @@ test('acquisition pages have unique absolute self-canonicals', () => {
 test('the SEO registry includes only live static acquisition routes', () => {
   assert.deepEqual(
     ACQUISITION_ROUTES.map((route) => route.path),
-    ['/', '/blog', '/changelog'],
+    ['/', '/blog', '/qr-menu-from-pdf', '/changelog'],
   )
-  assert.ok(!ACQUISITION_ROUTES.some((route) => String(route.path) === '/qr-menu-from-pdf'))
+  assert.equal(
+    new Set(ACQUISITION_ROUTES.map((route) => route.title)).size,
+    ACQUISITION_ROUTES.length,
+  )
+  assert.equal(
+    new Set(ACQUISITION_ROUTES.map((route) => route.heading)).size,
+    ACQUISITION_ROUTES.length,
+  )
+  assert.equal(
+    new Set(ACQUISITION_ROUTES.map((route) => route.primaryIntent)).size,
+    ACQUISITION_ROUTES.length,
+  )
+})
+
+test('hub breadcrumbs are absolute, parseable, and match the visible breadcrumb model', () => {
+  const route = getAcquisitionRoute('/qr-menu-from-pdf')
+  assert.deepEqual(
+    { path: route.path, title: route.title, heading: route.heading, intent: route.primaryIntent },
+    {
+      path: '/qr-menu-from-pdf',
+      title: 'Convert a PDF Menu to an Editable QR Menu | Qtable',
+      heading: 'Turn your PDF into an editable mobile QR menu',
+      intent: 'convert PDF menu to QR code',
+    },
+  )
+  const breadcrumbs = route.breadcrumbs ?? []
+  const schema = buildBreadcrumbJsonLd(breadcrumbs)
+  const parsed = JSON.parse(serializeJsonLd(schema))
+
+  assert.deepEqual(
+    parsed.itemListElement.map((entry: { name: string; item: string }) => ({
+      name: entry.name,
+      item: entry.item,
+    })),
+    breadcrumbs.map((breadcrumb) => ({
+      name: breadcrumb.name,
+      item: absoluteUrl(breadcrumb.path),
+    })),
+  )
+
+  const pageSource = readFileSync(
+    new URL('../app/qr-menu-from-pdf/page.tsx', import.meta.url),
+    'utf8',
+  )
+  assert.match(pageSource, /buildBreadcrumbJsonLd\(breadcrumbs\)/)
+  assert.match(pageSource, /<nav[\s\S]*?aria-label="Breadcrumb"/)
+  assert.match(pageSource, /breadcrumbs\.map/)
 })
 
 test('static sitemap entries are absolute, unique, deterministic, and public', () => {

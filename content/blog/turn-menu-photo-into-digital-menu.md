@@ -1,5 +1,6 @@
 ---
 title: How to Turn a Menu Photo Into an Editable Digital Menu
+heading: Turn a photo of your menu into an editable digital menu
 description: Photograph a printed restaurant menu clearly, review the extracted dishes and prices, and prepare a mobile menu that is ready to share by QR code.
 publishedAt: 2026-08-07
 author: Qtable Product Team
@@ -33,7 +34,7 @@ Use this quick capture routine for each page:
 
 Photograph one page per image. A single picture containing an open booklet may look efficient, but the center fold, page angle, and smaller type make review harder. If a page has unusually small print, two overlapping close photos can be clearer than one distant shot—as long as you check duplicates after import.
 
-Qtable currently accepts JPG, PNG, WEBP, HEIC, and HEIF images in its menu import flow. A PDF is also an option when you have the original digital file.
+Qtable currently accepts JPG, PNG, WEBP, HEIC, and HEIF images in its menu import flow. A PDF is also an option when you have the original digital file; see the complete [PDF-to-QR menu workflow](/qr-menu-from-pdf) when that is your source.
 
 ## Import the photos as a draft
 
@@ -69,7 +70,7 @@ Look especially at page edges and overlaps between photos. These are the common 
 
 A digitized menu should be easier to use than a photograph of paper. Add the restaurant name and brand details, choose a layout that fits the amount of content, and preview the result at a narrow phone width.
 
-Check that guests can move between categories without repeated zooming, that long names wrap cleanly, and that prices stay associated with the right dishes. Dish photos are optional: use accurate, approved images where they help, but do not delay a clear text menu just to fill every image slot.
+Check that guests can move between categories without repeated zooming, that long names wrap cleanly, and that prices stay associated with the right dishes. The W3C's [reflow guidance](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html) explains why adapting content to a narrow viewport matters. Dish photos are optional: use accurate, approved images where they help, but do not delay a clear text menu just to fill every image slot.
 
 ## Publish, scan, and test
 
@@ -77,7 +78,7 @@ Once the content is approved, publish the menu and open its QR code with a real 
 
 Use at least two phones if available, and try the code at the distance and lighting guests will encounter. Browse every category, open a few long dishes, and confirm the restaurant name, currency, prices, and dietary notes one final time. Keep a plain-text “Menu” or “Scan to view menu” label near the code so its purpose is clear.
 
-After launch, menu edits happen in the editable menu rather than in the original photo. Existing table QR codes continue to point to that menu, so the team can correct a description or update a price without rebuilding the photographed source.
+After launch, menu edits happen in the editable menu rather than in the original photo. Existing table QR codes continue to point to that menu, so the team can correct a description or update a price without rebuilding the photographed source. Read [how to edit a QR menu without reprinting](/blog/edit-qr-menu-without-reprinting) for the cases where the destination itself changes.
 
 ## A short checklist
 
@@ -88,5 +89,7 @@ After launch, menu edits happen in the editable menu rather than in the original
 - Dietary and allergen details were verified by the restaurant.
 - The mobile preview works without pinching and zooming.
 - A printed QR proof was scanned on real phones before the full print run.
+
+Before ordering every table card, run the complete [restaurant QR menu launch checklist](/blog/qr-menu-launch-checklist).
 
 Ready to replace retyping with a reviewable first draft? [Import your menu photos in Qtable](/onboarding), then keep this checklist beside the source while you approve the result.

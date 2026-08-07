@@ -4,8 +4,10 @@ import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, OG_IMAGE, SITE_NAME, SITE_URL } fro
 type ChangeFrequency = NonNullable<MetadataRoute.Sitemap[number]['changeFrequency']>
 
 export type AcquisitionRoute = {
-  path: '/' | '/blog' | '/changelog'
+  path: '/' | '/blog' | '/changelog' | '/qr-menu-from-pdf'
   title: string
+  heading: string
+  primaryIntent: string
   description: string
   socialImage: string
   publishedAt: string
@@ -20,6 +22,8 @@ export const ACQUISITION_ROUTES = [
   {
     path: '/',
     title: DEFAULT_TITLE,
+    heading: 'Your menu, on every table, just a scan away.',
+    primaryIntent: 'create a QR menu for a restaurant',
     description: DEFAULT_DESCRIPTION,
     socialImage: OG_IMAGE.url,
     publishedAt: '2026-06-13',
@@ -31,6 +35,8 @@ export const ACQUISITION_ROUTES = [
   {
     path: '/blog',
     title: 'Restaurant menu guides and practical QR tips | Qtable',
+    heading: 'Better digital menus start with practical details.',
+    primaryIntent: 'restaurant QR menu guides',
     description:
       'Practical guides for turning printed restaurant menus into clear, editable mobile menus and reliable QR experiences.',
     socialImage: OG_IMAGE.url,
@@ -42,8 +48,28 @@ export const ACQUISITION_ROUTES = [
     breadcrumbs: [{ name: 'Blog', path: '/blog' }],
   },
   {
+    path: '/qr-menu-from-pdf',
+    title: 'Convert a PDF Menu to an Editable QR Menu | Qtable',
+    heading: 'Turn your PDF into an editable mobile QR menu',
+    primaryIntent: 'convert PDF menu to QR code',
+    description:
+      'Import a restaurant PDF menu, review the extracted dishes and prices, then publish an editable mobile menu behind a reusable QR code.',
+    socialImage: OG_IMAGE.url,
+    publishedAt: '2026-08-07',
+    modifiedAt: '2026-08-07',
+    changeFrequency: 'monthly',
+    priority: 0.9,
+    indexable: true,
+    breadcrumbs: [
+      { name: 'Home', path: '/' },
+      { name: 'PDF to QR menu', path: '/qr-menu-from-pdf' },
+    ],
+  },
+  {
     path: '/changelog',
     title: 'Qtable product updates and changelog',
+    heading: 'Changelog',
+    primaryIntent: 'Qtable product updates',
     description:
       'See the latest improvements to Qtable digital menus, QR codes, and restaurant tools.',
     socialImage: OG_IMAGE.url,
@@ -74,7 +100,7 @@ export function absoluteUrl(path: string) {
   return normalizedPath === '/' ? SITE_URL : `${SITE_URL}${normalizedPath}`
 }
 
-export function getAcquisitionRoute(path: AcquisitionPath) {
+export function getAcquisitionRoute(path: AcquisitionPath): AcquisitionRoute {
   const route = ACQUISITION_ROUTES.find((candidate) => candidate.path === path)
 
   if (!route) {
@@ -176,5 +202,18 @@ export function buildHomepageJsonLd() {
         publisher: { '@id': `${SITE_URL}/#organization` },
       },
     ],
+  }
+}
+
+export function buildBreadcrumbJsonLd(breadcrumbs: readonly { name: string; path: string }[]) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumbs.map((breadcrumb, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      name: breadcrumb.name,
+      item: absoluteUrl(breadcrumb.path),
+    })),
   }
 }

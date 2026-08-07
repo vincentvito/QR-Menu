@@ -17,6 +17,7 @@ const changelog = [
         type: 'added' as const,
         items: [
           'Added a practical restaurant menu blog, starting with a guide to turning menu photos into an editable digital menu',
+          'Added a PDF-to-QR menu guide and practical comparisons, update instructions, and a pre-print launch checklist',
         ],
       },
       {

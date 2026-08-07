@@ -9,6 +9,7 @@ The filename is the slug and must use lowercase words separated by hyphens. Publ
 ```md
 ---
 title: How to Prepare a Restaurant Menu for a QR Launch
+heading: Prepare your restaurant menu for a reliable QR launch
 description: A practical summary that is specific to this guide.
 publishedAt: 2026-08-07
 modifiedAt: 2026-08-14

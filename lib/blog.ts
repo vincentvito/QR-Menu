@@ -19,6 +19,7 @@ export type BlogPostSource = {
 export type BlogPost = {
   slug: string
   title: string
+  heading: string
   description: string
   publishedAt: string
   modifiedAt?: string
@@ -189,7 +190,7 @@ export function buildBlogPostJsonLd(post: BlogPost) {
       {
         '@type': 'BlogPosting',
         '@id': `${canonical}#article`,
-        headline: post.title,
+        headline: post.heading,
         description: post.description,
         datePublished: post.publishedAt,
         dateModified: post.modifiedAt ?? post.publishedAt,
@@ -261,6 +262,7 @@ function toPostMeta(post: BlogPost): BlogPostMeta {
   return {
     slug: post.slug,
     title: post.title,
+    heading: post.heading,
     description: post.description,
     publishedAt: post.publishedAt,
     modifiedAt: post.modifiedAt,
@@ -349,6 +351,7 @@ function buildPost(
   fileName: string,
 ): BlogPost {
   const title = requiredString(frontmatter, 'title', fileName)
+  const heading = requiredString(frontmatter, 'heading', fileName)
   const description = requiredString(frontmatter, 'description', fileName)
   const publishedAt = requiredDate(frontmatter, 'publishedAt', fileName)
   const modifiedAt = optionalDate(frontmatter, 'modifiedAt', fileName)
@@ -374,6 +377,7 @@ function buildPost(
   return {
     slug,
     title,
+    heading,
     description,
     publishedAt,
     modifiedAt,

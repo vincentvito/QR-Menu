@@ -20,6 +20,9 @@ export default function BlogPage() {
             <BrandMark size="md" />
           </Link>
           <div className="flex items-center gap-3">
+            <Link href="/qr-menu-from-pdf" className="hidden text-sm font-medium sm:inline">
+              PDF to QR menu
+            </Link>
             <Link href="/#resources" className="hidden text-sm font-medium sm:inline">
               FAQ
             </Link>
@@ -73,6 +76,7 @@ export default function BlogPage() {
           <span>Practical restaurant menu guidance from Qtable.</span>
           <div className="flex gap-5">
             <Link href="/">Home</Link>
+            <Link href="/qr-menu-from-pdf">PDF to QR menu</Link>
             <Link href="/#resources">FAQ</Link>
           </div>
         </div>

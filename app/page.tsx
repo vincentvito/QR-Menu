@@ -498,6 +498,15 @@ function Process({ t }: { t: T }) {
             </div>
           ))}
         </div>
+        <div className="mt-8 text-center">
+          <Link
+            href="/qr-menu-from-pdf"
+            className="inline-flex items-center gap-2 text-sm font-semibold underline decoration-1 underline-offset-4"
+          >
+            Already have a PDF? See the PDF-to-QR menu workflow
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </div>
       </div>
     </section>
   )
@@ -1136,13 +1145,18 @@ function Footer({ t, year }: { t: T; year: number }) {
                 </div>
                 <ul className="m-0 list-none p-0">
                   {links.map((l, index) => {
-                    const isBlogLink = col === 'resources' && index === 0
+                    const resourceHref =
+                      col === 'resources' && index === 0
+                        ? '/blog'
+                        : col === 'resources' && index === 1
+                          ? '/qr-menu-from-pdf'
+                          : null
 
                     return (
                       <li key={l} className="py-1">
-                        {isBlogLink ? (
+                        {resourceHref ? (
                           <Link
-                            href="/blog"
+                            href={resourceHref}
                             className="text-[13px] transition-opacity hover:opacity-70"
                           >
                             {l}

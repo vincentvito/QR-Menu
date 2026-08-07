@@ -104,7 +104,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               ))}
             </div>
             <h1 className="mt-7 text-5xl leading-[1] font-semibold tracking-[-0.04em] sm:text-6xl">
-              {post.title}
+              {post.heading}
             </h1>
             <p className="text-muted-foreground mt-6 text-xl leading-8">{post.description}</p>
             <div className="text-muted-foreground mt-7 flex flex-wrap gap-x-5 gap-y-2 text-sm">
@@ -139,7 +139,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
               Start with the menu you have
             </p>
             <h2 className="mt-4 text-3xl leading-tight font-semibold tracking-[-0.02em]">
-              Turn your menu photo into a reviewable first draft.
+              Turn the menu you already have into a reviewable first draft.
             </h2>
             <p className="text-background/75 mt-4 max-w-xl leading-7">
               Upload a photo, PDF, website link, or pasted text. Review every dish and price before
@@ -147,8 +147,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </p>
             <div className="mt-7 flex flex-wrap gap-3">
               <PillButton asChild variant="accent" size="lg">
-                <Link href="/onboarding">
-                  Import your menu
+                <Link href="/qr-menu-from-pdf">
+                  See the PDF-to-QR workflow
                   <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
               </PillButton>
