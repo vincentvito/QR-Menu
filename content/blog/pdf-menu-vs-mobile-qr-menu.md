@@ -16,14 +16,14 @@ The QR code itself does not decide the experience. Its destination does.
 
 ## The practical difference
 
-| Question              | QR code linked to a PDF                               | QR code linked to a mobile menu                               |
-| --------------------- | ----------------------------------------------------- | ------------------------------------------------------------- |
-| What opens?           | The original fixed-layout document                    | A webpage organized into categories and dishes                |
-| Phone reading         | Depends on the PDF page size and design               | Content can reflow to the screen width                        |
-| Updating              | Edit and export the PDF, then replace the hosted file | Edit menu fields and publish to the same address              |
-| Setup                 | Usually quick when a finished PDF exists              | Requires import, review, and presentation choices             |
-| Search and navigation | Usually relies on the document viewer                 | Can provide browseable categories and structured dish details |
-| Best fit              | Stable, short, phone-readable documents               | Frequently changing or detailed restaurant menus              |
+| Question              | QR code linked to a PDF                               | QR code linked to a mobile menu                              |
+| --------------------- | ----------------------------------------------------- | ------------------------------------------------------------ |
+| What opens?           | The original fixed-layout document                    | A webpage organized into categories and dishes               |
+| Phone reading         | Depends on the PDF page size and design               | Content can reflow to the screen width                       |
+| Updating              | Edit and export the PDF, then replace the hosted file | Edit menu fields and publish to the same address             |
+| Setup                 | Usually quick when a finished PDF exists              | Requires import, review, and presentation choices            |
+| Search and navigation | Usually relies on the document viewer                 | Can provide browsable categories and structured dish details |
+| Best fit              | Stable, short, phone-readable documents               | Frequently changing or detailed restaurant menus             |
 
 The accessibility principle behind the mobile distinction is straightforward: the W3C's [reflow guidance](https://www.w3.org/WAI/WCAG22/Understanding/reflow.html) explains why content that adapts without two-dimensional scrolling is easier to use at narrow widths. That does not make every PDF unusable, but it gives you a useful test: open the real document on a small phone and try to read a price without zooming.
 

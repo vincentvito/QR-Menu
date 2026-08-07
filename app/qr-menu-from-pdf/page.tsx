@@ -298,7 +298,7 @@ export default function PdfToQrMenuPage() {
                   unusual price formats, and ambiguous dietary notes need careful human review.
                 </p>
                 <p>
-                  Qtable creates a browseable menu; this page does not promise online ordering, POS
+                  Qtable creates a browsable menu; this page does not promise online ordering, POS
                   integration, guaranteed extraction accuracy, or automatic translation of your menu
                   content.
                 </p>
