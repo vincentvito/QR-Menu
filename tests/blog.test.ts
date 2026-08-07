@@ -11,6 +11,7 @@ import {
   buildBlogPostJsonLd,
   buildBlogPostMetadata,
   getAllBlogPosts,
+  getBlogBreadcrumbs,
   getBlogPost,
   getInternalMarkdownLinks,
   parseBlogSources,
@@ -214,7 +215,11 @@ test('metadata, canonical, JSON-LD, and sitemap use the same article URL and dat
   const canonical = absoluteUrl(blogPostPath(post.slug))
   const metadata = buildBlogPostMetadata(post)
   const schema = buildBlogPostJsonLd(post)
-  const article = schema['@graph'][0] as { '@id': string; mainEntityOfPage: string }
+  const article = schema['@graph'][0] as {
+    '@id': string
+    mainEntityOfPage: string
+    author: { '@type': string; name: string; description: string }
+  }
   const breadcrumb = schema['@graph'][1] as {
     itemListElement: { item: string }[]
   }
@@ -224,6 +229,11 @@ test('metadata, canonical, JSON-LD, and sitemap use the same article URL and dat
   assert.equal(String(metadata.alternates?.canonical), canonical)
   assert.equal(article['@id'], `${canonical}#article`)
   assert.equal(article.mainEntityOfPage, canonical)
+  assert.deepEqual(article.author, {
+    '@type': 'Organization',
+    name: post.author,
+    description: post.authorRole,
+  })
   assert.equal(breadcrumb.itemListElement.at(-1)?.item, canonical)
   assert.equal(entry?.lastModified, post.publishedAt)
 })
@@ -238,6 +248,35 @@ test('the blog index registry is canonical and unknown posts remain unavailable'
   const pageSource = readFileSync(new URL('../app/blog/[slug]/page.tsx', import.meta.url), 'utf8')
   assert.match(pageSource, /if \(!post\) notFound\(\)/)
   assert.match(pageSource, /getRelatedPosts\(post\.slug, post\.tags, 3\)/)
+})
+
+test('visible article breadcrumbs and schema share the same three-item model', () => {
+  const post = getBlogPost('turn-menu-photo-into-digital-menu', {
+    production: true,
+    now: NOW,
+  }) as BlogPost
+  const breadcrumbs = getBlogBreadcrumbs(post)
+  const schema = buildBlogPostJsonLd(post)
+  const schemaBreadcrumbs = (
+    schema['@graph'][1] as {
+      itemListElement: { position: number; name: string; item: string }[]
+    }
+  ).itemListElement
+
+  assert.deepEqual(
+    breadcrumbs.map((breadcrumb, index) => ({
+      position: index + 1,
+      name: breadcrumb.name,
+      item: absoluteUrl(breadcrumb.path),
+    })),
+    schemaBreadcrumbs.map(({ position, name, item }) => ({ position, name, item })),
+  )
+
+  const pageSource = readFileSync(new URL('../app/blog/[slug]/page.tsx', import.meta.url), 'utf8')
+  assert.match(pageSource, /const breadcrumbs = getBlogBreadcrumbs\(post\)/)
+  assert.match(pageSource, /<nav aria-label="Breadcrumb">/)
+  assert.match(pageSource, /breadcrumbs\.map/)
+  assert.match(pageSource, /aria-current="page"/)
 })
 
 test('publication metadata and cards do not expose draft fields or content', () => {

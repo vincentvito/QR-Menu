@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, ArrowRight } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import type { Metadata } from 'next'
 import { BrandMark } from '@/components/brand/BrandMark'
 import { BlogCard } from '@/components/blog/BlogCard'
@@ -14,6 +14,7 @@ import {
   buildBlogPostMetadata,
   formatPostDate,
   getAllBlogPostMeta,
+  getBlogBreadcrumbs,
   getBlogPost,
   getRelatedPosts,
 } from '@/lib/blog'
@@ -50,6 +51,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   if (!post) notFound()
 
   const relatedPosts = getRelatedPosts(post.slug, post.tags, 3)
+  const breadcrumbs = getBlogBreadcrumbs(post)
 
   return (
     <div className="bg-background text-foreground min-h-screen">
@@ -70,10 +72,28 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
       <main>
         <article className="mx-auto max-w-3xl px-5 py-14 sm:px-8 md:py-20">
-          <Link href="/blog" className="inline-flex items-center gap-2 text-sm font-medium">
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Back to the blog
-          </Link>
+          <nav aria-label="Breadcrumb">
+            <ol className="text-muted-foreground flex min-w-0 items-center gap-2 text-sm">
+              {breadcrumbs.map((breadcrumb, index) => {
+                const isCurrent = index === breadcrumbs.length - 1
+
+                return (
+                  <li key={breadcrumb.path} className="flex min-w-0 items-center gap-2">
+                    {index > 0 ? <span aria-hidden="true">/</span> : null}
+                    {isCurrent ? (
+                      <span aria-current="page" className="truncate" title={breadcrumb.name}>
+                        {breadcrumb.name}
+                      </span>
+                    ) : (
+                      <Link href={breadcrumb.path} className="text-foreground font-medium">
+                        {breadcrumb.name}
+                      </Link>
+                    )}
+                  </li>
+                )
+              })}
+            </ol>
+          </nav>
 
           <header className="border-cream-line mt-10 border-b pb-10">
             <div className="flex flex-wrap gap-2">

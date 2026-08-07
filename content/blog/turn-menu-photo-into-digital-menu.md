@@ -19,7 +19,7 @@ Set the menu on a flat surface near a window or under even overhead light. Remov
 
 Check the source before digitizing it. Crossed-out prices, handwritten specials, faded print, and old allergen notes may be faithfully carried into the draft even though they should not be published. Mark the current version first so your digital menu does not begin with outdated information.
 
-If the menu has several pages, decide their order before shooting. Qtable accepts up to three import files at once. Each file must be under 10 MB, and the group must stay within 20 MB. For a longer menu, divide the work into clear batches rather than squeezing several distant pages into one photograph.
+If the menu has several pages, decide their order before shooting. Qtable accepts up to three import files at once. For a longer menu, divide the work into clear batches rather than squeezing several distant pages into one photograph.
 
 ## Take a readable menu photo
 

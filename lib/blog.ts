@@ -181,6 +181,7 @@ export function buildBlogPostMetadata(post: BlogPost): Metadata {
 
 export function buildBlogPostJsonLd(post: BlogPost) {
   const canonical = absoluteUrl(blogPostPath(post.slug))
+  const breadcrumbs = getBlogBreadcrumbs(post)
 
   return {
     '@context': 'https://schema.org',
@@ -193,9 +194,9 @@ export function buildBlogPostJsonLd(post: BlogPost) {
         datePublished: post.publishedAt,
         dateModified: post.modifiedAt ?? post.publishedAt,
         author: {
-          '@type': 'Person',
+          '@type': 'Organization',
           name: post.author,
-          jobTitle: post.authorRole,
+          description: post.authorRole,
         },
         publisher: {
           '@type': 'Organization',
@@ -207,29 +208,23 @@ export function buildBlogPostJsonLd(post: BlogPost) {
       },
       {
         '@type': 'BreadcrumbList',
-        itemListElement: [
-          {
-            '@type': 'ListItem',
-            position: 1,
-            name: 'Home',
-            item: absoluteUrl('/'),
-          },
-          {
-            '@type': 'ListItem',
-            position: 2,
-            name: 'Blog',
-            item: absoluteUrl(BLOG_INDEX.path),
-          },
-          {
-            '@type': 'ListItem',
-            position: 3,
-            name: post.title,
-            item: canonical,
-          },
-        ],
+        itemListElement: breadcrumbs.map((breadcrumb, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: breadcrumb.name,
+          item: absoluteUrl(breadcrumb.path),
+        })),
       },
     ],
   }
+}
+
+export function getBlogBreadcrumbs(post: Pick<BlogPost, 'slug' | 'title'>) {
+  return [
+    { name: 'Home', path: '/' },
+    { name: 'Blog', path: BLOG_INDEX.path },
+    { name: post.title, path: blogPostPath(post.slug) },
+  ] as const
 }
 
 export function blogSitemapEntries(options: PublicationOptions = {}): MetadataRoute.Sitemap {
