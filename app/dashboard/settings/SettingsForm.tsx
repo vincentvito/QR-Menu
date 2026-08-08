@@ -165,7 +165,7 @@ interface SettingsFormProps {
   templatePreviewMockupUrl: string
   /**
    * Real menu data for the template preview. Null when the restaurant
-   * hasn't created a menu yet — the preview falls back to demo data.
+   * hasn't created a menu yet: the preview falls back to demo data.
    */
   templatePreviewData: TemplatePreviewRealData | null
   /** Used only for the live QR preview. `name` is null when there's no
@@ -397,7 +397,7 @@ export function SettingsForm({
             <SelectContent>
               {CURRENCIES.map((c) => (
                 <SelectItem key={c.code} value={c.code}>
-                  {c.symbol} — {c.label}
+                  {c.symbol} ? {c.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -1258,7 +1258,7 @@ function HandleField({
   placeholder?: string
 }) {
   // Strip a typed `@` so the visible value stays aligned with the prefix
-  // adornment. Users can still paste `@handle` or a URL — the server-side
+  // adornment. Users can still paste `@handle` or a URL: the server-side
   // normalize covers both.
   const display = value.replace(/^@/, '')
   return (
@@ -1331,14 +1331,14 @@ function ColorField({
 
   function handleTextChange(next: string) {
     setLocal(next)
-    // Only propagate once it's a complete hex — avoids thrashing while typing.
+    // Only propagate once it's a complete hex: avoids thrashing while typing.
     if (/^#[0-9A-Fa-f]{6}$/.test(next) || next === '') {
       schedulePropagate(next)
     }
   }
 
   function handleTextBlur() {
-    // On blur, always flush — catches intermediate states the user settled on.
+    // On blur, always flush: catches intermediate states the user settled on.
     if (timerRef.current) clearTimeout(timerRef.current)
     if (local !== value) onChange(local)
   }

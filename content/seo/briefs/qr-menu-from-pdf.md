@@ -3,7 +3,7 @@
 - Status: approved first-cluster hub
 - Canonical: `/qr-menu-from-pdf`
 - Target user/job: a restaurant owner with an existing PDF who wants a table-ready QR menu without manually retyping every dish.
-- Primary intent/query: transactional — “convert PDF menu to QR code.”
+- Primary intent/query: transactional: “convert PDF menu to QR code.”
 - Secondary queries: “upload restaurant menu PDF create QR code,” “convert restaurant menu to digital menu.”
 - Funnel/CTA: bottom funnel; primary CTA “Upload your menu,” secondary CTA “View a sample mobile menu.”
 - Author/reviewer: product marketing / product owner and SEO reviewer.

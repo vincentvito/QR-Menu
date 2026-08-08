@@ -12,7 +12,7 @@ imageAlt: A restaurant owner photographing a printed menu on a table beside a wi
 draft: false
 ---
 
-A phone photo can be enough to start a digital menu. The important part is not making the photo look artistic. It is giving the importer a straight, readable view of every menu line—and then treating the extracted menu as a draft that a person must check.
+A phone photo can be enough to start a digital menu. The important part is not making the photo look artistic. It is giving the importer a straight, readable view of every menu line, and then treating the extracted menu as a draft that a person must check.
 
 This guide covers the whole job: preparing the paper, taking clear photos, reviewing the result, and testing the menu on a guest’s phone before a QR code reaches the tables.
 
@@ -36,7 +36,7 @@ Use this quick capture routine for each page:
 4. **Focus on the text.** Tap near the center of the page and wait for the camera to settle before taking the picture.
 5. **Review at full size.** Zoom into the smallest price and description. If you cannot read them comfortably, take the photo again.
 
-Photograph one page per image. A single picture containing an open booklet may look efficient, but the center fold, page angle, and smaller type make review harder. If a page has unusually small print, two overlapping close photos can be clearer than one distant shot—as long as you check duplicates after import.
+Photograph one page per image. A single picture containing an open booklet may look efficient, but the center fold, page angle, and smaller type make review harder. If a page has unusually small print, two overlapping close photos can be clearer than one distant shot, as long as you check duplicates after import.
 
 Qtable currently accepts JPG, PNG, WEBP, HEIC, and HEIF images in its menu import flow. A PDF is also an option when you have the original digital file; see the complete [PDF-to-QR menu workflow](/qr-menu-from-pdf) when that is your source.
 
@@ -60,7 +60,7 @@ Compare spelling, accents, punctuation, and optional ingredients line by line. K
 
 ### 3. Prices and variants
 
-Prices deserve a second pass by someone who knows the current menu. Check decimal separators and currency, then review dishes with multiple sizes or portions. A pizza with small, medium, and large prices should remain one understandable item with the correct variants—not three unrelated dishes.
+Prices deserve a second pass by someone who knows the current menu. Check decimal separators and currency, then review dishes with multiple sizes or portions. A pizza with small, medium, and large prices should remain one understandable item with the correct variants, not three unrelated dishes.
 
 ### 4. Dietary and allergen information
 

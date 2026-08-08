@@ -29,7 +29,7 @@ interface AnalyticsDashboardProps {
 }
 
 function formatPercent(num: number, denom: number): string {
-  if (denom === 0) return '—'
+  if (denom === 0) return 'N/A'
   return `${((num / denom) * 100).toFixed(1)}%`
 }
 
@@ -39,7 +39,7 @@ function formatDate(iso: string, locale: string): string {
 }
 
 function formatHour(h: number): string {
-  // 12-hour labels — easier to skim at a glance than military time.
+  // 12-hour labels: easier to skim at a glance than military time.
   if (h === 0) return '12a'
   if (h === 12) return '12p'
   return h < 12 ? `${h}a` : `${h - 12}p`
@@ -52,7 +52,7 @@ export function AnalyticsDashboard({ range, kpis, daily, peak, social }: Analyti
 
   return (
     <div className="space-y-6">
-      {/* Range tabs — use <Link> so the server refetches aggregates.
+      {/* Range tabs: use <Link> so the server refetches aggregates.
           Tiny UX trade: one RSC round-trip on toggle; chart data is
           accurate to the second, no stale client state to reconcile. */}
       <div className="border-cream-line inline-flex rounded-full border p-0.5 text-xs">
@@ -74,7 +74,7 @@ export function AnalyticsDashboard({ range, kpis, daily, peak, social }: Analyti
         </Link>
       </div>
 
-      {/* KPI row. Small cards, one stat each — readable without hover. */}
+      {/* KPI row. Small cards, one stat each: readable without hover. */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Kpi label={t('kpis.scans')} value={kpis.scans.toLocaleString()} hint={t('hints.scans')} />
         <Kpi

@@ -36,7 +36,7 @@ Open the menu in a private browser window on a device that is not signed in. In 
 - [ ] The restaurant has the trial, plan, or other access needed for publication.
 - [ ] The first screen clearly identifies the restaurant and menu.
 - [ ] The QR destination uses the exact address the team intends to keep.
-- [ ] A useful fallback—such as a short readable address or staff instruction—is available if a guest cannot scan.
+- [ ] A useful fallback, such as a short readable address or staff instruction, is available if a guest cannot scan.
 
 ## 3. Test the phone experience
 

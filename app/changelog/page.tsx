@@ -29,7 +29,10 @@ const changelog = [
       },
       {
         type: 'fixed' as const,
-        items: ['Blog guide cards now keep their titles aligned across the grid'],
+        items: [
+          'Blog guide cards now keep their titles aligned across the grid',
+          'Blog and interface copy now uses more natural punctuation throughout',
+        ],
       },
     ],
   },
@@ -80,7 +83,7 @@ const changelog = [
         type: 'added' as const,
         items: [
           'Each restaurant can now send daily or weekly analytics reports at 9:00 AM in its local time zone, in English, Spanish, or Italian',
-          'Add extra report recipients — each confirms their own address, and anyone can stop reports from the email without signing in',
+          'Add extra report recipients: each confirms their own address, and anyone can stop reports from the email without signing in',
         ],
       },
     ],
@@ -118,7 +121,7 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'Added a "Dish photos" setting in Menu design to hide all dish photos and show a clean text-only menu — photo-forward layouts switch to the Editorial layout automatically',
+          'Added a "Dish photos" setting in Menu design to hide all dish photos and show a clean text-only menu: photo-forward layouts switch to the Editorial layout automatically',
         ],
       },
     ],
@@ -295,14 +298,14 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'AI photo generation now picks the right look automatically for cocktails, beer and wine, hot coffee drinks, iced and blended drinks, desserts, and bakery items — not just plated food',
+          'AI photo generation now picks the right look automatically for cocktails, beer and wine, hot coffee drinks, iced and blended drinks, desserts, and bakery items: not just plated food',
           'Extra direction you type now steers mood, props, and garnish more strongly while still respecting photography quality rules',
         ],
       },
       {
         type: 'changed' as const,
         items: [
-          'AI photo panel is now cleaner — the internal prompt preview is gone for owners; just type the hint and let the model do the work',
+          'AI photo panel is now cleaner: the internal prompt preview is gone for owners; just type the hint and let the model do the work',
         ],
       },
     ],
@@ -483,7 +486,7 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'After setting up your restaurant you land on a Start your free trial step — pick Basic, Pro, or Business, capture a card through Stripe Checkout, and your 14 days plus 5 AI credits start instantly. Skip if you want to look around first; the trial is always available from Billing',
+          'After setting up your restaurant you land on a Start your free trial step: pick Basic, Pro, or Business, capture a card through Stripe Checkout, and your 14 days plus 5 AI credits start instantly. Skip if you want to look around first; the trial is always available from Billing',
         ],
       },
     ],
@@ -509,7 +512,7 @@ const changelog = [
       {
         type: 'changed' as const,
         items: [
-          'Creating a menu (URL scrape, PDF, text paste, photo) no longer spends an AI credit — extraction is free. Credits are reserved for per-dish image generation and enhancement, where the real cost lives',
+          'Creating a menu (URL scrape, PDF, text paste, photo) no longer spends an AI credit: extraction is free. Credits are reserved for per-dish image generation and enhancement, where the real cost lives',
         ],
       },
     ],
@@ -522,16 +525,16 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'New Analytics page at /dashboard/analytics — see scans over time, unique guests, peak hours (so you know when to staff up), WiFi reveals, review click-through rate, and social clicks by platform. Last 7 / 30 days toggle',
-          'Bigger, more prominent &ldquo;Leave us a Google review&rdquo; button at the bottom of the public menu — still only shows when you&apos;ve set a Google review URL in Settings',
-          '&ldquo;Add restaurant&rdquo; is live in the restaurant switcher — spin up additional venues under your account without leaving the dashboard. Blocked with a clear message when you&apos;re at your plan&apos;s restaurant limit',
+          'New Analytics page at /dashboard/analytics: see scans over time, unique guests, peak hours (so you know when to staff up), WiFi reveals, review click-through rate, and social clicks by platform. Last 7 / 30 days toggle',
+          'Bigger, more prominent &ldquo;Leave us a Google review&rdquo; button at the bottom of the public menu: still only shows when you&apos;ve set a Google review URL in Settings',
+          '&ldquo;Add restaurant&rdquo; is live in the restaurant switcher: spin up additional venues under your account without leaving the dashboard. Blocked with a clear message when you&apos;re at your plan&apos;s restaurant limit',
           'Trial banner at the top of the dashboard shows days remaining and turns red-urgent under 3 days so nobody is surprised by a card charge',
         ],
       },
       {
         type: 'changed' as const,
         items: [
-          'Rebranded to <strong>Qtable</strong> — new name, new home at <strong>qtable.ai</strong>. Same product, sharper identity. Wordmark, page titles, social cards, PWA install name, and OTP/invitation emails all reflect the new brand',
+          'Rebranded to <strong>Qtable</strong>: new name, new home at <strong>qtable.ai</strong>. Same product, sharper identity. Wordmark, page titles, social cards, PWA install name, and OTP/invitation emails all reflect the new brand',
           'Support and contact emails moved to <strong>hello@qtable.ai</strong>; transactional mail now sends from <strong>noreply@qtable.ai</strong>',
         ],
       },
@@ -553,25 +556,25 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'New Billing page at /dashboard/billing — see your current plan, AI credits remaining, and switch plans without leaving the app',
-          '14-day free trial with 5 AI credits — capture a card through Stripe Checkout to start it',
-          'Four subscription tiers: Basic, Pro, Business, and Enterprise — each billed monthly or yearly, with a toggle in the plan picker',
+          'New Billing page at /dashboard/billing: see your current plan, AI credits remaining, and switch plans without leaving the app',
+          '14-day free trial with 5 AI credits: capture a card through Stripe Checkout to start it',
+          'Four subscription tiers: Basic, Pro, Business, and Enterprise. Each is billed monthly or yearly, with a toggle in the plan picker',
           '&ldquo;Manage billing&rdquo; opens the Stripe customer portal so you can update your payment method, download invoices, or cancel any time',
-          'New Staff page at /dashboard/staff — invite managers and waiters by email; they get access to this specific restaurant only, not your billing or other restaurants',
+          'New Staff page at /dashboard/staff: invite managers and waiters by email; they get access to this specific restaurant only, not your billing or other restaurants',
           'Revoke a pending staff invitation or remove an active staff member with one click',
-          'Read-only mode — if a plan change leaves you with more restaurants than your tier supports, the extras turn read-only: public menus keep serving guests, but dashboard editing is locked until you upgrade or pick which ones stay active',
-          'Activation picker on the Billing page — swap which restaurants stay active under your current plan without upgrading',
-          'Restaurant switcher in the dashboard sidebar — the foundation for managing multiple venues from one account (adding more restaurants ships next)',
-          'Buy-credits button on the Billing page — top up with a one-time 100-credit pack for $15 when you run out mid-month. Credits land in your bonus bucket and never expire',
+          'Read-only mode: if a plan change leaves you with more restaurants than your tier supports, the extras turn read-only. Public menus keep serving guests, but dashboard editing is locked until you upgrade or pick which ones stay active',
+          'Activation picker on the Billing page: swap which restaurants stay active under your current plan without upgrading',
+          'Restaurant switcher in the dashboard sidebar: the foundation for managing multiple venues from one account (adding more restaurants ships next)',
+          'Buy-credits button on the Billing page: top up with a one-time 100-credit pack for $15 when you run out mid-month. Credits land in your bonus bucket and never expire',
         ],
       },
       {
         type: 'changed' as const,
         items: [
-          'Restaurant-scoped staff (managers and waiters) now see a focused sidebar with just Menus and Staff — account-level pages like Billing, Team, and Settings are hidden from their view and redirect back to Menus if opened directly',
-          'Logos are now per-restaurant — each venue in your account can have its own logo for the public menu, the dashboard sidebar, and the QR code center. Existing logos are carried over automatically',
-          'AI features now meter against your plan&apos;s monthly credits — creating a menu from a URL/photo/PDF, generating a dish photo, and enhancing a photo each cost 1 credit. The monthly bucket refills on each plan renewal; unused monthly credits don&apos;t carry over',
-          'Settings now save to the specific restaurant you&apos;re viewing — so in the multi-restaurant world every venue can have its own branding, QR style, and WiFi details',
+          'Restaurant-scoped staff (managers and waiters) now see a focused sidebar with just Menus and Staff: account-level pages like Billing, Team, and Settings are hidden from their view and redirect back to Menus if opened directly',
+          'Logos are now per-restaurant: each venue in your account can have its own logo for the public menu, the dashboard sidebar, and the QR code center. Existing logos are carried over automatically',
+          'AI features now meter against your plan&apos;s monthly credits: creating a menu from a URL/photo/PDF, generating a dish photo, and enhancing a photo each cost 1 credit. The monthly bucket refills on each plan renewal; unused monthly credits don&apos;t carry over',
+          'Settings now save to the specific restaurant you&apos;re viewing: so in the multi-restaurant world every venue can have its own branding, QR style, and WiFi details',
         ],
       },
     ],
@@ -584,32 +587,32 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'Upload a header image in Settings — it sits behind your restaurant name on the public menu with a soft dark gradient so the name stays readable on any photo. When no image is set, the brand-color gradient still shows as before',
-          'New Restaurant name color setting in Menu design — pick any hex to override the default when a header image makes the name hard to read, with the change reflected live in the Settings preview',
-          'New Category tiles template — lands guests on a grid of big square category buttons with a specials tile on top. Tap a tile to browse that category; a sticky bottom bar holds search and quick-jump buttons for every category',
-          'Settings page now has a sticky left-side quick-nav — jump straight to Restaurant, Links, Menu design, Brand, QR code style, or WiFi without scrolling. The current section highlights as you scroll',
-          'Today&apos;s Specials section now glows in your brand&apos;s accent color — the block lifts off the page so specials feel like the first thing guests notice',
+          'Upload a header image in Settings: it sits behind your restaurant name on the public menu with a soft dark gradient so the name stays readable on any photo. When no image is set, the brand-color gradient still shows as before',
+          'New Restaurant name color setting in Menu design: pick any hex to override the default when a header image makes the name hard to read, with the change reflected live in the Settings preview',
+          'New Category tiles template: lands guests on a grid of big square category buttons with a specials tile on top. Tap a tile to browse that category; a sticky bottom bar holds search and quick-jump buttons for every category',
+          'Settings page now has a sticky left-side quick-nav: jump straight to Restaurant, Links, Menu design, Brand, QR code style, or WiFi without scrolling. The current section highlights as you scroll',
+          'Today&apos;s Specials section now glows in your brand&apos;s accent color: the block lifts off the page so specials feel like the first thing guests notice',
         ],
       },
       {
         type: 'changed' as const,
         items: [
-          'Tightened the public menu header — restaurant name, logo, and menu label shrunk so guests see dishes sooner without scrolling',
-          'Removed the QRmenucrafter wordmark from the public menu header — it already appears in the footer, so the top of the page is fully your restaurant',
-          'Settings now offers save buttons at the bottom of each section, with subtle dividers between sections — Restaurant, Links, Menu design, Brand, QR code style, and WiFi are easier to scan and save without jumping to the end of the page',
-          'WiFi badge on the public menu now uses a solid card instead of a frosted pill — stays legible on any header image or theme',
+          'Tightened the public menu header: restaurant name, logo, and menu label shrunk so guests see dishes sooner without scrolling',
+          'Removed the QRmenucrafter wordmark from the public menu header: it already appears in the footer, so the top of the page is fully your restaurant',
+          'Settings now offers save buttons at the bottom of each section, with subtle dividers between sections: Restaurant, Links, Menu design, Brand, QR code style, and WiFi are easier to scan and save without jumping to the end of the page',
+          'WiFi badge on the public menu now uses a solid card instead of a frosted pill: stays legible on any header image or theme',
         ],
       },
       {
         type: 'fixed' as const,
         items: [
-          'WiFi reveal button no longer causes a hydration warning on first render — the sheet opens cleanly on the first tap',
+          'WiFi reveal button no longer causes a hydration warning on first render: the sheet opens cleanly on the first tap',
           'Removing or replacing a header image now cleans up the previous file from storage, so unused images don&apos;t linger',
           'The Settings phone mockup now includes the same menu header, search bar, and category chips as your live menu, so the preview matches what guests actually see on mobile',
           'Template previews in Settings now scale the menu viewport down more accurately inside the phone frame, so dish photos and spacing no longer look oversized compared with the real mobile page',
           'Photo grid menus with a single Today&apos;s Special now show it in a focused featured card instead of leaving an awkward half-empty specials block',
           'Category tiles now renders correctly inside the Settings phone mockup, and its bottom search/pill bar stays pinned to the phone bottom like the live public menu',
-          'Switching templates or saving settings no longer leaves a giant blank scroll area inside the phone mockup preview — its height now shrinks back to the real content like it does after a refresh',
+          'Switching templates or saving settings no longer leaves a giant blank scroll area inside the phone mockup preview: its height now shrinks back to the real content like it does after a refresh',
           'Collapsed dashboard sidebar icons now stay centered on one clean vertical line instead of drifting out of alignment',
         ],
       },
@@ -624,21 +627,21 @@ const changelog = [
         type: 'added' as const,
         items: [
           'AED (UAE dirham) added to the currency list',
-          'The phone mockup in Menu design is now clickable — tap it to open your real menu in a new tab and see exactly how it looks live',
+          'The phone mockup in Menu design is now clickable: tap it to open your real menu in a new tab and see exactly how it looks live',
         ],
       },
       {
         type: 'changed' as const,
         items: [
-          'Creating a new menu drops you into the editor to review the extracted items, instead of the public menu view — you can polish before sharing',
-          'Removed the 20 MB file size cap on menu uploads — drop in any PDF or photo your device can send',
-          'Luxury theme price chips brightened to true gold — reads clearly as gold on the parchment page rather than olive-green on some displays',
+          'Creating a new menu drops you into the editor to review the extracted items, instead of the public menu view: you can polish before sharing',
+          'Removed the 20 MB file size cap on menu uploads: drop in any PDF or photo your device can send',
+          'Luxury theme price chips brightened to true gold: reads clearly as gold on the parchment page rather than olive-green on some displays',
         ],
       },
       {
         type: 'removed' as const,
         items: [
-          'The Badges enable/disable section in Settings — all five badges (Best Seller, Chef&apos;s Pick, Signature, New, Spicy) are now always available as toggleable chips on every dish in the editor',
+          'The Badges enable/disable section in Settings: all five badges (Best Seller, Chef&apos;s Pick, Signature, New, Spicy) are now always available as toggleable chips on every dish in the editor',
         ],
       },
     ],
@@ -646,22 +649,22 @@ const changelog = [
   {
     version: '0.19.0',
     date: '2026-04-20',
-    title: 'Share-ready menus — search + social polish',
+    title: 'Share-ready menus: search + social polish',
     changes: [
       {
         type: 'added' as const,
         items: [
-          'Every restaurant menu now has a custom social-share card — the restaurant&apos;s name, your brand colors, and dish count render in the link preview on iMessage, WhatsApp, Slack, Twitter, and Facebook',
-          'Google and other search engines now understand your menu as structured data — individual dishes, prices, and categories — so your menu can show up in richer search results',
-          'New branded app icon replaces the default — the QRmenucrafter Q appears in browser tabs, bookmarks, and iOS home-screen installs',
+          'Every restaurant menu now has a custom social-share card: the restaurant&apos;s name, your brand colors, and dish count render in the link preview on iMessage, WhatsApp, Slack, Twitter, and Facebook',
+          'Google and other search engines now understand your menu as structured data, including individual dishes, prices, and categories, so your menu can show up in richer search results',
+          'New branded app icon replaces the default: the QRmenucrafter Q appears in browser tabs, bookmarks, and iOS home-screen installs',
           'A default social card for the landing page when someone shares a link to qrmenucrafter',
         ],
       },
       {
         type: 'changed' as const,
         items: [
-          'Private dashboard routes (settings, menus, team, admin) now tell search engines not to index them — only your public menu pages, the landing, and the changelog are discoverable',
-          'Luxury theme repainted — deeper parchment page, espresso-brown text, and antique gold price chips. Now looks and feels clearly distinct from Editorial instead of just swapping the font',
+          'Private dashboard routes (settings, menus, team, admin) now tell search engines not to index them: only your public menu pages, the landing, and the changelog are discoverable',
+          'Luxury theme repainted: deeper parchment page, espresso-brown text, and antique gold price chips. Now looks and feels clearly distinct from Editorial instead of just swapping the font',
         ],
       },
     ],
@@ -674,10 +677,10 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'Five color + typography themes in Settings — Editorial (current look), Pastel, Luxury, Midnight, and Sunset. Each swaps the full palette and, where it fits, switches headings to the Instrument Serif display face',
-          'Midnight theme is effectively dark mode — deep ink with amber and burgundy accents, tuned for cocktail bars, wine bars, and lounges',
-          'Seasonal touch picker — add a gentle overlay of falling snow, amber autumn leaves, or celebration confetti in your brand colors. Pure CSS, no performance hit, and it respects &ldquo;reduce motion&rdquo;',
-          'The phone mockup preview in Settings reflects theme + seasonal choices live, alongside template and brand colors — pick any combination and see exactly how it&apos;ll look',
+          'Five color + typography themes in Settings: Editorial (current look), Pastel, Luxury, Midnight, and Sunset. Each swaps the full palette and, where it fits, switches headings to the Instrument Serif display face',
+          'Midnight theme is effectively dark mode: deep ink with amber and burgundy accents, tuned for cocktail bars, wine bars, and lounges',
+          'Seasonal touch picker: add a gentle overlay of falling snow, amber autumn leaves, or celebration confetti in your brand colors. Pure CSS, no performance hit, and it respects &ldquo;reduce motion&rdquo;',
+          'The phone mockup preview in Settings reflects theme + seasonal choices live, alongside template and brand colors: pick any combination and see exactly how it&apos;ll look',
         ],
       },
     ],
@@ -690,10 +693,10 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'New Menu design section in Settings — choose how your public menu is laid out',
+          'New Menu design section in Settings: choose how your public menu is laid out',
           'Two templates to start: Editorial (text-first with thumbnails) and Photo grid (photo-forward 2-column tiles for restaurants that lean on dish photos)',
           'Each template previews inside an iPhone mockup using your actual brand colors, so picking one is truly WYSIWYG',
-          'Switching templates is instant — no reload, no data migration — and the change shows up on your next /m/... visit',
+          'Switching templates is instant, with no reload or data migration, and the change shows up on your next /m/... visit',
         ],
       },
       {
@@ -717,13 +720,13 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          '&ldquo;Generate&rdquo; a dish photo with AI — uses the dish&apos;s name and description as the brief; add optional extra direction (&ldquo;overhead on slate, more steam&rdquo;) and let it cook',
-          '&ldquo;Enhance&rdquo; an existing photo — improves lighting, background, and framing while preserving the exact dish and plating',
-          'Review panel shows before/after so you never lose your original by accident — keep the new one, keep the old one, or try again',
-          'Preview the exact prompt being sent to the AI in a collapsible section before you generate — updates live as you tweak the extra direction',
-          'Drinks (smoothies, cocktails, coffees, juices) are now shot front-on with studio lighting, condensation, and garnishes — plated food stays overhead',
+          '&ldquo;Generate&rdquo; a dish photo with AI: uses the dish&apos;s name and description as the brief; add optional extra direction (&ldquo;overhead on slate, more steam&rdquo;) and let it cook',
+          '&ldquo;Enhance&rdquo; an existing photo: improves lighting, background, and framing while preserving the exact dish and plating',
+          'Review panel shows before/after so you never lose your original by accident: keep the new one, keep the old one, or try again',
+          'Preview the exact prompt being sent to the AI in a collapsible section before you generate: updates live as you tweak the extra direction',
+          'Drinks (smoothies, cocktails, coffees, juices) are now shot front-on with studio lighting, condensation, and garnishes: plated food stays overhead',
           'Success toast appears when an AI photo is ready, with a button that jumps back to the dish if you&apos;ve scrolled away',
-          'Generated and enhanced photos default to bright, appetite-forward styling — visible glisten, steam, caramelization, richer color — instead of a muted editorial look',
+          'Generated and enhanced photos default to bright, appetite-forward styling with visible glisten, steam, caramelization, and richer color instead of a muted editorial look',
         ],
       },
       {
@@ -735,7 +738,7 @@ const changelog = [
       {
         type: 'fixed' as const,
         items: [
-          'Dish photos are now cleaned up from storage when you remove them or delete a dish — no more orphaned images lingering behind',
+          'Dish photos are now cleaned up from storage when you remove them or delete a dish: no more orphaned images lingering behind',
         ],
       },
     ],
@@ -748,9 +751,9 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'Upload a photo for any dish in the editor — drag-drop or click, JPG/PNG/WEBP up to 5 MB',
+          'Upload a photo for any dish in the editor: drag-drop or click, JPG/PNG/WEBP up to 5 MB',
           'Photos render as a thumbnail next to each dish on your public menu, giving guests a taste at a glance',
-          'Tap a dish thumbnail to open it in a full-screen viewer — close with the button below, a tap outside, or Escape',
+          'Tap a dish thumbnail to open it in a full-screen viewer: close with the button below, a tap outside, or Escape',
           'Remove a photo anytime with the × button on the editor thumbnail',
         ],
       },
@@ -764,7 +767,7 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'Mark any dish as Today&apos;s Special with a single tap in the editor — expires automatically at midnight, no unchecking needed',
+          'Mark any dish as Today&apos;s Special with a single tap in the editor: expires automatically at midnight, no unchecking needed',
           'Specials appear as a pinned section at the top of your public menu with a distinct treatment so guests see them first',
           'A &ldquo;Today&apos;s Specials&rdquo; pill in the menu&apos;s category nav jumps straight to that section',
         ],
@@ -779,7 +782,7 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'Tag dishes with editorial badges in the editor — Best Seller, Chef&apos;s Pick, Signature, New, and Spicy — each with their own icon and color',
+          'Tag dishes with editorial badges in the editor, including Best Seller, Chef&apos;s Pick, Signature, New, and Spicy, each with its own icon and color',
           'Badges render as prominent pills above the dish name on your public menu, so customers spot your highlights instantly',
           'New Badges section in Settings lets you disable the ones you don&apos;t use, keeping the editor tidy',
         ],
@@ -794,9 +797,9 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'New Links section in Settings — add your Google review URL plus Instagram, TikTok, and Facebook profiles',
+          'New Links section in Settings: add your Google review URL plus Instagram, TikTok, and Facebook profiles',
           '&ldquo;Leave us a Google review&rdquo; button in your public menu footer when a review link is set',
-          'Social follow icons (Instagram, TikTok, Facebook) show up in the footer — only the ones you&apos;ve filled in',
+          'Social follow icons (Instagram, TikTok, Facebook) show up in the footer: only the ones you&apos;ve filled in',
         ],
       },
     ],
@@ -809,9 +812,9 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'Add your restaurant WiFi in Settings — network name, password, and security type (WPA, WEP, or open)',
-          'Guests see a &quot;WiFi&quot; button in your public menu header — tap to reveal the password, tap again to copy it',
-          'Download a WiFi QR code from Settings (SVG or PNG) — print it on table cards so modern phones auto-join just by pointing the camera',
+          'Add your restaurant WiFi in Settings: network name, password, and security type (WPA, WEP, or open)',
+          'Guests see a &quot;WiFi&quot; button in your public menu header: tap to reveal the password, tap again to copy it',
+          'Download a WiFi QR code from Settings (SVG or PNG): print it on table cards so modern phones auto-join just by pointing the camera',
         ],
       },
     ],
@@ -824,12 +827,12 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'Upload your restaurant logo with drag-and-drop instead of pasting a URL — PNG, JPG, WEBP, or SVG up to 2 MB. Works from Settings and from onboarding',
+          'Upload your restaurant logo with drag-and-drop instead of pasting a URL: PNG, JPG, WEBP, or SVG up to 2 MB. Works from Settings and from onboarding',
           'Pick what goes in the middle of your QR code: your logo, custom text (up to 4 characters), or leave it blank',
-          '&quot;Use restaurant brand colors&quot; one-click button in the QR section — pulls your primary/secondary colors straight into the code',
-          'Download your most recent menu&apos;s QR straight from the Settings preview — SVG or PNG',
-          'New left sidebar for the dashboard — your restaurant at the top, Menus/Team/Settings tabs below, your account card at the bottom. Collapses to icons with ⌘B / Ctrl+B',
-          'New Profile page at /dashboard/profile — set a display name so you don&apos;t show up to teammates as your email',
+          '&quot;Use restaurant brand colors&quot; one-click button in the QR section: pulls your primary/secondary colors straight into the code',
+          'Download your most recent menu&apos;s QR straight from the Settings preview: SVG or PNG',
+          'New left sidebar for the dashboard: your restaurant at the top, Menus/Team/Settings tabs below, your account card at the bottom. Collapses to icons with ⌘B / Ctrl+B',
+          'New Profile page at /dashboard/profile: set a display name so you don&apos;t show up to teammates as your email',
           'Onboarding now asks for your name so it&apos;s filled in from day one',
           'Floating back-to-top button on the landing page',
         ],
@@ -837,7 +840,7 @@ const changelog = [
       {
         type: 'changed' as const,
         items: [
-          'Landing page top nav simplified — one &quot;Get started&quot; button that takes you to the dashboard when you&apos;re already signed in',
+          'Landing page top nav simplified: one &quot;Get started&quot; button that takes you to the dashboard when you&apos;re already signed in',
           'Every CTA on the landing page (Start for free, Get started, Choose plan) routes you straight to your dashboard if you&apos;re signed in, instead of bouncing through the login screen',
           'Dashboard pages now share the same width and padding so navigating between Menus, Team, Settings, and Profile doesn&apos;t jump horizontally',
           'Color pickers are now circular to match the rest of the rounded UI',
@@ -853,8 +856,8 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'Every menu now has a real, downloadable QR code at /dashboard/menus/[slug]/qr — SVG for print, PNG for sharing',
-          'Customize your QR&apos;s dot style, corner style, and colors in Settings — updates apply across every menu',
+          'Every menu now has a real, downloadable QR code at /dashboard/menus/[slug]/qr: SVG for print, PNG for sharing',
+          'Customize your QR&apos;s dot style, corner style, and colors in Settings: updates apply across every menu',
           'If you&apos;ve set a restaurant logo, it&apos;s automatically placed in the center of your QR',
           '&quot;QR&quot; action on each row of the menu list opens the downloadable code for that menu',
         ],
@@ -869,11 +872,11 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'New Team page at /dashboard/team — see who has access to your restaurant and invite more teammates',
-          'Invite employees by email — they receive a branded invitation email and can accept with a single click',
+          'New Team page at /dashboard/team: see who has access to your restaurant and invite more teammates',
+          'Invite employees by email: they receive a branded invitation email and can accept with a single click',
           'Two roles when inviting: Admin (can edit menus + settings + invite others) or Member (can edit menus)',
           'Pending invitations are listed with their expiry and can be canceled before they&apos;re accepted',
-          'Accept-invite page at /accept-invite — shows who invited you and which restaurant, and signs you in if needed',
+          'Accept-invite page at /accept-invite: shows who invited you and which restaurant, and signs you in if needed',
         ],
       },
     ],
@@ -886,7 +889,7 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'New Settings page at /dashboard/settings — edit your restaurant name, description, website, logo, brand colors, and default currency any time',
+          'New Settings page at /dashboard/settings: edit your restaurant name, description, website, logo, brand colors, and default currency any time',
           'Changes to brand colors and logo show up on your public menu page immediately',
           'Settings tab in the dashboard nav',
         ],
@@ -901,16 +904,16 @@ const changelog = [
       {
         type: 'changed' as const,
         items: [
-          'Menus now belong to your restaurant, not to a single user — every teammate on the account sees and can edit the same menus',
-          'Menu creation now asks for a menu name (e.g. Dinner, Brunch, Cocktails) instead of the restaurant name — the restaurant name comes from onboarding',
-          'Currency is set once on the restaurant and every menu inherits it — no more picking currency on every new menu',
+          'Menus now belong to your restaurant, not to a single user: every teammate on the account sees and can edit the same menus',
+          'Menu creation now asks for a menu name (e.g. Dinner, Brunch, Cocktails) instead of the restaurant name: the restaurant name comes from onboarding',
+          'Currency is set once on the restaurant and every menu inherits it: no more picking currency on every new menu',
           'Public menu page now shows your restaurant logo and applies your brand colors if you set them during onboarding',
         ],
       },
       {
         type: 'removed' as const,
         items: [
-          'Per-menu currency override and per-menu restaurant name — moved to restaurant-level settings',
+          'Per-menu currency override and per-menu restaurant name: moved to restaurant-level settings',
         ],
       },
     ],
@@ -923,7 +926,7 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'New restaurants go through a quick onboarding flow after sign-up — paste your website and we auto-fill your name, description, logo, and brand colors from the page',
+          'New restaurants go through a quick onboarding flow after sign-up: paste your website and we auto-fill your name, description, logo, and brand colors from the page',
           'Skip-to-manual option if you don&apos;t have a website yet',
           'Set a default currency for your restaurant so every new menu inherits it',
           'Dashboard now has a top nav with your restaurant name + logo so you always know which restaurant you&apos;re managing',
@@ -940,12 +943,12 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'Owner-only menu editor at /m/[slug]/edit — inline edit every dish name, description, and price with autosave',
+          'Owner-only menu editor at /m/[slug]/edit: inline edit every dish name, description, and price with autosave',
           'Desktop editor has a sticky left sidebar with big category buttons + icons; mobile gets horizontal category pills',
           'Search bar inside the editor filters dishes across the whole menu',
           'Add or delete dishes per category',
           'Change the restaurant name or currency from the editor header, reflected on the public page instantly',
-          'Search bar at the top of every public menu — filters dishes by name, description, or tag in real time, with a no-results state',
+          'Search bar at the top of every public menu: filters dishes by name, description, or tag in real time, with a no-results state',
           '"Currency" selector in the create-menu form (default USD)',
         ],
       },
@@ -959,8 +962,8 @@ const changelog = [
       {
         type: 'added' as const,
         items: [
-          'Menu creation from a photo or PDF — drag a file into the dashboard and we OCR every dish with Gemini',
-          'Menu creation from a restaurant URL — we scrape the page, extract every dish with Gemini, and publish a mobile-friendly menu in seconds',
+          'Menu creation from a photo or PDF: drag a file into the dashboard and we OCR every dish with Gemini',
+          'Menu creation from a restaurant URL: we scrape the page, extract every dish with Gemini, and publish a mobile-friendly menu in seconds',
           'Menu creation from pasted text for restaurants without a website',
           'Public menu page at /m/[slug] with sticky category nav, dish cards, persimmon price chips, dietary tags, and a floating call-waiter button',
           'Dashboard lists your published menus with copy-link and view-menu actions',
@@ -976,10 +979,10 @@ const changelog = [
       {
         type: 'changed' as const,
         items: [
-          'New Pistachio · Persimmon palette — cream paper, ink primary, pistachio-green accent, persimmon highlights',
+          'New Pistachio · Persimmon palette: cream paper, ink primary, pistachio-green accent, persimmon highlights',
           'Typography switched to General Sans (body) + Gambarino (italic emphasis) from Fontshare',
           'Buttons are now pill-shaped ink on cream (not orange), matching the new design',
-          'Brand mark is an ink square with pistachio-green QR dots — reflected across every page',
+          'Brand mark is an ink square with pistachio-green QR dots: reflected across every page',
         ],
       },
       {
@@ -1040,7 +1043,7 @@ const changelog = [
           'Google OAuth and email/password sign-in (replaced by email OTP)',
           '"Pricing" and "Examples" nav links (those sections don\'t exist yet)',
           'Terms and Privacy links on the login page until those pages exist',
-          'Language switcher — English only for v0.1. Translation infrastructure remains in place for when Spanish ships.',
+          'Language switcher: English only for v0.1. Translation infrastructure remains in place for when Spanish ships.',
         ],
       },
     ],

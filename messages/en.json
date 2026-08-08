@@ -76,7 +76,7 @@
     "title": "Dashboard",
     "welcome": "Welcome, {name}",
     "emptyTitle": "No menus yet",
-    "emptyDescription": "Paste a link to your restaurant's site (or the menu text itself) above — we'll build the digital menu for you.",
+    "emptyDescription": "Paste a link to your restaurant's site (or the menu text itself) above: we'll build the digital menu for you.",
     "signOut": "Sign out",
     "loading": "Loading...",
     "sidebar": {
@@ -136,7 +136,7 @@
       "addRestaurant": "Add restaurant",
       "add": {
         "title": "Add a restaurant",
-        "description": "Spin up another venue under your account. You'll finish branding — logo, colors, WiFi — in Settings next.",
+        "description": "Spin up another venue under your account. You'll finish branding: logo, colors, WiFi: in Settings next.",
         "nameLabel": "Restaurant name",
         "namePlaceholder": "e.g. Via Napoli",
         "currencyLabel": "Currency",
@@ -180,14 +180,14 @@
       "orDivider": "or",
       "textLabel": "Menu text",
       "textOptionHint": "Paste the menu if you have it in a document or message.",
-      "textPlaceholder": "Starters\n  Soupe à l'oignon — 12\n  Escargots de Bourgogne — 16\n\nMains\n  ...",
+      "textPlaceholder": "Starters\n  Soupe à l'oignon: 12\n  Escargots de Bourgogne: 16\n\nMains\n  ...",
       "nameLabel": "Menu name (optional)",
       "nameHint": "You can name it later. Useful names are Dinner, Brunch, Drinks, or Specials.",
       "namePlaceholder": "e.g. Dinner, Brunch, Cocktails",
       "submit": "Create menu",
       "submitting": "Extracting your menu…",
       "sourceRequired": "Choose one source above to create your menu.",
-      "urlHint": "Public menu page or homepage — anything readable works.",
+      "urlHint": "Public menu page or homepage: anything readable works.",
       "paused": {
         "title": "Creating menus is paused",
         "subscriptionEnded": "Your subscription has ended. Public menus stay live, but creating new menus is paused until you pick a plan.",
@@ -441,11 +441,11 @@
       "close": "Close menu"
     },
     "hero": {
-      "badge": "New — Auto-parse from any PDF or photo",
+      "badge": "New: Auto-parse from any PDF or photo",
       "h1a": "Your menu,",
       "h1b": "on every table,",
       "h1c": "just a scan away.",
-      "description": "Turn your printed menu into a beautiful mobile page and a QR code for your tables. No apps to download, no menus to reprint — edit a dish and it updates everywhere, instantly.",
+      "description": "Turn your printed menu into a beautiful mobile page and a QR code for your tables. No apps to download, no menus to reprint: edit a dish and it updates everywhere, instantly.",
       "ctaPrimary": "Start for free",
       "ctaSecondary": "See a live menu",
       "trustStars": "4.9 from 340+ reviews",
@@ -508,7 +508,7 @@
         "upload": {
           "n": "01",
           "title": "Upload your menu",
-          "description": "Send us a PDF, a photo of your printed menu, or even a snapshot on your phone. Wine stains and all — we handle it."
+          "description": "Send us a PDF, a photo of your printed menu, or even a snapshot on your phone. Wine stains and all: we handle it."
         },
         "build": {
           "n": "02",
@@ -518,7 +518,7 @@
         "print": {
           "n": "03",
           "title": "Print the QR",
-          "description": "Download a print-ready QR card, laminate it, place it on your tables. Diners scan, browse, and order — no download needed."
+          "description": "Download a print-ready QR card, laminate it, place it on your tables. Diners scan, browse, and order: no download needed."
         }
       }
     },
@@ -596,7 +596,7 @@
       "titleA": "Not just any QR.",
       "titleB": "Your",
       "titleC": "QR.",
-      "description": "Add your logo to the center, pick your colors, and print it on anything — paper, wood, steel, vinyl. We handle the math so it still scans reliably, every time.",
+      "description": "Add your logo to the center, pick your colors, and print it on anything: paper, wood, steel, vinyl. We handle the math so it still scans reliably, every time.",
       "imageAlt": "Scan to open a live Qtable menu",
       "scanLabel": "Scan for the menu",
       "variants": {
@@ -619,12 +619,12 @@
         "thomas": {
           "name": "Thomas Renaud",
           "role": "Chef, Brasserie 19 (Lyon)",
-          "quote": "The translation is the killer feature. Our tourists finally order confidently — and upsells on wine are up 18%."
+          "quote": "The translation is the killer feature. Our tourists finally order confidently: and upsells on wine are up 18%."
         },
         "sara": {
           "name": "Sara Kouassi",
           "role": "Manager, Kinteros (Barcelona)",
-          "quote": "Setup took us a single afternoon. Our servers love it — they just point at the QR, the rest is on the diner."
+          "quote": "Setup took us a single afternoon. Our servers love it: they just point at the QR, the rest is on the diner."
         }
       }
     },
@@ -712,15 +712,15 @@
       "titleA": "The things",
       "titleB": "we hear",
       "titleC": "the most.",
-      "helpLine": "Can't find your answer? Email us at hello@qtable.ai — a human replies within an hour, every day of the week.",
+      "helpLine": "Can't find your answer? Email us at hello@qtable.ai: a human replies within an hour, every day of the week.",
       "items": {
         "savvy": {
           "q": "Do I need to be tech-savvy?",
-          "a": "Not at all. If you can take a photo with your phone, you can use Qtable. Upload your menu and we do the rest — no training needed."
+          "a": "Not at all. If you can take a photo with your phone, you can use Qtable. Upload your menu and we do the rest: no training needed."
         },
         "price": {
           "q": "What if I change a price tomorrow?",
-          "a": "Edit any dish from your phone and it updates instantly. The QR on your tables never changes — it always shows your latest menu."
+          "a": "Edit any dish from your phone and it updates instantly. The QR on your tables never changes: it always shows your latest menu."
         },
         "wifi": {
           "q": "Does it work without restaurant wifi?",
@@ -1534,7 +1534,7 @@
       "recipientLimit": "You can add up to {limit} report recipients",
       "recipientNotFound": "Report recipient not found",
       "confirmationFailed": "The recipient was added, but the confirmation email could not be sent",
-      "confirmationCooldown": "A confirmation email was just sent to that address — wait a moment before resending"
+      "confirmationCooldown": "A confirmation email was just sent to that address: wait a moment before resending"
     },
     "invitations": {
       "invalidEmail": "Invalid email",

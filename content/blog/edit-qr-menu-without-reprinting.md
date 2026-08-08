@@ -12,7 +12,7 @@ imageAlt: A restaurant manager editing a digital menu beside an existing QR tabl
 draft: false
 ---
 
-You can edit a QR menu without reprinting the code when the QR continues to point to the same public menu address. Change the content behind that address—such as a dish, price, description, category, or image—then publish and scan the existing table code to confirm the update.
+You can edit a QR menu without reprinting the code when the QR continues to point to the same public menu address. Change the content behind that address, such as a dish, price, description, category, or image, then publish and scan the existing table code to confirm the update.
 
 That separation is the useful part: the printed QR stores a destination, while the menu editor controls what appears there. DENSO WAVE, the company behind QR Code, describes a QR code as a way to encode data and confirms in its [QR Code FAQ](https://www.qrcode.com/en/faq.html?lang=en) that a URL can be encoded. Changing the page at that URL does not inherently change the encoded URL.
 
@@ -46,7 +46,7 @@ Access still matters. Qtable keeps a menu private during setup until a trial, pa
 
 ## When you should reprint the QR code
 
-Reprint or replace it when the destination itself changes—for example, after moving to a different menu URL or domain—or when the physical code is damaged, too small, low contrast, or placed where phones cannot scan it reliably. A new visual design can also warrant replacement if nearby text incorrectly describes the destination.
+Reprint or replace it when the destination itself changes, for example, after moving to a different menu URL or domain, or when the physical code is damaged, too small, low contrast, or placed where phones cannot scan it reliably. A new visual design can also warrant replacement if nearby text incorrectly describes the destination.
 
 Do not assume that error correction makes a poor print safe. DENSO's [QR Code overview](https://www.qrcode.com/en/about/index.html) explains that the format includes error-correction capability, but your own final-size scan test is still the evidence that matters for a table card.
 

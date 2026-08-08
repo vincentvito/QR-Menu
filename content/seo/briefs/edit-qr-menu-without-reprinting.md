@@ -3,7 +3,7 @@
 - Status: approved supporting page
 - Canonical: `/blog/edit-qr-menu-without-reprinting`
 - Target user/job: an owner who changes prices, availability, descriptions, or dishes and wants existing table cards to keep working.
-- Primary intent/query: informational/commercial — “edit QR menu without changing QR code.”
+- Primary intent/query: informational/commercial: “edit QR menu without changing QR code.”
 - Funnel/CTA: middle-to-bottom funnel; CTA “Create an editable QR menu.”
 - Author/reviewer: product marketing / product owner.
 

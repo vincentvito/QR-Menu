@@ -136,7 +136,7 @@
       "addRestaurant": "Añadir restaurante",
       "add": {
         "title": "Añadir restaurante",
-        "description": "Crea otro local en tu cuenta. Después terminarás la marca — logo, colores y WiFi — en Ajustes.",
+        "description": "Crea otro local en tu cuenta. Después terminarás la marca: logo, colores y WiFi: en Ajustes.",
         "nameLabel": "Nombre del restaurante",
         "namePlaceholder": "p. ej. Via Napoli",
         "currencyLabel": "Moneda",
@@ -180,7 +180,7 @@
       "orDivider": "o",
       "textLabel": "Texto del menú",
       "textOptionHint": "Pega el menú si lo tienes en un documento o mensaje.",
-      "textPlaceholder": "Entrantes\n  Sopa de cebolla — 12\n  Croquetas de jamón — 10\n\nPrincipales\n  ...",
+      "textPlaceholder": "Entrantes\n  Sopa de cebolla: 12\n  Croquetas de jamón: 10\n\nPrincipales\n  ...",
       "nameLabel": "Nombre del menú (opcional)",
       "nameHint": "Puedes ponerle nombre más tarde. Algunos nombres útiles son Cena, Brunch, Bebidas o Especiales.",
       "namePlaceholder": "p. ej. Cena, Brunch, Cócteles",
@@ -441,7 +441,7 @@
       "close": "Cerrar menú"
     },
     "hero": {
-      "badge": "Nuevo — Importa automáticamente cualquier PDF o foto",
+      "badge": "Nuevo: Importa automáticamente cualquier PDF o foto",
       "h1a": "Tu menú,",
       "h1b": "en cada mesa,",
       "h1c": "a un escaneo.",

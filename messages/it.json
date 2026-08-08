@@ -76,7 +76,7 @@
     "title": "Dashboard",
     "welcome": "Benvenuto, {name}",
     "emptyTitle": "Ancora nessun menu",
-    "emptyDescription": "Incolla un link al sito del tuo ristorante (o il testo del menu stesso) qui sopra — creeremo il menu digitale per te.",
+    "emptyDescription": "Incolla un link al sito del tuo ristorante (o il testo del menu stesso) qui sopra: creeremo il menu digitale per te.",
     "signOut": "Esci",
     "loading": "Caricamento...",
     "sidebar": {
@@ -136,7 +136,7 @@
       "addRestaurant": "Aggiungi ristorante",
       "add": {
         "title": "Aggiungi un ristorante",
-        "description": "Crea un'altra sede sotto il tuo account. Completerai il branding — logo, colori, WiFi — in Impostazioni in seguito.",
+        "description": "Crea un'altra sede sotto il tuo account. Completerai il branding: logo, colori, WiFi: in Impostazioni in seguito.",
         "nameLabel": "Nome ristorante",
         "namePlaceholder": "es. Via Napoli",
         "currencyLabel": "Valuta",
@@ -180,14 +180,14 @@
       "orDivider": "o",
       "textLabel": "Testo del menu",
       "textOptionHint": "Incolla il menu se lo hai in un documento o messaggio.",
-      "textPlaceholder": "Antipasti\n  Soupe à l'oignon — 12\n  Escargots de Bourgogne — 16\n\nPiatti principali\n  ...",
+      "textPlaceholder": "Antipasti\n  Soupe à l'oignon: 12\n  Escargots de Bourgogne: 16\n\nPiatti principali\n  ...",
       "nameLabel": "Nome del menu (opzionale)",
       "nameHint": "Puoi nominarlo più tardi. Nomi utili sono Cena, Brunch, Bevande o Speciali.",
       "namePlaceholder": "es. Cena, Brunch, Cocktail",
       "submit": "Crea menu",
       "submitting": "Estrazione del tuo menu in corso…",
       "sourceRequired": "Scegli una fonte qui sopra per creare il menu.",
-      "urlHint": "Pagina del menu pubblico o homepage — qualsiasi cosa leggibile va bene.",
+      "urlHint": "Pagina del menu pubblico o homepage: qualsiasi cosa leggibile va bene.",
       "paused": {
         "title": "La creazione di menu è in pausa",
         "subscriptionEnded": "Il tuo abbonamento è terminato. I menu pubblici rimangono attivi, ma la creazione di nuovi menu è in pausa finché non scegli un piano.",
@@ -441,11 +441,11 @@
       "close": "Chiudi menu"
     },
     "hero": {
-      "badge": "Novità — Auto-analisi da qualsiasi PDF o foto",
+      "badge": "Novità: Auto-analisi da qualsiasi PDF o foto",
       "h1a": "Il tuo menu,",
       "h1b": "su ogni tavolo,",
       "h1c": "a portata di scansione.",
-      "description": "Trasforma il tuo menu cartaceo in una splendida pagina mobile e un codice QR per i tuoi tavoli. Nessuna app da scaricare, nessun menu da ristampare — modifica un piatto e si aggiorna ovunque, istantaneamente.",
+      "description": "Trasforma il tuo menu cartaceo in una splendida pagina mobile e un codice QR per i tuoi tavoli. Nessuna app da scaricare, nessun menu da ristampare: modifica un piatto e si aggiorna ovunque, istantaneamente.",
       "ctaPrimary": "Inizia gratis",
       "ctaSecondary": "Vedi un menu dal vivo",
       "trustStars": "4.9 da oltre 340 recensioni",
@@ -508,7 +508,7 @@
         "upload": {
           "n": "01",
           "title": "Carica il tuo menu",
-          "description": "Inviaci un PDF, una foto del tuo menu stampato, o anche uno scatto dal tuo telefono. Macchie di vino e tutto il resto — ci pensiamo noi."
+          "description": "Inviaci un PDF, una foto del tuo menu stampato, o anche uno scatto dal tuo telefono. Macchie di vino e tutto il resto: ci pensiamo noi."
         },
         "build": {
           "n": "02",
@@ -518,7 +518,7 @@
         "print": {
           "n": "03",
           "title": "Stampa il QR",
-          "description": "Scarica una card QR pronta per la stampa, plastificala, posizionala sui tuoi tavoli. I clienti scansionano, sfogliano e ordinano — nessun download richiesto."
+          "description": "Scarica una card QR pronta per la stampa, plastificala, posizionala sui tuoi tavoli. I clienti scansionano, sfogliano e ordinano: nessun download richiesto."
         }
       }
     },
@@ -596,7 +596,7 @@
       "titleA": "Non un QR qualsiasi.",
       "titleB": "Il tuo",
       "titleC": "QR.",
-      "description": "Aggiungi il tuo logo al centro, scegli i tuoi colori e stampalo su qualsiasi materiale — carta, legno, acciaio, vinile. Ci occupiamo noi dei calcoli affinché la scansione sia sempre affidabile.",
+      "description": "Aggiungi il tuo logo al centro, scegli i tuoi colori e stampalo su qualsiasi materiale: carta, legno, acciaio, vinile. Ci occupiamo noi dei calcoli affinché la scansione sia sempre affidabile.",
       "imageAlt": "Scansiona per aprire un menu Qtable dal vivo",
       "scanLabel": "Scansiona per il menu",
       "variants": {
@@ -619,12 +619,12 @@
         "thomas": {
           "name": "Thomas Renaud",
           "role": "Chef, Brasserie 19 (Lione)",
-          "quote": "La traduzione è la funzione vincente. I nostri turisti finalmente ordinano con sicurezza — e le vendite di vino sono aumentate del 18%."
+          "quote": "La traduzione è la funzione vincente. I nostri turisti finalmente ordinano con sicurezza: e le vendite di vino sono aumentate del 18%."
         },
         "sara": {
           "name": "Sara Kouassi",
           "role": "Manager, Kinteros (Barcellona)",
-          "quote": "L'installazione ci ha richiesto un solo pomeriggio. I nostri camerieri lo adorano — devono solo indicare il QR, il resto lo fa il cliente."
+          "quote": "L'installazione ci ha richiesto un solo pomeriggio. I nostri camerieri lo adorano: devono solo indicare il QR, il resto lo fa il cliente."
         }
       }
     },
@@ -712,15 +712,15 @@
       "titleA": "Le cose",
       "titleB": "che sentiamo",
       "titleC": "più spesso.",
-      "helpLine": "Non trovi la tua risposta? Scrivici a hello@qtable.ai — un umano risponde entro un'ora, ogni giorno della settimana.",
+      "helpLine": "Non trovi la tua risposta? Scrivici a hello@qtable.ai: un umano risponde entro un'ora, ogni giorno della settimana.",
       "items": {
         "savvy": {
           "q": "Devo essere esperto di tecnologia?",
-          "a": "Assolutamente no. Se sai scattare una foto con il tuo telefono, puoi usare Qtable. Carica il tuo menu e noi facciamo il resto — nessuna formazione richiesta."
+          "a": "Assolutamente no. Se sai scattare una foto con il tuo telefono, puoi usare Qtable. Carica il tuo menu e noi facciamo il resto: nessuna formazione richiesta."
         },
         "price": {
           "q": "Cosa succede se cambio un prezzo domani?",
-          "a": "Modifica qualsiasi piatto dal tuo telefono e si aggiorna istantaneamente. Il QR sui tuoi tavoli non cambia mai — mostrerà sempre il tuo menu più recente."
+          "a": "Modifica qualsiasi piatto dal tuo telefono e si aggiorna istantaneamente. Il QR sui tuoi tavoli non cambia mai: mostrerà sempre il tuo menu più recente."
         },
         "wifi": {
           "q": "Funziona senza il Wi-Fi del ristorante?",

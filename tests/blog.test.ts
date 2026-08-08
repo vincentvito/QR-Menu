@@ -166,6 +166,27 @@ test('published posts sort newest first with a deterministic slug tie-break', ()
   )
 })
 
+test('published blog copy does not use em dashes', () => {
+  const posts = getAllBlogPosts({ production: true, now: NOW })
+  const emDash = '\u2014'
+
+  for (const post of posts) {
+    const publishedCopy = [
+      post.title,
+      post.heading,
+      post.description,
+      post.author,
+      post.authorRole,
+      post.primaryIntent,
+      post.imageAlt,
+      post.content,
+      ...post.tags,
+    ].join('\n')
+
+    assert.ok(!publishedCopy.includes(emDash), `${post.slug} contains an em dash`)
+  }
+})
+
 test('related posts exclude the current article and rank shared tags before recency', () => {
   const posts = parseBlogSources(
     [

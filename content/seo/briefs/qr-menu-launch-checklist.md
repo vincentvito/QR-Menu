@@ -3,7 +3,7 @@
 - Status: approved supporting page
 - Canonical: `/blog/qr-menu-launch-checklist`
 - Target user/job: a restaurant owner or manager preparing to print and place QR cards.
-- Primary intent/query: informational, bottom funnel — “QR menu launch checklist.”
+- Primary intent/query: informational, bottom funnel: “QR menu launch checklist.”
 - Funnel/CTA: bottom funnel; CTA “Build and test your QR menu.”
 - Author/reviewer: hospitality content writer / product and accessibility reviewer.
 

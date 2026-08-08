@@ -3,7 +3,7 @@
 - Status: approved supporting page
 - Canonical: `/blog/pdf-menu-vs-mobile-qr-menu`
 - Target user/job: an owner deciding whether a table QR should open the existing PDF or a structured mobile menu.
-- Primary intent/query: commercial comparison — “PDF menu vs digital menu.”
+- Primary intent/query: commercial comparison: “PDF menu vs digital menu.”
 - Funnel/CTA: middle funnel; CTA “Convert your PDF to a mobile menu.”
 - Author/reviewer: hospitality content writer / product and accessibility reviewer.
 

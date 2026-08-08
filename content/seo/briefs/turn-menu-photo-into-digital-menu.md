@@ -3,7 +3,7 @@
 - Status: approved supporting page
 - Canonical: `/blog/turn-menu-photo-into-digital-menu`
 - Target user/job: an owner whose only source is one or more phone photos of a printed menu.
-- Primary intent/query: informational — “turn menu photo into digital menu.”
+- Primary intent/query: informational: “turn menu photo into digital menu.”
 - Funnel/CTA: middle funnel; CTA “Import your menu photo.”
 - Author/reviewer: hospitality content writer / product owner.
 
